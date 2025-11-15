@@ -94,6 +94,18 @@ struct Index {
         else return new Promise((resolve) => { resolve(""); });
     }
 
+    // 安全关闭左滑菜单
+    // 防止列表没有条目时闪退、报错
+    private safeCloseSwipeActions(): void {
+        try {
+            if (this.listViewModel.commandEntries.length > 0) {
+                this.scrollerForList.closeAllSwipeActions();
+            }
+        } catch (err) {
+            Logger.debug(this.LOG_TAG, `Safe close swipe actions failed, ${err}`);
+        }
+    }
+
     // 检查数据库是否存在设置
     // 并初始化 ASF 的服务器地址和密码
     async checkSettingsAndInit(): Promise<void> {
@@ -176,6 +188,7 @@ struct Index {
         })
     }
 
+    // 编辑按钮
     @Builder
     EditButton(entry: CommandEntryViewModel) {
         Row() {
@@ -190,7 +203,7 @@ struct Index {
             .width(40)
             .height(40)
             .onClick(() => {
-                this.scrollerForList.closeAllSwipeActions();
+                this.safeCloseSwipeActions();
                 this.pageStack.pushPath({
                     name: "EditPage",
                     param: [this.listViewModel, entry],
@@ -356,7 +369,7 @@ struct Index {
                     value: "Add",
                     icon: $r("app.media.startIcon"),
                     action: () => {
-                        this.scrollerForList.closeAllSwipeActions();
+                        this.safeCloseSwipeActions();
                         this.pageStack.pushPath({
                             name: "AddCommand",
                             param: this.listViewModel,
@@ -371,7 +384,7 @@ struct Index {
                     value: "Settings",
                     icon: $r("app.media.startIcon"),
                     action: () => {
-                        this.scrollerForList.closeAllSwipeActions();
+                        this.safeCloseSwipeActions();
                         this.pageStack.pushPath({
                             name: "SettingsPage",
                             onPop: async (popInfo) => {
