@@ -1,6 +1,3 @@
-import { deviceInfo, BusinessError } from '@kit.BasicServicesKit';
-import { promptAction } from '@kit.ArkUI';
-
 import Logger from '../common/utils/Logger';
 import StyleConstants from '../common/constants/StyleConstants';
 import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
@@ -27,24 +24,6 @@ struct MorePage {
     private db = DB.getInstance();
 
     private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
-
-    alert(message: string | Resource) {
-        if(deviceInfo.sdkApiVersion <= 17) {
-            try {
-                promptAction.showToast({
-                    message: message
-                });
-            } catch (err) {
-                Logger.error(this.LOG_TAG, `<alert API <= 17> 错误, ${err}`);
-            }
-        } else {
-            this.promptAction.openToast({
-                message: message
-            }).catch((err: BusinessError) => {
-                Logger.error(this.LOG_TAG, `<alert API > 17> 错误, ${err}`);
-            });
-        }
-    }
 
     // 从 NavDestination 由 pop() 返回时
     // 显示回调 popInfo

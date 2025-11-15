@@ -1,10 +1,8 @@
-import { deviceInfo, BusinessError } from '@kit.BasicServicesKit';
-import { promptAction } from '@kit.ArkUI';
-
 import Logger from '../common/utils/Logger';
 import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
 import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
 import StyleConstants from '../common/constants/StyleConstants';
+import CommonUtils from '../common/utils/CommonUtils';
 
 @Builder
 export function AddCommandBuilder() {
@@ -25,24 +23,6 @@ struct AddCommand {
 
     pathStack: NavPathStack | undefined = undefined;
 
-    alert(message: string | Resource) {
-        if(deviceInfo.sdkApiVersion <= 17) {
-            try {
-                promptAction.showToast({
-                    message: message
-                });
-            } catch (err) {
-                Logger.error(this.LOG_TAG, `<alert API <= 17> 错误, ${err}`);
-            }
-        } else {
-            this.promptAction.openToast({
-                message: message
-            }).catch((err: BusinessError) => {
-                Logger.error(this.LOG_TAG, `<alert API > 17> 错误, ${err}`);
-            });
-        }
-    }
-
     clearInput() {
         this.newCommandViewModel.nickname = '';
         this.newCommandViewModel.command = '';
@@ -52,19 +32,19 @@ struct AddCommand {
 
     async saveCommand() {
         if (!this.newCommandViewModel.nickname.trim() || !this.newCommandViewModel.command.trim()) {
-            this.alert($r("app.string.AddCommand_Invalid_Input"));
+            CommonUtils.alert($r("app.string.AddCommand_Invalid_Input"), this.promptAction);
             return;
         }
 
         try {
             const success = await this.listViewModel.addCommandEntry(this.newCommandViewModel.toCommandEntry());
             if (success) {
-                this.alert($r("app.string.AddCommand_Add_Success"));
+                CommonUtils.alert($r("app.string.AddCommand_Add_Success"), this.promptAction);
                 this.clearInput();
-            } else this.alert($r("app.string.AddCommand_Add_Failed_Try_Again"));
+            } else CommonUtils.alert($r("app.string.AddCommand_Add_Failed_Try_Again"), this.promptAction);
         } catch (err) {
             Logger.error(this.LOG_TAG, `保存命令失败: ${err}`);
-            this.alert($r("app.string.AddCommand_Add_Failed"));
+            CommonUtils.alert($r("app.string.AddCommand_Add_Failed"), this.promptAction);
         }
     }
 

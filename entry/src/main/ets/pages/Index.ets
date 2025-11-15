@@ -1,6 +1,3 @@
-import { promptAction } from '@kit.ArkUI';
-import { deviceInfo, BusinessError } from '@kit.BasicServicesKit';
-
 import Logger from '../common/utils/Logger';
 import { ASF } from '../common/utils/ASF';
 import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
@@ -9,6 +6,7 @@ import CommonConstants from '../common/constants/CommonConstants';
 import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
 import { CommandListItem } from '../view/components/CommandTile';
 import StyleConstants from '../common/constants/StyleConstants';
+import CommonUtils from '../common/utils/CommonUtils';
 
 @Entry
 @ComponentV2
@@ -40,24 +38,6 @@ struct Index {
 
     onPageHide(): void {
         this.scrollerForList.closeAllSwipeActions();
-    }
-
-    alert(message: string) {
-        if(deviceInfo.sdkApiVersion <= 17) {
-            try {
-                promptAction.showToast({
-                    message: message
-                });
-            } catch (err) {
-                Logger.error(this.LOG_TAG, `<alert API <= 17> 错误, ${err}`);
-            }
-        } else {
-            this.promptAction.openToast({
-                message: message
-            }).catch((err: BusinessError) => {
-                Logger.error(this.LOG_TAG, `<alert API > 17> 错误, ${err}`);
-            });
-        }
     }
 
     // 执行指令后，显示结果的对话框
@@ -157,7 +137,7 @@ struct Index {
                 this.resultPopup(result["Result"]);
             } else {
                 const result: Record<string, string> = JSON.parse(resp.result.toString());
-                this.alert(`${result["Message"]} Code: ${resp.responseCode}`);
+                CommonUtils.alert(`${result["Message"]} 响应码: ${resp.responseCode}`, this.promptAction);
             }
         } catch (err) {
             Logger.error(this.LOG_TAG, `<sendCommand> error: ${err}`)

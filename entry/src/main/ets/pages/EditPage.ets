@@ -1,7 +1,5 @@
-import { promptAction } from '@kit.ArkUI';
-import { deviceInfo, BusinessError } from '@kit.BasicServicesKit';
 import StyleConstants from '../common/constants/StyleConstants';
-
+import CommonUtils from '../common/utils/CommonUtils';
 import Logger from '../common/utils/Logger';
 import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
 import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
@@ -25,39 +23,21 @@ struct EditPage {
 
     pathStack: NavPathStack | undefined = undefined;
 
-    alert(message: string | Resource) {
-        if(deviceInfo.sdkApiVersion <= 17) {
-            try {
-                promptAction.showToast({
-                    message: message
-                });
-            } catch (err) {
-                Logger.error(this.LOG_TAG, `<alert API <= 17> 错误, ${err}`);
-            }
-        } else {
-            this.promptAction.openToast({
-                message: message
-            }).catch((err: BusinessError) => {
-                Logger.error(this.LOG_TAG, `<alert API > 17> 错误, ${err}`);
-            });
-        }
-    }
-
     async saveCommand() {
         if (!this.updatingCommandEntry.nickname.trim() || !this.updatingCommandEntry.command.trim()) {
-            this.alert($r("app.string.EditPage_Invalid_Input"));
+            CommonUtils.alert($r("app.string.EditPage_Invalid_Input"), this.promptAction);
             return;
         }
 
         try {
             const success = await this.listViewModel.updateCommandEntry(this.updatingCommandEntry.toCommandEntry());
             if (success) {
-                this.alert($r("app.string.EditPage_Update_Success"));
+                CommonUtils.alert($r("app.string.EditPage_Update_Success"), this.promptAction);
                 this.pathStack?.pop("Button pressed");
-            } else this.alert($r("app.string.EditPage_Update_Failed_Try_Again"));
+            } else CommonUtils.alert($r("app.string.EditPage_Update_Failed_Try_Again"), this.promptAction);
         } catch (err) {
             Logger.error(this.LOG_TAG, `更新命令失败: ${err}`);
-            this.alert($r("app.string.EditPage_Update_Failed"));
+            CommonUtils.alert($r("app.string.EditPage_Update_Failed"), this.promptAction);
         }
     }
 

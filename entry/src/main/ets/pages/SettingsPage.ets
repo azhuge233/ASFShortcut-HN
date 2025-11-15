@@ -1,10 +1,8 @@
-import { promptAction } from '@kit.ArkUI';
-import { deviceInfo, BusinessError } from '@kit.BasicServicesKit';
-
 import Logger from '../common/utils/Logger';
 import { DB } from '../common/utils/DB';
 import CommonConstants from '../common/constants/CommonConstants';
 import StyleConstants from '../common/constants/StyleConstants';
+import CommonUtils from '../common/utils/CommonUtils';
 
 @Builder
 export function SettingsPageBuilder() {
@@ -31,24 +29,6 @@ struct SettingsPage {
     aboutToAppear(): void {
         // 加载当前设置
         this.loadSettings();
-    }
-
-    alert(message: string | Resource) {
-        if(deviceInfo.sdkApiVersion <= 17) {
-            try {
-                promptAction.showToast({
-                    message: message
-                });
-            } catch (err) {
-                Logger.error(this.LOG_TAG, `<alert API <= 17> 错误, ${err}`);
-            }
-        } else {
-            this.promptAction.openToast({
-                message: message
-            }).catch((err: BusinessError) => {
-                Logger.error(this.LOG_TAG, `<alert API > 17> 错误, ${err}`);
-            });
-        }
     }
 
     async loadSettings(): Promise<void> {
@@ -115,9 +95,9 @@ struct SettingsPage {
                     .onClick(async () => {
                         const saveSuccess = await this.saveSettings();
                         if (saveSuccess) {
-                            this.alert($r("app.string.SettingsPage_Save_Success"));
+                            CommonUtils.alert($r("app.string.SettingsPage_Save_Success"), this.promptAction);
                             this.pathStack?.pop("Submit pressed");
-                        } else this.alert($r("app.string.SettingsPage_Save_Failed"));
+                        } else CommonUtils.alert($r("app.string.SettingsPage_Save_Failed"), this.promptAction);
                     })
             }
         }
@@ -128,7 +108,7 @@ struct SettingsPage {
         })
         .onBackPressed(() => {
             if(this.isSaving) {
-                this.alert($r("app.string.SettingsPage_Save_Button_Saving"));
+                CommonUtils.alert($r("app.string.SettingsPage_Save_Button_Saving"), this.promptAction);
                 return true;
             }
             this.pathStack?.pop("Back pressed");
