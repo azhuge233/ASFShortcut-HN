@@ -3,6 +3,7 @@
     "pages/Index",
     "pages/AddCommand",
     "pages/EditPage",
-    "pages/SettingsPage"
+    "pages/SettingsPage",
+    "pages/MorePage"
   ]
 }
