@@ -1,0 +1,52 @@
+{
+  "routerMap": [
+    {
+      "name": "AddCommand",
+      "pageSourceFile": "src/main/ets/pages/AddCommand.ets",
+      "buildFunction": "AddCommandBuilder",
+      "data": {
+        "description" : "Add command page"
+      }
+    },
+    {
+      "name": "SettingsPage",
+      "pageSourceFile": "src/main/ets/pages/SettingsPage.ets",
+      "buildFunction": "SettingsPageBuilder",
+      "data": {
+        "description" : "Settings page"
+      }
+    },
+    {
+      "name": "EditPage",
+      "pageSourceFile": "src/main/ets/pages/EditPage.ets",
+      "buildFunction": "EditPageBuilder",
+      "data": {
+        "description" : "Edit page"
+      }
+    },
+    {
+      "name": "SelectableDialog",
+      "pageSourceFile": "src/main/ets/view/dialogs/SelectableDialog.ets",
+      "buildFunction": "SelectableDialogBuilder",
+      "data": {
+        "description" : "Selectable Dialog"
+      }
+    },
+    {
+      "name": "AccInputDialog",
+      "pageSourceFile": "src/main/ets/view/dialogs/AccInputDialog.ets",
+      "buildFunction": "AccInputDialogBuilder",
+      "data": {
+        "description" : "ASF account Input Dialog"
+      }
+    },
+    {
+      "name": "IDInputDialog",
+      "pageSourceFile": "src/main/ets/view/dialogs/IDInputDialog.ets",
+      "buildFunction": "IDInputDialogBuilder",
+      "data": {
+        "description" : "ASF ID Input Dialog"
+      }
+    }
+  ]
+}

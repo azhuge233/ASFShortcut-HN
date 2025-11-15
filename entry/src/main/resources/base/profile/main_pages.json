@@ -1,0 +1,8 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/AddCommand",
+    "pages/EditPage",
+    "pages/SettingsPage"
+  ]
+}

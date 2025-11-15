@@ -1,0 +1,172 @@
+import { deviceInfo, BusinessError } from '@kit.BasicServicesKit';
+import { promptAction } from '@kit.ArkUI';
+
+import Logger from '../common/utils/Logger';
+import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
+import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
+
+@Builder
+export function AddCommandBuilder() {
+    AddCommand();
+}
+
+@Entry
+@ComponentV2
+struct AddCommand {
+    private LOG_TAG = '[pages/AddCommand]';
+
+    @Local newCommandViewModel: CommandEntryViewModel = new CommandEntryViewModel();
+
+    private uiContext = this.getUIContext();
+    private promptAction = this.uiContext.getPromptAction();
+
+    private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
+
+    pathStack: NavPathStack | undefined = undefined;
+
+    alert(message: string) {
+        if(deviceInfo.sdkApiVersion <= 17) {
+            try {
+                promptAction.showToast({
+                    message: message
+                });
+            } catch (err) {
+                Logger.error(this.LOG_TAG, `<alert API <= 17> error: ${err}`);
+            }
+        } else {
+            this.promptAction.openToast({
+                message: message
+            }).catch((err: BusinessError) => {
+                Logger.error(this.LOG_TAG, `<alert API > 17> error: ${err}`);
+            });
+        }
+    }
+
+    clearInput() {
+        this.newCommandViewModel.nickname = '';
+        this.newCommandViewModel.command = '';
+        this.newCommandViewModel.accountInputRequired = 0;
+        this.newCommandViewModel.idInputRequired = 0;
+    }
+
+    async saveCommand() {
+        if (!this.newCommandViewModel.nickname.trim() || !this.newCommandViewModel.command.trim()) {
+            // 显示错误提示
+            this.alert('名称和命令不能为空');
+            return;
+        }
+
+        try {
+            const success = await this.listViewModel.addCommandEntry(this.newCommandViewModel.toCommandEntry());
+            if (success) {
+                this.alert('命令添加成功');
+                this.clearInput();
+                // this.pathStack?.pop("Submit pressed");
+            } else this.alert('添加失败，请重试');
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `保存命令失败: ${err}`);
+            this.alert('保存失败');
+        }
+    }
+
+    build() {
+        NavDestination() {
+            Column({ space: 20 }) {
+                Blank()
+                    .margin({ top: 10, bottom: 10 })
+
+                // 名称输入
+                Text('名称:')
+                    .fontSize(18)
+                    .alignSelf(ItemAlign.Start)
+                    .margin({ left: 20 })
+                TextInput({ placeholder: '输入命令名称', text: this.newCommandViewModel.nickname })
+                    .onChange((value: string) => {
+                        this.newCommandViewModel.nickname = value;
+                    })
+                    .margin({ left: 20, right: 20 })
+                    .padding(10)
+                    .border({ width: 1, color: Color.Gray })
+                    .borderRadius(8)
+
+                // 命令输入
+                Text('命令:')
+                    .fontSize(18)
+                    .alignSelf(ItemAlign.Start)
+                    .margin({ left: 20, top: 20 })
+                TextInput({ placeholder: '输入ASF命令', text: this.newCommandViewModel.command })
+                    .onChange((value: string) => {
+                        this.newCommandViewModel.command = value;
+                    })
+                    .margin({ left: 20, right: 20 })
+                    .padding(10)
+                    .border({ width: 1, color: Color.Gray })
+                    .borderRadius(8)
+
+                // 选项区域 - 使用 Toggle 组件
+                Column({ space: 15 }) {
+                    Text('选项设置:')
+                        .fontSize(18)
+                        .alignSelf(ItemAlign.Start)
+                        .margin({ bottom: 10 })
+
+                    // 需要输入账户的选项
+                    Row({ space: 10 }) {
+                        Toggle({ type: ToggleType.Checkbox, isOn: this.newCommandViewModel.accountRequired })
+                            .onChange((value: boolean) => {
+                                this.newCommandViewModel.accountRequired = value;
+                            })
+                        Text('需要输入ASF账户')
+                            .fontSize(16)
+                    }
+                    .justifyContent(FlexAlign.Start)
+                    .width('100%')
+
+                    // 需要输入 App ID 的选项
+                    Row({ space: 10 }) {
+                        Toggle({ type: ToggleType.Checkbox, isOn: this.newCommandViewModel.idRequired })
+                            .onChange((value: boolean) => {
+                                this.newCommandViewModel.idRequired = value;
+                            })
+                        Text('需要输入ASF App/Sub/Def ID')
+                            .fontSize(16)
+                    }
+                    .justifyContent(FlexAlign.Start)
+                    .width('100%')
+                }
+                .alignSelf(ItemAlign.Start)
+                .margin({ left: 20, top: 20, right: 20 })
+                .padding(15)
+                .border({ width: 1, color: Color.Gray })
+                .borderRadius(8)
+                .width('90%')
+
+                // 按钮区域
+                Button('保存')
+                    .width('70%')
+                    .margin({ top: 40 })
+                    .onClick(() => {
+                        this.saveCommand();
+                    })
+
+                // 占位空间
+                Blank()
+            }
+            .padding(20)
+        }
+        .title("添加新命令")
+        .height('100%')
+        .width('100%')
+        .onReady((context: NavDestinationContext) => {
+            this.pathStack = context.pathStack;
+            this.listViewModel = context.pathInfo.param as CommandEntryListViewModel;
+        })
+        .onBackPressed(() => {
+            this.pathStack?.pop("Back pressed");
+            return true;
+        })
+        .onAppear(() => {
+            Logger.debug(this.LOG_TAG, "Loaded!");
+        })
+    }
+}

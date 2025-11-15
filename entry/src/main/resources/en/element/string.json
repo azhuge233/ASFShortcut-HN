@@ -1,0 +1,20 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Create Archi Steam Farm shortcuts"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "ASF Shortcut"
+    },
+    {
+      "name": "NetworkPermissionReason",
+      "value": "Send ASF commands"
+    }
+  ]
+}

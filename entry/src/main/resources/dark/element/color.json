@@ -1,0 +1,24 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#000000"
+    },
+    {
+      "name": "tag_account_bg",
+      "value": "#2A3A57"
+    },
+    {
+      "name": "tag_account_text",
+      "value": "#64D2FF"
+    },
+    {
+      "name": "tag_id_bg",
+      "value": "#2A5746"
+    },
+    {
+      "name": "tag_id_text",
+      "value": "#64FFA3"
+    }
+  ]
+}
