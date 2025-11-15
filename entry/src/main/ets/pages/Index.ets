@@ -367,7 +367,7 @@ struct Index {
             .menus([
                 {
                     value: $r("app.string.Index_Add_Menu_Button_Label"),
-                    icon: $r("app.media.startIcon"),
+                    icon: $r("app.media.plus"),
                     action: () => {
                         this.safeCloseSwipeActions();
                         this.pageStack.pushPath({
@@ -382,7 +382,7 @@ struct Index {
                 },
                 {
                     value: $r("app.string.Index_Settings_Menu_Button_Label"),
-                    icon: $r("app.media.startIcon"),
+                    icon: $r("app.media.gearshape"),
                     action: () => {
                         this.safeCloseSwipeActions();
                         this.pageStack.pushPath({
