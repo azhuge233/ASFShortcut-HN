@@ -65,6 +65,14 @@ class StyleConstants {
     public EDIT_PAGE_BORDER_RADIUS = 8;
     public EDIT_PAGE_LABEL_FONT_SIZE = 18;
     public EDIT_PAGE_CHECK_LABEL_FONT_SIZE = 16;
+
+    public ADD_COMMAND_COL_SPACE = 20;
+    public ADD_COMMAND_OPTION_COL_SPACE = 15;
+    public ADD_COMMAND_ROW_SPACE = 10;
+    public ADD_COMMAND_BORDER_WIDTH = 1;
+    public ADD_COMMAND_BORDER_RADIUS = 8;
+    public ADD_COMMAND_LABEL_FONT_SIZE = 18;
+    public ADD_COMMAND_CHECK_LABEL_FONT_SIZE = 16;
 }
 
 export default new StyleConstants();
