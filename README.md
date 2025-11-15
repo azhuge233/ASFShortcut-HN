@@ -1,6 +1,6 @@
 # ASFShortcut
 
-A HarmonyOS client for ArchiSteamFarm (ASF).
+A HarmonyOS client for [ArchiSteamFarm](https://github.com/JustArchiNET/ArchiSteamFarm) (ASF).
 
 Send custom commands to ASF and view the results directly.
 
