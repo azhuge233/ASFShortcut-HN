@@ -46,7 +46,7 @@ struct Index {
             name: "SelectableDialog",
             param: message,
             onPop: (popInfo) => {
-                this.returnFromSubPage(popInfo);
+                CommonUtils.returnFromSubPage(popInfo);
             }
         });
     }
@@ -58,7 +58,7 @@ struct Index {
             this.pageStack.pushPath({
                 name: "AccInputDialog",
                 onPop: (popInfo) => {
-                    this.returnFromSubPage(popInfo);
+                    CommonUtils.returnFromSubPage(popInfo);
                     resolve(popInfo.result as string);
                 }
             });
@@ -67,7 +67,7 @@ struct Index {
             this.pageStack.pushPath({
                 name: "IDInputDialog",
                 onPop: (popInfo) => {
-                    this.returnFromSubPage(popInfo);
+                    CommonUtils.returnFromSubPage(popInfo);
                     resolve(popInfo.result as string);
                 }
             });
@@ -116,13 +116,6 @@ struct Index {
     async resetSettings(): Promise<void> {
         await this.db.clearTableSettings();
         this.showSetupDialog = true;
-    }
-
-    // 从 NavDestination 由 pop() 返回时
-    // 显示回调 popInfo
-    async returnFromSubPage(popInfo: PopInfo): Promise<void> {
-        Logger.debug(this.LOG_TAG,
-            `从 [${popInfo.info.name}] 页面返回, 携带参数: ${JSON.stringify(popInfo.result)}`);
     }
 
     // 发送指令
@@ -188,8 +181,8 @@ struct Index {
                 this.pageStack.pushPath({
                     name: "EditPage",
                     param: [this.listViewModel, entry],
-                    onPop: async (popInfo) => {
-                        await this.returnFromSubPage(popInfo);
+                    onPop: (popInfo) => {
+                        CommonUtils.returnFromSubPage(popInfo);
                     }
                 });
             })
@@ -260,7 +253,7 @@ struct Index {
                             name: "SettingsPage",
                             onPop: async (popInfo) => {
                                 await this.checkSettingsAndInit();
-                                await this.returnFromSubPage(popInfo);
+                                CommonUtils.returnFromSubPage(popInfo);
                             }
                         });
                         this.showSetupDialog = false;
@@ -355,7 +348,7 @@ struct Index {
                             param: this.listViewModel,
                             onPop: async (popInfo) => {
                                 await this.checkSettingsAndInit();
-                                await this.returnFromSubPage(popInfo);
+                                CommonUtils.returnFromSubPage(popInfo);
                             }
                         });
                     }
@@ -370,7 +363,7 @@ struct Index {
                             param: this.listViewModel,
                             onPop: async (popInfo) => {
                                 await this.checkSettingsAndInit();
-                                await this.returnFromSubPage(popInfo);
+                                CommonUtils.returnFromSubPage(popInfo);
                             }
                         });
                     }

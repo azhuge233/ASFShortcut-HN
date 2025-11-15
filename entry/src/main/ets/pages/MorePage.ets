@@ -3,6 +3,7 @@ import StyleConstants from '../common/constants/StyleConstants';
 import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
 import { DB } from '../common/utils/DB';
 import { MoreMenuItem } from '../view/components/MoreMenuItem';
+import CommonUtils from '../common/utils/CommonUtils';
 
 @Builder
 export function MorePageBuilder() {
@@ -24,13 +25,6 @@ struct MorePage {
     private db = DB.getInstance();
 
     private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
-
-    // 从 NavDestination 由 pop() 返回时
-    // 显示回调 popInfo
-    async returnFromSubPage(popInfo: PopInfo): Promise<void> {
-        Logger.debug(this.LOG_TAG,
-            `从 [${popInfo.info.name}] 页面返回, 携带参数: ${JSON.stringify(popInfo.result)}`);
-    }
 
     // 导入时显示
     // 阻止用户操作
@@ -80,8 +74,8 @@ struct MorePage {
                         doJob: () => {
                             this.pathStack?.pushPath({
                                 name: "SettingsPage",
-                                onPop: async (popInfo) => {
-                                    await this.returnFromSubPage(popInfo);
+                                onPop: (popInfo) => {
+                                    CommonUtils.returnFromSubPage(popInfo);
                                 }
                             });
                         }
