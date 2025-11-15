@@ -36,6 +36,11 @@ class StyleConstants {
     public DIALOG_TITLE_FONT_SIZE = 23;
     public DIALOG_CONTENT_FONT_SIZE = 18;
 
+    public PROGRESS_STROKE_WIDTH = 18;
+    public PROGRESS_WIDTH = 22;
+    public PROGRESS_TEXT_FONT_SIZE = 17;
+    public BLUE_LEVEL = 10;
+
     public COMMAND_TILE_COL_SPACE = 12;
     public COMMAND_TILE_ROW_SPACE = 8;
     public COMMAND_TILE_NAME_FONT_SIZE = 16;
@@ -49,10 +54,7 @@ class StyleConstants {
     public SETTINGS_PAGE_LABEL_FONT_SIZE = 17;
 
     public INDEX_SWIPE_BUTTON_SIZE = 40;
-    public INDEX_PROGRESS_WIDTH = 22;
-    public INDEX_PROGRESS_STROKE_WIDTH = 18;
-    public INDEX_BLUE_LEVEL = 10;
-    public INDEX_PROGRESS_TEXT_FONT_SIZE = 17;
+
     public INDEX_SETUP_FONT_SIZE = 20;
     public INDEX_NO_ENTRY_TITLE_FONT_SIZE = 18;
     public INDEX_NO_ENTRY_SECOND_TITLE_FONT_SIZE = 14;

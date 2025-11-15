@@ -228,21 +228,21 @@ struct Index {
                 .width(StyleConstants.FULL_PERCENT)
                 .height(StyleConstants.FULL_PERCENT)
                 .backgroundColor($r("app.color.transparent"))
-                .blur(StyleConstants.INDEX_BLUE_LEVEL)
+                .blur(StyleConstants.BLUE_LEVEL)
                 .onClick(() => {})
 
             Column() {
                 Progress({ value: 0, total: 100, type: ProgressType.Ring })
-                    .width(StyleConstants.INDEX_PROGRESS_WIDTH)
+                    .width(StyleConstants.PROGRESS_WIDTH)
                     .color(Color.Blue)
                     .style({
-                        strokeWidth: StyleConstants.INDEX_PROGRESS_STROKE_WIDTH,
+                        strokeWidth: StyleConstants.PROGRESS_STROKE_WIDTH,
                         status: ProgressStatus.LOADING
                     })
 
                 Text($r("app.string.Index_processing"))
                     .margin({ top: StyleConstants.MARGIN_TWENTY })
-                    .fontSize(StyleConstants.INDEX_PROGRESS_TEXT_FONT_SIZE)
+                    .fontSize(StyleConstants.PROGRESS_TEXT_FONT_SIZE)
             }
             .width(StyleConstants.FULL_PERCENT)
             .height(StyleConstants.FULL_PERCENT)
@@ -266,7 +266,7 @@ struct Index {
                 .width(StyleConstants.FULL_PERCENT)
                 .height(StyleConstants.FULL_PERCENT)
                 .backgroundColor($r("app.color.transparent"))
-                .blur(StyleConstants.INDEX_BLUE_LEVEL)
+                .blur(StyleConstants.BLUE_LEVEL)
                 .onClick(() => {})
 
             Column() {
