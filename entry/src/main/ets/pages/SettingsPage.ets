@@ -4,6 +4,7 @@ import { deviceInfo, BusinessError } from '@kit.BasicServicesKit';
 import Logger from '../common/utils/Logger';
 import { DB } from '../common/utils/DB';
 import CommonConstants from '../common/constants/CommonConstants';
+import StyleConstants from '../common/constants/StyleConstants';
 
 @Builder
 export function SettingsPageBuilder() {
@@ -70,46 +71,45 @@ struct SettingsPage {
         NavDestination() {
             Column() {
                 Text($r("app.string.SettingsPage_Title"))
-                    .fontSize(24)
+                    .fontSize(StyleConstants.SETTINGS_PAGE_TITLE_FONT_SIZE)
                     .fontWeight(FontWeight.Bold)
-                    .margin({ top: 40, bottom: 40 })
+                    .margin({ top: StyleConstants.MARGIN_FORTY, bottom: StyleConstants.MARGIN_FORTY })
 
                 Text($r("app.string.SettingsPage_Address_Label"))
-                    .fontSize(16)
+                    .fontSize(StyleConstants.SETTINGS_PAGE_LABEL_FONT_SIZE)
                     .alignSelf(ItemAlign.Start)
-                    .margin({ left: 20, bottom: 10 })
+                    .margin({ bottom: StyleConstants.MARGIN_TEN })
 
                 TextInput({ text: this.address, placeholder: $r("app.string.SettingsPage_Address_Input_Placeholder") })
-                    .width('90%')
-                    .height(50)
-                    .border({ width: 1, color: Color.Gray })
-                    .borderRadius(8)
-                    .padding(10)
+                    .width(StyleConstants.NINETY_PERCENT)
+                    .height(StyleConstants.SETTINGS_PAGE_INPUT_HEIGHT)
+                    .border({ width: StyleConstants.SETTINGS_PAGE_INPUT_BORDER_WIDTH, color: Color.Gray })
+                    .borderRadius(StyleConstants.SETTINGS_PAGE_INPUT_BORDER_RADIUS)
+                    .padding(StyleConstants.PADDING_TEN)
                     .onChange((value: string) => {
                         this.address = value;
                     })
-                    .margin({ bottom: 30 })
+                    .margin({ bottom: StyleConstants.MARGIN_THIRTY })
 
                 Text($r("app.string.SettingsPage_Password_Label"))
-                    .fontSize(16)
+                    .fontSize(StyleConstants.SETTINGS_PAGE_LABEL_FONT_SIZE)
                     .alignSelf(ItemAlign.Start)
-                    .margin({ left: 20, bottom: 10 })
+                    .margin({ bottom: StyleConstants.MARGIN_TEN })
 
                 TextInput({ text: this.asfPassword, placeholder: $r("app.string.SettingsPage_Password_Input_Placeholder") })
                     .type(InputType.Password)
-                    .width('90%')
-                    .height(50)
-                    .border({ width: 1, color: Color.Gray })
-                    .borderRadius(8)
-                    .padding(10)
+                    .width(StyleConstants.NINETY_PERCENT)
+                    .height(StyleConstants.SETTINGS_PAGE_INPUT_HEIGHT)
+                    .border({ width: StyleConstants.SETTINGS_PAGE_INPUT_BORDER_WIDTH, color: Color.Gray })
+                    .borderRadius(StyleConstants.SETTINGS_PAGE_INPUT_BORDER_RADIUS)
+                    .padding(StyleConstants.PADDING_TEN)
                     .onChange((value: string) => {
                         this.asfPassword = value;
                     })
-                    .margin({ bottom: 50 })
+                    .margin({ bottom: StyleConstants.MARGIN_FIFTY })
 
                 Button(this.isSaving ? $r("app.string.SettingsPage_Save_Button_Saving") : $r("app.string.SettingsPage_Save_Button_Label"), { type: ButtonType.Capsule })
-                    .width('90%')
-                    .height(50)
+                    .width(StyleConstants.EIGHTY_PERCENT)
                     .fontColor(Color.White)
                     .enabled(!this.isSaving && this.address.trim() !== '' && this.asfPassword.trim() !== '')
                     .onClick(async () => {
@@ -121,8 +121,8 @@ struct SettingsPage {
                     })
             }
         }
-        .width('100%')
-        .height('100%')
+        .width(StyleConstants.FULL_PERCENT)
+        .height(StyleConstants.FULL_PERCENT)
         .onReady((context: NavDestinationContext) => {
             this.pathStack = context.pathStack;
         })
