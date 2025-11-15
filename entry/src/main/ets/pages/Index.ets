@@ -8,6 +8,7 @@ import { DB } from '../common/utils/DB';
 import CommonConstants from '../common/constants/CommonConstants';
 import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
 import { CommandListItem } from '../view/components/CommandTile';
+import StyleConstants from '../common/constants/StyleConstants';
 
 @Entry
 @ComponentV2
@@ -172,19 +173,19 @@ struct Index {
             Button() {
                 Image($r("app.media.trash"))
                     .objectFit(ImageFit.Cover)
-                    .width('60%')
-                    .height('60%')
+                    .width(StyleConstants.SIXTY_PERCENT)
+                    .height(StyleConstants.SIXTY_PERCENT)
             }
-            .backgroundColor("#FF0000")
+            .backgroundColor($r("app.color.delete_button_color"))
             .type(ButtonType.Circle)
-            .width(40)
-            .height(40)
+            .width(StyleConstants.INDEX_SWIPE_BUTTON_SIZE)
+            .height(StyleConstants.INDEX_SWIPE_BUTTON_SIZE)
             .onClick(() => {
                 this.listViewModel.deleteCommandEntry(entry.toCommandEntry());
             })
         }
         .margin({
-            left: '3%'
+            left: StyleConstants.THREE_PERCENT
         })
     }
 
@@ -195,13 +196,13 @@ struct Index {
             Button() {
                 Image($r("app.media.square_and_pencil"))
                     .objectFit(ImageFit.Cover)
-                    .width('60%')
-                    .height('60%')
+                    .width(StyleConstants.SIXTY_PERCENT)
+                    .height(StyleConstants.SIXTY_PERCENT)
             }
-            .backgroundColor("#00FF00")
+            .backgroundColor($r("app.color.edit_button_color"))
             .type(ButtonType.Circle)
-            .width(40)
-            .height(40)
+            .width(StyleConstants.INDEX_SWIPE_BUTTON_SIZE)
+            .height(StyleConstants.INDEX_SWIPE_BUTTON_SIZE)
             .onClick(() => {
                 this.safeCloseSwipeActions();
                 this.pageStack.pushPath({
@@ -214,7 +215,7 @@ struct Index {
             })
         }
         .margin({
-            left: '3%'
+            left: StyleConstants.THREE_PERCENT
         })
     }
 
@@ -224,28 +225,27 @@ struct Index {
     LoadingContent() {
         Stack() {
             Column()
-                .width('100%')
-                .height('100%')
-                .backgroundColor('#00000080')
-                .blur(8)
-                .onClick(() => {
-                })
+                .width(StyleConstants.FULL_PERCENT)
+                .height(StyleConstants.FULL_PERCENT)
+                .backgroundColor($r("app.color.transparent"))
+                .blur(StyleConstants.INDEX_BLUE_LEVEL)
+                .onClick(() => {})
 
             Column() {
                 Progress({ value: 0, total: 100, type: ProgressType.Ring })
-                    .width(22)
+                    .width(StyleConstants.INDEX_PROGRESS_WIDTH)
                     .color(Color.Blue)
                     .style({
-                        strokeWidth: 18,
+                        strokeWidth: StyleConstants.INDEX_PROGRESS_STROKE_WIDTH,
                         status: ProgressStatus.LOADING
                     })
 
                 Text($r("app.string.Index_processing"))
-                    .margin({ top: 20 })
-                    .fontSize(17)
+                    .margin({ top: StyleConstants.MARGIN_TWENTY })
+                    .fontSize(StyleConstants.INDEX_PROGRESS_TEXT_FONT_SIZE)
             }
-            .width('100%')
-            .height('100%')
+            .width(StyleConstants.FULL_PERCENT)
+            .height(StyleConstants.FULL_PERCENT)
             .justifyContent(FlexAlign.Center)
             .onClick(() => {
             })
@@ -263,18 +263,18 @@ struct Index {
     SetupPopup() {
         Stack() {
             Column()
-                .width('100%')
-                .height('100%')
-                .backgroundColor('#00000080')
-                .blur(10)
+                .width(StyleConstants.FULL_PERCENT)
+                .height(StyleConstants.FULL_PERCENT)
+                .backgroundColor($r("app.color.transparent"))
+                .blur(StyleConstants.INDEX_BLUE_LEVEL)
                 .onClick(() => {})
 
             Column() {
                 Text($r("app.string.Index_Setup_Alert_Label"))
-                    .fontSize(20)
-                    .margin(5)
+                    .fontSize(StyleConstants.INDEX_SETUP_FONT_SIZE)
+                    .margin(StyleConstants.MARGIN_FIVE)
                 Button($r("app.string.Index_Setup_Button_Label"))
-                    .margin(5)
+                    .margin(StyleConstants.MARGIN_FIVE)
                     .onClick(() => {
                         this.pageStack.pushPath({
                             name: "SettingsPage",
@@ -286,8 +286,8 @@ struct Index {
                         this.showSetupDialog = false;
                     })
             }
-            .width('100%')
-            .height('100%')
+            .width(StyleConstants.FULL_PERCENT)
+            .height(StyleConstants.FULL_PERCENT)
             .justifyContent(FlexAlign.Center)
             .onClick(() => {
             })
@@ -306,16 +306,16 @@ struct Index {
             if (this.listViewModel.commandEntries.length === 0) {
                 Column() {
                     Text($r("app.string.Index_No_Commands_Label"))
-                        .fontSize(18)
+                        .fontSize(StyleConstants.INDEX_NO_ENTRY_TITLE_FONT_SIZE)
                         .fontColor(Color.Gray)
                     Text($r("app.string.Index_Create_First_Command_Label"))
-                        .fontSize(14)
+                        .fontSize(StyleConstants.INDEX_NO_ENTRY_SECOND_TITLE_FONT_SIZE)
                         .fontColor(Color.Gray)
-                        .margin({ top: 10 })
+                        .margin({ top: StyleConstants.MARGIN_TEN })
                 }
                 .justifyContent(FlexAlign.Center)
-                .layoutWeight(1)
-                .width('100%')
+                .layoutWeight(StyleConstants.INDEX_LAYOUT_WEIGHT)
+                .width(StyleConstants.FULL_PERCENT)
             } else {
                 List({ scroller: this.scrollerForList }) {
                     ForEach(this.listViewModel.commandEntries, (item: CommandEntryViewModel) => {
@@ -339,21 +339,21 @@ struct Index {
                             }
                         })
                         .margin({
-                            top: '2%',
-                            left: '1%',
-                            right: '3%',
-                            bottom: '2%'
+                            top: StyleConstants.TWO_PERCENT,
+                            left: StyleConstants.ONE_PERCENT,
+                            right: StyleConstants.THREE_PERCENT,
+                            bottom: StyleConstants.TWO_PERCENT
                         })
                     })
                 }
-                .padding(8)
-                .layoutWeight(1)
-                .height('100%')
-                .width('100%')
+                .padding(StyleConstants.PADDING_EIGHT)
+                .layoutWeight(StyleConstants.INDEX_LAYOUT_WEIGHT)
+                .height(StyleConstants.FULL_PERCENT)
+                .width(StyleConstants.FULL_PERCENT)
             }
         }
-        .width('100%')
-        .height('100%')
+        .width(StyleConstants.FULL_PERCENT)
+        .height(StyleConstants.FULL_PERCENT)
         .justifyContent(FlexAlign.Center)
     }
 
@@ -397,8 +397,8 @@ struct Index {
             ])
             .title($r("app.string.Index_Title"))
             .mode(NavigationMode.Auto)
-            .height('100%')
-            .width('100%')
+            .height(StyleConstants.FULL_PERCENT)
+            .width(StyleConstants.FULL_PERCENT)
             .alignSelf(ItemAlign.Center)
             .onAppear(() => {
                 Logger.debug(this.LOG_TAG, "Loaded!");
