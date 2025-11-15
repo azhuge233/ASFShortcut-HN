@@ -1,6 +1,20 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\azhuge233\\.ohos\\config\\default_ASFShortcut_v4qo7GLKo0QMFW_5nJIR7RACDbB_35kEm396Zkxyjek=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B86EFDEC98156DDD8688AFF1919A34204EC485E0B74F04710DCD4B4E8A2D993509CD9DD9CEB5591",
+          "profile": "C:\\Users\\azhuge233\\.ohos\\config\\default_ASFShortcut_v4qo7GLKo0QMFW_5nJIR7RACDbB_35kEm396Zkxyjek=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\azhuge233\\.ohos\\config\\default_ASFShortcut_v4qo7GLKo0QMFW_5nJIR7RACDbB_35kEm396Zkxyjek=.p12",
+          "storePassword": "0000001BFFF53602FBC911F2C377E09A071C7372B087DDBC8E17C1678EED12CF36CBC49056047D992B0EF1"
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
