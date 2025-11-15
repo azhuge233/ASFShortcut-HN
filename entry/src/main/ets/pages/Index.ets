@@ -347,7 +347,6 @@ struct Index {
                             name: "AddCommand",
                             param: this.listViewModel,
                             onPop: async (popInfo) => {
-                                await this.checkSettingsAndInit();
                                 CommonUtils.returnFromSubPage(popInfo);
                             }
                         });
