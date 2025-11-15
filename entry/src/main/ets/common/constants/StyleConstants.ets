@@ -23,6 +23,7 @@ class StyleConstants {
     public MARGIN_THIRTY = 30;
     public MARGIN_TWENTY = 20;
     public MARGIN_TEN = 10;
+    public MARGIN_FIVE = 5;
 
     public PADDING_TWENTY = 20;
     public PADDING_SIXTEEN = 16;
@@ -45,6 +46,16 @@ class StyleConstants {
     public SETTINGS_PAGE_INPUT_HEIGHT = 50;
     public SETTINGS_PAGE_TITLE_FONT_SIZE = 24;
     public SETTINGS_PAGE_LABEL_FONT_SIZE = 17;
+
+    public INDEX_SWIPE_BUTTON_SIZE = 40;
+    public INDEX_PROGRESS_WIDTH = 22;
+    public INDEX_PROGRESS_STROKE_WIDTH = 18;
+    public INDEX_BLUE_LEVEL = 10;
+    public INDEX_PROGRESS_TEXT_FONT_SIZE = 17;
+    public INDEX_SETUP_FONT_SIZE = 20;
+    public INDEX_NO_ENTRY_TITLE_FONT_SIZE = 18;
+    public INDEX_NO_ENTRY_SECOND_TITLE_FONT_SIZE = 14;
+    public INDEX_LAYOUT_WEIGHT = 1;
 }
 
 export default new StyleConstants();
