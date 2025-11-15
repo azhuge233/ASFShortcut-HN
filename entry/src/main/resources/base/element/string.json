@@ -155,6 +155,38 @@
     {
       "name": "AddCommand_Title",
       "value": "Add"
+    },
+    {
+      "name": "Index_processing",
+      "value": "Processing..."
+    },
+    {
+      "name": "Index_Setup_Alert_Label",
+      "value": "Missing ASF address and password.\nGo to Settings."
+    },
+    {
+      "name": "Index_Setup_Button_Label",
+      "value": "Go"
+    },
+    {
+      "name": "Index_No_Commands_Label",
+      "value": "No commands."
+    },
+    {
+      "name": "Index_Create_First_Command_Label",
+      "value": "Tap '+' to create your first command."
+    },
+    {
+      "name": "Index_Add_Menu_Button_Label",
+      "value": "Add"
+    },
+    {
+      "name": "Index_Settings_Menu_Button_Label",
+      "value": "Settings"
+    },
+    {
+      "name": "Index_Title",
+      "value": "ASF Shortcut"
     }
   ]
 }

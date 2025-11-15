@@ -240,7 +240,7 @@ struct Index {
                         status: ProgressStatus.LOADING
                     })
 
-                Text("Processing")
+                Text($r("app.string.Index_processing"))
                     .margin({ top: 20 })
                     .fontSize(17)
             }
@@ -270,10 +270,10 @@ struct Index {
                 .onClick(() => {})
 
             Column() {
-                Text('未设置URL和ASF密码，前往设置')
+                Text($r("app.string.Index_Setup_Alert_Label"))
                     .fontSize(20)
                     .margin(5)
-                Button('Go')
+                Button($r("app.string.Index_Setup_Button_Label"))
                     .margin(5)
                     .onClick(() => {
                         this.pageStack.pushPath({
@@ -305,10 +305,10 @@ struct Index {
         Column() {
             if (this.listViewModel.commandEntries.length === 0) {
                 Column() {
-                    Text('暂无命令')
+                    Text($r("app.string.Index_No_Commands_Label"))
                         .fontSize(18)
                         .fontColor(Color.Gray)
-                    Text("点击 '+' 号创建第一个命令")
+                    Text($r("app.string.Index_Create_First_Command_Label"))
                         .fontSize(14)
                         .fontColor(Color.Gray)
                         .margin({ top: 10 })
@@ -366,7 +366,7 @@ struct Index {
             }
             .menus([
                 {
-                    value: "Add",
+                    value: $r("app.string.Index_Add_Menu_Button_Label"),
                     icon: $r("app.media.startIcon"),
                     action: () => {
                         this.safeCloseSwipeActions();
@@ -381,7 +381,7 @@ struct Index {
                     }
                 },
                 {
-                    value: "Settings",
+                    value: $r("app.string.Index_Settings_Menu_Button_Label"),
                     icon: $r("app.media.startIcon"),
                     action: () => {
                         this.safeCloseSwipeActions();
@@ -395,7 +395,7 @@ struct Index {
                     }
                 }
             ])
-            .title("ASF Shortcuts")
+            .title($r("app.string.Index_Title"))
             .mode(NavigationMode.Auto)
             .height('100%')
             .width('100%')
