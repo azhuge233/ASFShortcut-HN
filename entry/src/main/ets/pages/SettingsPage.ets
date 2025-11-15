@@ -40,13 +40,13 @@ struct SettingsPage {
                     message: message
                 });
             } catch (err) {
-                Logger.error(this.LOG_TAG, `<alert API <= 17> error: ${err}`);
+                Logger.error(this.LOG_TAG, `<alert API <= 17> 错误, ${err}`);
             }
         } else {
             this.promptAction.openToast({
                 message: message
             }).catch((err: BusinessError) => {
-                Logger.error(this.LOG_TAG, `<alert API > 17> error: ${err}`);
+                Logger.error(this.LOG_TAG, `<alert API > 17> 错误, ${err}`);
             });
         }
     }

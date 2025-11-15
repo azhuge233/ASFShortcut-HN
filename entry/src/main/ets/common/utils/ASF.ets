@@ -32,12 +32,12 @@ export class ASF {
     setAddress(address: string) {
         if(address.slice(-1) == "/") this.address = `${address.slice(0, -1)}${this.apiEndpoint}`;
         else this.address = `${address}${this.apiEndpoint}`;
-        Logger.debug(this.LOG_TAG, `Current address: ${this.address}`);
+        Logger.debug(this.LOG_TAG, `当前ASF地址: ${this.address}`);
     }
 
     setASFPassword(asfPassword: string) {
         this.asfPassword = asfPassword;
-        Logger.debug(this.LOG_TAG, `Current ASF password: ${this.asfPassword}`);
+        Logger.debug(this.LOG_TAG, `当前ASF密码: ${this.asfPassword}`);
     }
 
     async send(command: string): Promise<http.HttpResponse> {
@@ -51,21 +51,21 @@ export class ASF {
         }
 
         try {
-            Logger.debug(this.LOG_TAG, `Sending command: ${command}`);
-            Logger.debug(this.LOG_TAG, `URL: ${this.address}`);
-            Logger.debug(this.LOG_TAG, `ASF Password: ${this.asfPassword}}`);
+            Logger.debug(this.LOG_TAG, `发送指令: ${command}`);
+            Logger.debug(this.LOG_TAG, `ASF 地址: ${this.address}`);
+            Logger.debug(this.LOG_TAG, `ASF 密码: ${this.asfPassword}}`);
 
             const response = await httpRequest.request(this.address, this.httpRequestOptions);
 
-            Logger.debug(this.LOG_TAG, `Code: ${response.responseCode}`);
+            Logger.debug(this.LOG_TAG, `响应代码：${response.responseCode}`);
             // Logger.debug(this.LOG_TAG, `Result Type: ${JSON.stringify(response.resultType)}`);
             // Logger.debug(this.LOG_TAG, `Header: ${JSON.stringify(response.header)}`);
-            Logger.debug(this.LOG_TAG, `Result: ${response.result}`);
+            Logger.debug(this.LOG_TAG, `响应结果：${response.result}`);
 
             return response;
         } catch (err) {
-            Logger.error(this.LOG_TAG, 'Send request error:' + JSON.stringify(err));
-            throw new Error(`Send request error: ${JSON.stringify(err)}`);
+            Logger.error(this.LOG_TAG, `发送请求失败, ${err}`);
+            throw new Error(`发送请求失败, ${JSON.stringify(err)}`);
         } finally {
             this.httpRequestOptions.extraData = this.defaultDataCommand;
             httpRequest.destroy();

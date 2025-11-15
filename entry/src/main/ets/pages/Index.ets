@@ -49,13 +49,13 @@ struct Index {
                     message: message
                 });
             } catch (err) {
-                Logger.error(this.LOG_TAG, `<alert API <= 17> error: ${err}`);
+                Logger.error(this.LOG_TAG, `<alert API <= 17> 错误, ${err}`);
             }
         } else {
             this.promptAction.openToast({
                 message: message
             }).catch((err: BusinessError) => {
-                Logger.error(this.LOG_TAG, `<alert API > 17> error: ${err}`);
+                Logger.error(this.LOG_TAG, `<alert API > 17> 错误, ${err}`);
             });
         }
     }
@@ -103,7 +103,7 @@ struct Index {
                 this.scrollerForList.closeAllSwipeActions();
             }
         } catch (err) {
-            Logger.debug(this.LOG_TAG, `Safe close swipe actions failed, ${err}`);
+            Logger.debug(this.LOG_TAG, `关闭左滑菜单失败, ${err}`);
         }
     }
 
@@ -142,7 +142,7 @@ struct Index {
     // 显示回调 popInfo
     async returnFromSubPage(popInfo: PopInfo): Promise<void> {
         Logger.debug(this.LOG_TAG,
-            `Returned from page [${popInfo.info.name}], result: ${JSON.stringify(popInfo.result)}`);
+            `从 [${popInfo.info.name}] 页面返回, 携带参数: ${JSON.stringify(popInfo.result)}`);
     }
 
     // 发送指令
