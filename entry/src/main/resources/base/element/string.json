@@ -51,6 +51,58 @@
     {
       "name": "SettingsPage_Save_Failed",
       "value": "Save failed. Please try again."
+    },
+    {
+      "name": "EditPage_Invalid_Input",
+      "value": "Name and Command cannot be empty!"
+    },
+    {
+      "name": "EditPage_Update_Success",
+      "value": "Command updated successfully"
+    },
+    {
+      "name": "EditPage_Update_Failed_Try_Again",
+      "value": "Update failed. Please try again."
+    },
+    {
+      "name": "EditPage_Update_Failed",
+      "value": "Update failed."
+    },
+    {
+      "name": "EditPage_Name_Label",
+      "value": "Name:"
+    },
+    {
+      "name": "EditPage_Name_Input_Placeholder",
+      "value": "Enter Name"
+    },
+    {
+      "name": "EditPage_Command_Label",
+      "value": "ASF Command:"
+    },
+    {
+      "name": "EditPage_Command_Input_Placeholder",
+      "value": "Enter ASF Command"
+    },
+    {
+      "name": "EditPage_Options_Label",
+      "value": "Options"
+    },
+    {
+      "name": "EditPage_Needs_ASF_Account_Input_Label",
+      "value": "Manually enter ASF account"
+    },
+    {
+      "name": "EditPage_Needs_ASF_ID_Input_Label",
+      "value": "Manually enter ASF App/Sub/Def ID"
+    },
+    {
+      "name": "EditPage_Save_Button_Label",
+      "value": "Save"
+    },
+    {
+      "name": "EditPage_Title",
+      "value": "Edit"
     }
   ]
 }

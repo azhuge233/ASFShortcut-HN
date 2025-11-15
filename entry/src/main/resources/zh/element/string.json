@@ -51,6 +51,58 @@
     {
       "name": "SettingsPage_Save_Failed",
       "value": "保存失败，请重试..."
+    },
+    {
+      "name": "EditPage_Invalid_Input",
+      "value": "名称和命令不能为空！"
+    },
+    {
+      "name": "EditPage_Update_Success",
+      "value": "指令更新成功"
+    },
+    {
+      "name": "EditPage_Update_Failed_Try_Again",
+      "value": "更新失败，请重试"
+    },
+    {
+      "name": "EditPage_Update_Failed",
+      "value": "更新失败"
+    },
+    {
+      "name": "EditPage_Name_Label",
+      "value": "名称："
+    },
+    {
+      "name": "EditPage_Name_Input_Placeholder",
+      "value": "输入名称"
+    },
+    {
+      "name": "EditPage_Command_Label",
+      "value": "ASF 指令："
+    },
+    {
+      "name": "EditPage_Command_Input_Placeholder",
+      "value": "输入 ASF 指令"
+    },
+    {
+      "name": "EditPage_Options_Label",
+      "value": "选项"
+    },
+    {
+      "name": "EditPage_Needs_ASF_Account_Input_Label",
+      "value": "手动输入 ASF 账户"
+    },
+    {
+      "name": "EditPage_Needs_ASF_ID_Input_Label",
+      "value": "手动输入 ASF App/Sub/Def ID"
+    },
+    {
+      "name": "EditPage_Save_Button_Label",
+      "value": "保存"
+    },
+    {
+      "name": "EditPage_Title",
+      "value": "编辑"
     }
   ]
 }

@@ -24,7 +24,7 @@ struct EditPage {
 
     pathStack: NavPathStack | undefined = undefined;
 
-    alert(message: string) {
+    alert(message: string | Resource) {
         if(deviceInfo.sdkApiVersion <= 17) {
             try {
                 promptAction.showToast({
@@ -44,20 +44,19 @@ struct EditPage {
 
     async saveCommand() {
         if (!this.updatingCommandEntry.nickname.trim() || !this.updatingCommandEntry.command.trim()) {
-            // 显示错误提示
-            this.alert('名称和命令不能为空');
+            this.alert($r("app.string.EditPage_Invalid_Input"));
             return;
         }
 
         try {
             const success = await this.listViewModel.updateCommandEntry(this.updatingCommandEntry.toCommandEntry());
             if (success) {
-                this.alert('命令更新成功');
+                this.alert($r("app.string.EditPage_Update_Success"));
                 this.pathStack?.pop("Button pressed");
-            } else this.alert('更新失败，请重试');
+            } else this.alert($r("app.string.EditPage_Update_Failed_Try_Again"));
         } catch (err) {
             Logger.error(this.LOG_TAG, `更新命令失败: ${err}`);
-            this.alert('更新失败');
+            this.alert($r("app.string.EditPage_Update_Failed"));
         }
     }
 
@@ -68,11 +67,11 @@ struct EditPage {
                     .margin({ top: 10, bottom: 10 })
 
                 // 名称输入
-                Text('名称:')
+                Text($r("app.string.EditPage_Name_Label"))
                     .fontSize(18)
                     .alignSelf(ItemAlign.Start)
                     .margin({ left: 20 })
-                TextInput({ placeholder: '输入命令名称', text: this.updatingCommandEntry.nickname })
+                TextInput({ placeholder: $r("app.string.EditPage_Name_Input_Placeholder"), text: this.updatingCommandEntry.nickname })
                     .onChange((value: string) => {
                         this.updatingCommandEntry.nickname = value;
                     })
@@ -82,11 +81,11 @@ struct EditPage {
                     .borderRadius(8)
 
                 // 命令输入
-                Text('命令:')
+                Text($r("app.string.EditPage_Command_Label"))
                     .fontSize(18)
                     .alignSelf(ItemAlign.Start)
                     .margin({ left: 20, top: 20 })
-                TextInput({ placeholder: '输入ASF命令', text: this.updatingCommandEntry.command })
+                TextInput({ placeholder: $r("app.string.EditPage_Command_Input_Placeholder"), text: this.updatingCommandEntry.command })
                     .onChange((value: string) => {
                         this.updatingCommandEntry.command = value;
                     })
@@ -97,30 +96,30 @@ struct EditPage {
 
                 // 选项区域 - 使用 Toggle 组件
                 Column({ space: 15 }) {
-                    Text('选项设置:')
+                    Text($r("app.string.EditPage_Options_Label"))
                         .fontSize(18)
                         .alignSelf(ItemAlign.Start)
                         .margin({ bottom: 10 })
 
-                    // 需要输入账户的选项
+                    // 需要输入ASF账户的选项
                     Row({ space: 10 }) {
                         Toggle({ type: ToggleType.Checkbox, isOn: this.updatingCommandEntry.accountRequired })
                             .onChange((value: boolean) => {
                                 this.updatingCommandEntry.accountRequired = value;
                             })
-                        Text('需要输入ASF账户')
+                        Text($r("app.string.EditPage_Needs_ASF_Account_Input_Label"))
                             .fontSize(16)
                     }
                     .justifyContent(FlexAlign.Start)
                     .width('100%')
 
-                    // 需要输入 App ID 的选项
+                    // 需要输入 ASF App ID 的选项
                     Row({ space: 10 }) {
                         Toggle({ type: ToggleType.Checkbox, isOn: this.updatingCommandEntry.idRequired })
                             .onChange((value: boolean) => {
                                 this.updatingCommandEntry.idRequired = value;
                             })
-                        Text('需要输入ASF App/Sub/Def ID')
+                        Text($r("app.string.EditPage_Needs_ASF_ID_Input_Label"))
                             .fontSize(16)
                     }
                     .justifyContent(FlexAlign.Start)
@@ -133,8 +132,8 @@ struct EditPage {
                 .borderRadius(8)
                 .width('90%')
 
-                // 按钮区域
-                Button('保存')
+                // 按钮
+                Button($r("app.string.EditPage_Save_Button_Label"))
                     .width('70%')
                     .margin({ top: 40 })
                     .onClick(() => {
@@ -146,7 +145,7 @@ struct EditPage {
             }
             .padding(20)
         }
-        .title("编辑")
+        .title($r("app.string.EditPage_Title"))
         .height('100%')
         .width('100%')
         .onReady((context: NavDestinationContext) => {
