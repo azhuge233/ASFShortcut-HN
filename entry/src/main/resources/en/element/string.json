@@ -103,6 +103,58 @@
     {
       "name": "EditPage_Title",
       "value": "Edit"
+    },
+    {
+      "name": "AddCommand_Invalid_Input",
+      "value": "Name and Command cannot be empty!"
+    },
+    {
+      "name": "AddCommand_Add_Success",
+      "value": "Command add successfully"
+    },
+    {
+      "name": "AddCommand_Add_Failed_Try_Again",
+      "value": "Add failed. Please try again."
+    },
+    {
+      "name": "AddCommand_Add_Failed",
+      "value": "Add failed."
+    },
+    {
+      "name": "AddCommand_Name_Label",
+      "value": "Name:"
+    },
+    {
+      "name": "AddCommand_Name_Input_Placeholder",
+      "value": "Enter Name"
+    },
+    {
+      "name": "AddCommand_Command_Label",
+      "value": "ASF Command:"
+    },
+    {
+      "name": "AddCommand_Command_Input_Placeholder",
+      "value": "Enter ASF Command"
+    },
+    {
+      "name": "AddCommand_Options_Label",
+      "value": "Options"
+    },
+    {
+      "name": "AddCommand_Needs_ASF_Account_Input_Label",
+      "value": "Manually enter ASF account"
+    },
+    {
+      "name": "AddCommand_Needs_ASF_ID_Input_Label",
+      "value": "Manually enter ASF App/Sub/Def ID"
+    },
+    {
+      "name": "AddCommand_Add_Button_Label",
+      "value": "Add"
+    },
+    {
+      "name": "AddCommand_Title",
+      "value": "Add"
     }
   ]
 }

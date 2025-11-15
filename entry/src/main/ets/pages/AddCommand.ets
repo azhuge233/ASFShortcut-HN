@@ -24,7 +24,7 @@ struct AddCommand {
 
     pathStack: NavPathStack | undefined = undefined;
 
-    alert(message: string) {
+    alert(message: string | Resource) {
         if(deviceInfo.sdkApiVersion <= 17) {
             try {
                 promptAction.showToast({
@@ -51,21 +51,19 @@ struct AddCommand {
 
     async saveCommand() {
         if (!this.newCommandViewModel.nickname.trim() || !this.newCommandViewModel.command.trim()) {
-            // 显示错误提示
-            this.alert('名称和命令不能为空');
+            this.alert($r("app.string.AddCommand_Invalid_Input"));
             return;
         }
 
         try {
             const success = await this.listViewModel.addCommandEntry(this.newCommandViewModel.toCommandEntry());
             if (success) {
-                this.alert('命令添加成功');
+                this.alert($r("app.string.AddCommand_Add_Success"));
                 this.clearInput();
-                // this.pathStack?.pop("Submit pressed");
-            } else this.alert('添加失败，请重试');
+            } else this.alert($r("app.string.AddCommand_Add_Failed_Try_Again"));
         } catch (err) {
             Logger.error(this.LOG_TAG, `保存命令失败: ${err}`);
-            this.alert('保存失败');
+            this.alert($r("app.string.AddCommand_Add_Failed"));
         }
     }
 
@@ -76,11 +74,11 @@ struct AddCommand {
                     .margin({ top: 10, bottom: 10 })
 
                 // 名称输入
-                Text('名称:')
+                Text($r("app.string.AddCommand_Name_Label"))
                     .fontSize(18)
                     .alignSelf(ItemAlign.Start)
                     .margin({ left: 20 })
-                TextInput({ placeholder: '输入命令名称', text: this.newCommandViewModel.nickname })
+                TextInput({ placeholder: $r("app.string.AddCommand_Name_Input_Placeholder"), text: this.newCommandViewModel.nickname })
                     .onChange((value: string) => {
                         this.newCommandViewModel.nickname = value;
                     })
@@ -90,11 +88,11 @@ struct AddCommand {
                     .borderRadius(8)
 
                 // 命令输入
-                Text('命令:')
+                Text($r("app.string.AddCommand_Command_Label"))
                     .fontSize(18)
                     .alignSelf(ItemAlign.Start)
                     .margin({ left: 20, top: 20 })
-                TextInput({ placeholder: '输入ASF命令', text: this.newCommandViewModel.command })
+                TextInput({ placeholder: $r("app.string.AddCommand_Command_Input_Placeholder"), text: this.newCommandViewModel.command })
                     .onChange((value: string) => {
                         this.newCommandViewModel.command = value;
                     })
@@ -105,7 +103,7 @@ struct AddCommand {
 
                 // 选项区域 - 使用 Toggle 组件
                 Column({ space: 15 }) {
-                    Text('选项设置:')
+                    Text($r("app.string.AddCommand_Options_Label"))
                         .fontSize(18)
                         .alignSelf(ItemAlign.Start)
                         .margin({ bottom: 10 })
@@ -116,7 +114,7 @@ struct AddCommand {
                             .onChange((value: boolean) => {
                                 this.newCommandViewModel.accountRequired = value;
                             })
-                        Text('需要输入ASF账户')
+                        Text($r("app.string.AddCommand_Needs_ASF_Account_Input_Label"))
                             .fontSize(16)
                     }
                     .justifyContent(FlexAlign.Start)
@@ -128,7 +126,7 @@ struct AddCommand {
                             .onChange((value: boolean) => {
                                 this.newCommandViewModel.idRequired = value;
                             })
-                        Text('需要输入ASF App/Sub/Def ID')
+                        Text($r("app.string.AddCommand_Needs_ASF_ID_Input_Label"))
                             .fontSize(16)
                     }
                     .justifyContent(FlexAlign.Start)
@@ -142,7 +140,7 @@ struct AddCommand {
                 .width('90%')
 
                 // 按钮区域
-                Button('保存')
+                Button($r("app.string.AddCommand_Add_Button_Label"))
                     .width('70%')
                     .margin({ top: 40 })
                     .onClick(() => {
@@ -154,7 +152,7 @@ struct AddCommand {
             }
             .padding(20)
         }
-        .title("添加新命令")
+        .title($r("app.string.AddCommand_Title"))
         .height('100%')
         .width('100%')
         .onReady((context: NavDestinationContext) => {

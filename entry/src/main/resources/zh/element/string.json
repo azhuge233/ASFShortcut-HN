@@ -103,6 +103,58 @@
     {
       "name": "EditPage_Title",
       "value": "编辑"
+    },
+    {
+      "name": "AddCommand_Invalid_Input",
+      "value": "名称和命令不能为空！"
+    },
+    {
+      "name": "AddCommand_Add_Success",
+      "value": "指令添加成功"
+    },
+    {
+      "name": "AddCommand_Add_Failed_Try_Again",
+      "value": "添加失败，请重试"
+    },
+    {
+      "name": "AddCommand_Add_Failed",
+      "value": "添加失败"
+    },
+    {
+      "name": "AddCommand_Name_Label",
+      "value": "名称："
+    },
+    {
+      "name": "AddCommand_Name_Input_Placeholder",
+      "value": "输入名称"
+    },
+    {
+      "name": "AddCommand_Command_Label",
+      "value": "ASF 指令："
+    },
+    {
+      "name": "AddCommand_Command_Input_Placeholder",
+      "value": "输入 ASF 指令"
+    },
+    {
+      "name": "AddCommand_Options_Label",
+      "value": "选项"
+    },
+    {
+      "name": "AddCommand_Needs_ASF_Account_Input_Label",
+      "value": "手动输入 ASF 账户"
+    },
+    {
+      "name": "AddCommand_Needs_ASF_ID_Input_Label",
+      "value": "手动输入 ASF App/Sub/Def ID"
+    },
+    {
+      "name": "AddCommand_Add_Button_Label",
+      "value": "添加"
+    },
+    {
+      "name": "AddCommand_Title",
+      "value": "添加"
     }
   ]
 }
