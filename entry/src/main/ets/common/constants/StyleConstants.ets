@@ -27,6 +27,7 @@ class StyleConstants {
 
     public PADDING_TWENTY = 20;
     public PADDING_SIXTEEN = 16;
+    public PADDING_FIFTEEN = 15;
     public PADDING_TEN = 10;
     public PADDING_EIGHT = 8;
     public PADDING_FIVE = 5;
@@ -56,6 +57,14 @@ class StyleConstants {
     public INDEX_NO_ENTRY_TITLE_FONT_SIZE = 18;
     public INDEX_NO_ENTRY_SECOND_TITLE_FONT_SIZE = 14;
     public INDEX_LAYOUT_WEIGHT = 1;
+
+    public EDIT_PAGE_BLANK_COL_SPACE = 20;
+    public EDIT_PAGE_OPTION_COL_SPACE = 15;
+    public EDIT_PAGE_ROW_SPACE = 10;
+    public EDIT_PAGE_BORDER_WIDTH = 1;
+    public EDIT_PAGE_BORDER_RADIUS = 8;
+    public EDIT_PAGE_LABEL_FONT_SIZE = 18;
+    public EDIT_PAGE_CHECK_LABEL_FONT_SIZE = 16;
 }
 
 export default new StyleConstants();
