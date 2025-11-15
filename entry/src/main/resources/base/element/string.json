@@ -90,11 +90,11 @@
     },
     {
       "name": "EditPage_Needs_ASF_Account_Input_Label",
-      "value": "Manually enter ASF account"
+      "value": "Manually enter ASF bot"
     },
     {
       "name": "EditPage_Needs_ASF_ID_Input_Label",
-      "value": "Manually enter ASF App/Sub/Def ID"
+      "value": "Manually enter App/Sub/Def ID"
     },
     {
       "name": "EditPage_Save_Button_Label",
@@ -142,11 +142,11 @@
     },
     {
       "name": "AddCommand_Needs_ASF_Account_Input_Label",
-      "value": "Manually enter ASF account"
+      "value": "Manually enter ASF bot"
     },
     {
       "name": "AddCommand_Needs_ASF_ID_Input_Label",
-      "value": "Manually enter ASF App/Sub/Def ID"
+      "value": "Manually enter App/Sub/Def ID"
     },
     {
       "name": "AddCommand_Add_Button_Label",

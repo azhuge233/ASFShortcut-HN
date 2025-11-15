@@ -90,11 +90,11 @@
     },
     {
       "name": "EditPage_Needs_ASF_Account_Input_Label",
-      "value": "手动输入 ASF 账户"
+      "value": "手动输入 ASF 机器人"
     },
     {
       "name": "EditPage_Needs_ASF_ID_Input_Label",
-      "value": "手动输入 ASF App/Sub/Def ID"
+      "value": "手动输入 App/Sub/Def ID"
     },
     {
       "name": "EditPage_Save_Button_Label",
@@ -142,11 +142,11 @@
     },
     {
       "name": "AddCommand_Needs_ASF_Account_Input_Label",
-      "value": "手动输入 ASF 账户"
+      "value": "手动输入 ASF 机器人"
     },
     {
       "name": "AddCommand_Needs_ASF_ID_Input_Label",
-      "value": "手动输入 ASF App/Sub/Def ID"
+      "value": "手动输入 App/Sub/Def ID"
     },
     {
       "name": "AddCommand_Add_Button_Label",
