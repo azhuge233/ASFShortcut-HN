@@ -37,7 +37,7 @@ struct Index {
     }
 
     onPageHide(): void {
-        this.scrollerForList.closeAllSwipeActions();
+        this.safeCloseSwipeActions();
     }
 
     // 执行指令后，显示结果的对话框
