@@ -32,7 +32,7 @@ struct SettingsPage {
         this.loadSettings();
     }
 
-    alert(message: string) {
+    alert(message: string | Resource) {
         if(deviceInfo.sdkApiVersion <= 17) {
             try {
                 promptAction.showToast({
@@ -69,17 +69,17 @@ struct SettingsPage {
     build() {
         NavDestination() {
             Column() {
-                Text('ASF设置')
+                Text($r("app.string.SettingsPage_Title"))
                     .fontSize(24)
                     .fontWeight(FontWeight.Bold)
                     .margin({ top: 40, bottom: 40 })
 
-                Text('服务器地址')
+                Text($r("app.string.SettingsPage_Address_Label"))
                     .fontSize(16)
                     .alignSelf(ItemAlign.Start)
                     .margin({ left: 20, bottom: 10 })
 
-                TextInput({ text: this.address, placeholder: '输入ASF服务器地址' })
+                TextInput({ text: this.address, placeholder: $r("app.string.SettingsPage_Address_Input_Placeholder") })
                     .width('90%')
                     .height(50)
                     .border({ width: 1, color: Color.Gray })
@@ -90,12 +90,12 @@ struct SettingsPage {
                     })
                     .margin({ bottom: 30 })
 
-                Text('密码')
+                Text($r("app.string.SettingsPage_Password_Label"))
                     .fontSize(16)
                     .alignSelf(ItemAlign.Start)
                     .margin({ left: 20, bottom: 10 })
 
-                TextInput({ text: this.asfPassword, placeholder: '输入密码' })
+                TextInput({ text: this.asfPassword, placeholder: $r("app.string.SettingsPage_Password_Input_Placeholder") })
                     .type(InputType.Password)
                     .width('90%')
                     .height(50)
@@ -107,7 +107,7 @@ struct SettingsPage {
                     })
                     .margin({ bottom: 50 })
 
-                Button(this.isSaving ? '保存中...' : '保存设置', { type: ButtonType.Capsule })
+                Button(this.isSaving ? $r("app.string.SettingsPage_Save_Button_Saving") : $r("app.string.SettingsPage_Save_Button_Label"), { type: ButtonType.Capsule })
                     .width('90%')
                     .height(50)
                     .fontColor(Color.White)
@@ -115,9 +115,9 @@ struct SettingsPage {
                     .onClick(async () => {
                         const saveSuccess = await this.saveSettings();
                         if (saveSuccess) {
-                            this.alert('设置更新成功');
+                            this.alert($r("app.string.SettingsPage_Save_Success"));
                             this.pathStack?.pop("Submit pressed");
-                        } else this.alert('保存失败，请重试');
+                        } else this.alert($r("app.string.SettingsPage_Save_Failed"));
                     })
             }
         }
@@ -128,7 +128,7 @@ struct SettingsPage {
         })
         .onBackPressed(() => {
             if(this.isSaving) {
-                this.alert('Saving...');
+                this.alert($r("app.string.SettingsPage_Save_Button_Saving"));
                 return true;
             }
             this.pathStack?.pop("Back pressed");

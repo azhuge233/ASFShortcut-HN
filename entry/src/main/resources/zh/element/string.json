@@ -15,6 +15,42 @@
     {
       "name": "NetworkPermissionReason",
       "value": "Send ASF commands"
+    },
+    {
+      "name": "SettingsPage_Title",
+      "value": "ASF 设置"
+    },
+    {
+      "name": "SettingsPage_Address_Label",
+      "value": "ASF 服务器地址"
+    },
+    {
+      "name": "SettingsPage_Address_Input_Placeholder",
+      "value": "输入 ASF 服务器地址"
+    },
+    {
+      "name": "SettingsPage_Password_Label",
+      "value": "ASF 密码"
+    },
+    {
+      "name": "SettingsPage_Password_Input_Placeholder",
+      "value": "输入 ASF 密码"
+    },
+    {
+      "name": "SettingsPage_Save_Button_Label",
+      "value": "保存"
+    },
+    {
+      "name": "SettingsPage_Save_Button_Saving",
+      "value": "保存中..."
+    },
+    {
+      "name": "SettingsPage_Save_Success",
+      "value": "设置更新成功"
+    },
+    {
+      "name": "SettingsPage_Save_Failed",
+      "value": "保存失败，请重试..."
     }
   ]
 }

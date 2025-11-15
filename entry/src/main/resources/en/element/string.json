@@ -15,6 +15,42 @@
     {
       "name": "NetworkPermissionReason",
       "value": "Send ASF commands"
+    },
+    {
+      "name": "SettingsPage_Title",
+      "value": "ASF Settings"
+    },
+    {
+      "name": "SettingsPage_Address_Label",
+      "value": "ASF Server Address"
+    },
+    {
+      "name": "SettingsPage_Address_Input_Placeholder",
+      "value": "Enter ASF Server Address"
+    },
+    {
+      "name": "SettingsPage_Password_Label",
+      "value": "ASF Server Address"
+    },
+    {
+      "name": "SettingsPage_Password_Input_Placeholder",
+      "value": "Enter ASF Password"
+    },
+    {
+      "name": "SettingsPage_Save_Button_Label",
+      "value": "Save"
+    },
+    {
+      "name": "SettingsPage_Save_Button_Saving",
+      "value": "Saving"
+    },
+    {
+      "name": "SettingsPage_Save_Success",
+      "value": "Settings updated successfully"
+    },
+    {
+      "name": "SettingsPage_Save_Failed",
+      "value": "Save failed. Please try again."
     }
   ]
 }
