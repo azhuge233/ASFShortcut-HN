@@ -18,8 +18,6 @@ struct Index {
 
     @Local showSetupDialog: boolean = false;
     @Local private isProcessing: boolean = false;
-    @Local asfAccInputDialogLabel: string = "ASF 账户";
-    @Local asfIDInputDialogLabel: string = "App/Sub/Def ID";
 
     @Local currentAddress: string = '';
     @Local currentASFPassword: string = '';
@@ -59,16 +57,6 @@ struct Index {
                 Logger.error(this.LOG_TAG, `<alert API > 17> error: ${err}`);
             });
         }
-    }
-
-    // 辅助方法：显示选项状态
-    getOptionText(entry: CommandEntryViewModel): string {
-        const options: string[] = [];
-
-        if (entry.accountInputRequired === 1) options.push('需账户');
-        if (entry.idInputRequired === 1) options.push('需App ID');
-
-        return options.length > 0 ? options.join(' | ') : '无特殊选项';
     }
 
     // 执行指令后，显示结果的对话框
@@ -114,7 +102,7 @@ struct Index {
         else {
             await this.loadSettings();
             this.initASF();
-            Logger.info(this.LOG_TAG, `应用初始化完成, address: ${this.currentAddress}, password: ${this.currentASFPassword}`);
+            // Logger.info(this.LOG_TAG, `应用初始化完成, address: ${this.currentAddress}, password: ${this.currentASFPassword}`);
         }
     }
 
