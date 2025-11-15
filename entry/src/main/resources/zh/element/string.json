@@ -189,6 +189,10 @@
       "value": "ASF 快捷指令"
     },
     {
+      "name": "CommandTile_Button_Label",
+      "value": "运行"
+    },
+    {
       "name": "CommandTile_Input_Required_Label",
       "value": "需要输入："
     },

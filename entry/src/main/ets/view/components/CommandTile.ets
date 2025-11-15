@@ -108,7 +108,7 @@ export struct CommandListItem {
             })
 
             Column({ space: 12 }) {
-                Button('Run')
+                Button($r("app.string.CommandTile_Button_Label"))
                     .onClick(() => {
                         this.runCommand();
                     })
