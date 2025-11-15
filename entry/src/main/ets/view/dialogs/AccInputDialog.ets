@@ -1,3 +1,5 @@
+import StyleConstants from "../../common/constants/StyleConstants";
+
 @Builder
 export function AccInputDialogBuilder() {
     AccInputDialog();
@@ -15,18 +17,18 @@ export struct AccInputDialog {
                 Text($r("app.string.Account_Input_Dialog_Label"))
                     .fontWeight(FontWeight.Bold)
                     .alignSelf(ItemAlign.Start)
-                    .fontSize(23)
+                    .fontSize(StyleConstants.DIALOG_TITLE_FONT_SIZE)
                     .textSelectable(TextSelectableMode.UNSELECTABLE)
                     .copyOption(CopyOptions.None)
                     .margin({
-                        top: '20%',
-                        bottom: '10%'
+                        top: StyleConstants.TWENTY_PERCENT,
+                        bottom: StyleConstants.TEN_PERCENT
                     })
 
                 TextInput()
-                    .width('100%')
+                    .width(StyleConstants.FULL_PERCENT)
                     .maxLines(1)
-                    .margin({ top: 10, bottom: 10 })
+                    .margin({ top: StyleConstants.MARGIN_TEN, bottom: StyleConstants.MARGIN_TEN })
                     .onChange((value: string) => {
                         this.inputValue = value;
                     })
@@ -34,17 +36,17 @@ export struct AccInputDialog {
                 Button($r("app.string.Dialog_Button_Label"))
                     .alignSelf(ItemAlign.Stretch)
                     .margin({
-                        top: 20
+                        top: StyleConstants.MARGIN_TWENTY
                     })
                     .onClick(() => {
                         this.pathStack.pop(this.inputValue);
                     })
             }
-            .padding(20)
-            .width('100%')
+            .padding(StyleConstants.PADDING_TWENTY)
+            .width(StyleConstants.FULL_PERCENT)
         }
         .mode(NavDestinationMode.DIALOG)
-        .backgroundColor("#000000")
+        .backgroundColor($r("app.color.dialog_background_color"))
         .onBackPressed(() => {
             this.pathStack.pop("");
             return true;

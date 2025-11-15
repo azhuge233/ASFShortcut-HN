@@ -19,6 +19,10 @@
     {
       "name": "tag_id_text",
       "value": "#00A366"
+    },
+    {
+      "name": "dialog_background_color",
+      "value": "#FFFFFF"
     }
   ]
 }

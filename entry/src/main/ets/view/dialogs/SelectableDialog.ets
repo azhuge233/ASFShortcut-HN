@@ -1,3 +1,5 @@
+import StyleConstants from "../../common/constants/StyleConstants";
+
 @Builder
 export function SelectableDialogBuilder() {
     SelectableDialog();
@@ -15,24 +17,24 @@ export struct SelectableDialog {
                 Text($r("app.string.Selectable_Dialog_Label"))
                     .fontWeight(FontWeight.Bold)
                     .alignSelf(ItemAlign.Start)
-                    .fontSize(23)
+                    .fontSize(StyleConstants.DIALOG_TITLE_FONT_SIZE)
                     .textSelectable(TextSelectableMode.UNSELECTABLE)
                     .copyOption(CopyOptions.None)
                     .margin({
-                        bottom: '5%'
+                        bottom: StyleConstants.FIVE_PERCENT
                     })
 
                 Scroll() {
                     Text(this.message)
                         .textSelectable(TextSelectableMode.SELECTABLE_FOCUSABLE)
                         .copyOption(CopyOptions.LocalDevice)
-                        .fontSize(18)
+                        .fontSize(StyleConstants.DIALOG_CONTENT_FONT_SIZE)
                 }
                 .constraintSize({
-                    maxHeight: '80%'
+                    maxHeight: StyleConstants.EIGHTY_PERCENT
                 })
-                .width('100%')
-                .margin({ top: 10, bottom: 10 })
+                .width(StyleConstants.FULL_PERCENT)
+                .margin({ top: StyleConstants.MARGIN_TEN, bottom: StyleConstants.MARGIN_TEN })
                 .scrollable(ScrollDirection.Vertical)
                 .scrollBar(BarState.Auto)
                 .edgeEffect(EdgeEffect.Spring)
@@ -40,17 +42,17 @@ export struct SelectableDialog {
                 Button($r("app.string.Dialog_Button_Label"))
                     .alignSelf(ItemAlign.Stretch)
                     .margin({
-                        top: '5%'
+                        top: StyleConstants.FIVE_PERCENT
                     })
                     .onClick(() => {
                         this.pathStack.pop("Button pressed");
                     })
             }
-            .padding(20)
-            .width('100%')
+            .padding(StyleConstants.PADDING_TWENTY)
+            .width(StyleConstants.FULL_PERCENT)
         }
         .mode(NavDestinationMode.DIALOG)
-        .backgroundColor("#000000")
+        .backgroundColor($r("app.color.dialog_background_color"))
         .onBackPressed(() => {
             this.pathStack.pop("Back pressed");
             return true;
