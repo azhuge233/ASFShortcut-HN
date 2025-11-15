@@ -381,12 +381,13 @@ struct Index {
                     }
                 },
                 {
-                    value: $r("app.string.Index_Settings_Menu_Button_Label"),
-                    icon: $r("app.media.gearshape"),
+                    value: $r("app.string.Index_More_Menu_Button_Label"),
+                    icon: $r("app.media.dot_grid_2x2"),
                     action: () => {
                         this.safeCloseSwipeActions();
                         this.pageStack.pushPath({
-                            name: "SettingsPage",
+                            name: "MorePage",
+                            param: this.listViewModel,
                             onPop: async (popInfo) => {
                                 await this.checkSettingsAndInit();
                                 await this.returnFromSubPage(popInfo);
