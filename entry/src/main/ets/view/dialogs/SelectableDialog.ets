@@ -12,7 +12,7 @@ export struct SelectableDialog {
     build() {
         NavDestination() {
             Column() {
-                Text("Result")
+                Text($r("app.string.Selectable_Dialog_Label"))
                     .fontWeight(FontWeight.Bold)
                     .alignSelf(ItemAlign.Start)
                     .fontSize(23)
@@ -37,7 +37,7 @@ export struct SelectableDialog {
                 .scrollBar(BarState.Auto)
                 .edgeEffect(EdgeEffect.Spring)
 
-                Button('OK')
+                Button($r("app.string.Dialog_Button_Label"))
                     .alignSelf(ItemAlign.Stretch)
                     .margin({
                         top: '5%'

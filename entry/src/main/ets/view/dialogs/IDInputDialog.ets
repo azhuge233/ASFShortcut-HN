@@ -12,7 +12,7 @@ export struct IDInputDialog {
     build() {
         NavDestination() {
             Column() {
-                Text(`输入 App/Sub/Def ID`)
+                Text($r("app.string.ID_Input_Dialog_Label"))
                     .fontWeight(FontWeight.Bold)
                     .alignSelf(ItemAlign.Start)
                     .fontSize(23)
@@ -31,7 +31,7 @@ export struct IDInputDialog {
                         this.inputValue = value;
                     })
 
-                Button('OK')
+                Button($r("app.string.Dialog_Button_Label"))
                     .alignSelf(ItemAlign.Stretch)
                     .margin({
                         top: 20

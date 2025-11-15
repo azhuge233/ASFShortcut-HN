@@ -186,7 +186,7 @@
     },
     {
       "name": "Index_Title",
-      "value": "ASF 快捷方式"
+      "value": "ASF 快捷指令"
     },
     {
       "name": "CommandTile_Input_Required_Label",
@@ -199,6 +199,22 @@
     {
       "name": "CommandTile_Input_Required_ASF_ID_Label",
       "value": "App/Sub/Def ID"
+    },
+    {
+      "name": "Account_Input_Dialog_Label",
+      "value": "输入 ASF 机器人名称"
+    },
+    {
+      "name": "Dialog_Button_Label",
+      "value": "确认"
+    },
+    {
+      "name": "Selectable_Dialog_Label",
+      "value": "执行结果"
+    },
+    {
+      "name": "ID_Input_Dialog_Label",
+      "value": "输入 App/Sub/Def ID"
     }
   ]
 }

@@ -12,7 +12,7 @@ export struct AccInputDialog {
     build() {
         NavDestination() {
             Column() {
-                Text(`输入 ASF 机器人名称`)
+                Text($r("app.string.Account_Input_Dialog_Label"))
                     .fontWeight(FontWeight.Bold)
                     .alignSelf(ItemAlign.Start)
                     .fontSize(23)
@@ -31,7 +31,7 @@ export struct AccInputDialog {
                         this.inputValue = value;
                     })
 
-                Button('OK')
+                Button($r("app.string.Dialog_Button_Label"))
                     .alignSelf(ItemAlign.Stretch)
                     .margin({
                         top: 20

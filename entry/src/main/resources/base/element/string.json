@@ -199,6 +199,22 @@
     {
       "name": "CommandTile_Input_Required_ASF_ID_Label",
       "value": "App/Sub/Def ID"
+    },
+    {
+      "name": "Account_Input_Dialog_Label",
+      "value": "Enter ASF bot name"
+    },
+    {
+      "name": "Dialog_Button_Label",
+      "value": "OK"
+    },
+    {
+      "name": "Selectable_Dialog_Label",
+      "value": "Result"
+    },
+    {
+      "name": "ID_Input_Dialog_Label",
+      "value": "Enter App/Sub/Def ID"
     }
   ]
 }
