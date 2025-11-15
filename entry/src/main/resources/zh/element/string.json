@@ -219,6 +219,26 @@
     {
       "name": "ID_Input_Dialog_Label",
       "value": "输入 App/Sub/Def ID"
+    },
+    {
+      "name": "More_Settings_Label",
+      "value": "ASF 设置"
+    },
+    {
+      "name": "More_Clear_Label",
+      "value": "清除所有指令"
+    },
+    {
+      "name": "More_Export_Label",
+      "value": "导出"
+    },
+    {
+      "name": "More_Import_Label",
+      "value": "导入"
+    },
+    {
+      "name": "More_Help_Label",
+      "value": "帮助"
     }
   ]
 }

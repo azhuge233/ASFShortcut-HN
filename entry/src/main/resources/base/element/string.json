@@ -219,6 +219,26 @@
     {
       "name": "ID_Input_Dialog_Label",
       "value": "Enter App/Sub/Def ID"
+    },
+    {
+      "name": "More_Settings_Label",
+      "value": "ASF Settings"
+    },
+    {
+      "name": "More_Clear_Label",
+      "value": "Clear All Commands"
+    },
+    {
+      "name": "More_Export_Label",
+      "value": "Export"
+    },
+    {
+      "name": "More_Import_Label",
+      "value": "Import"
+    },
+    {
+      "name": "More_Help_Label",
+      "value": "Help"
     }
   ]
 }
