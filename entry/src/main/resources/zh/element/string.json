@@ -54,7 +54,7 @@
     },
     {
       "name": "EditPage_Invalid_Input",
-      "value": "名称和命令不能为空！"
+      "value": "名称和指令不能为空！"
     },
     {
       "name": "EditPage_Update_Success",
@@ -106,7 +106,7 @@
     },
     {
       "name": "AddCommand_Invalid_Input",
-      "value": "名称和命令不能为空！"
+      "value": "名称和指令不能为空！"
     },
     {
       "name": "AddCommand_Add_Success",
@@ -170,11 +170,11 @@
     },
     {
       "name": "Index_No_Commands_Label",
-      "value": "暂无命令"
+      "value": "暂无指令"
     },
     {
       "name": "Index_Create_First_Command_Label",
-      "value": "点击 '+' 号创建第一个命令"
+      "value": "点击 '+' 号创建指令"
     },
     {
       "name": "Index_Add_Menu_Button_Label",
