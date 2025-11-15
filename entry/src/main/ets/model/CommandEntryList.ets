@@ -62,4 +62,17 @@ export default class CommandEntryList {
             return false;
         }
     }
+
+    async clearCommandEntry(): Promise<boolean> {
+        await this.db.waitForReady();
+
+        try {
+            const result = await this.db.clearTableCommandEntries();
+            Logger.debug(this.LOG_TAG, `指令列表清除成功, ${result}}`);
+            return true;
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `清除指令列表失败, ${err}`);
+            return false;
+        }
+    }
 }

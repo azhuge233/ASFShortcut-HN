@@ -44,6 +44,15 @@ export default class CommandEntryListViewModel {
         return false;
     }
 
+    async clearCommandEntry(): Promise<boolean> {
+        const success = await this.dataModel.clearCommandEntry();
+        if(success) {
+            await this.loadCommandEntries();
+            return true;
+        }
+        return false;
+    }
+
     getNextId(): number {
         if (this.commandEntries.length === 0) return 1;
         const maxId = Math.max(...this.commandEntries.map(item => item.id));

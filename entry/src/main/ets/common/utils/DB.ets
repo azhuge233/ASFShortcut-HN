@@ -154,6 +154,7 @@ export class DB {
         return address.trim() !== '' && password.trim() !== '';
     }
 
+    // debug 方法
     async getAllSettings(): Promise<Map<string, string>> {
         const settings = new Map<string, string>();
 
@@ -198,6 +199,7 @@ export class DB {
         }
     }
 
+    // debug 方法
     async clearTableSettings() {
         await this.clearTable(this.TN_HostInfo);
     }

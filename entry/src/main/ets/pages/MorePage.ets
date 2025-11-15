@@ -93,7 +93,36 @@ struct MorePage {
 
                     MoreMenuItem({
                         menuText: $r("app.string.More_Clear_Label"),
-                        menuIcon: $r("app.media.clean")
+                        menuIcon: $r("app.media.clean"),
+                        doJob: async () => {
+                            try {
+                                this.promptAction.showDialog({
+                                    title: $r("app.string.More_Clear_Confirm_Title"),
+                                    message: $r("app.string.More_Clear_Confirm_Content"),
+                                    buttons: [
+                                        {
+                                            text: $r("app.string.More_Clear_Confirm_Button_Confirm"),
+                                            color: $r("app.color.more_clear_confirm_button_color")
+                                        },
+                                        {
+                                            text: $r("app.string.More_Clear_Confirm_Button_Cancel"),
+                                            color: $r("app.color.more_clear_confirm_button_color")
+                                        }
+                                    ]
+                                }).then(async (result) => {
+                                    if (result.index == 0) {
+                                        const success = await this.listViewModel.clearCommandEntry();
+                                        if (success) {
+                                            CommonUtils.alert($r("app.string.More_Clear_Success"), this.promptAction);
+                                            this.pathStack?.pop("Clear press");
+                                        } else CommonUtils.alert($r("app.string.More_Clear_Failed_Try_Again"), this.promptAction);
+                                    } else Logger.debug(this.LOG_TAG, "清除已取消");
+                                });
+                            } catch (err) {
+                                Logger.error(this.LOG_TAG, `清除失败, ${err}`);
+                                CommonUtils.alert($r("app.string.More_Clear_Failed"), this.promptAction);
+                            }
+                        }
                     })
 
                     MoreMenuItem({
@@ -104,7 +133,7 @@ struct MorePage {
                 .height(StyleConstants.FULL_PERCENT)
                 .width(StyleConstants.FULL_PERCENT)
             }
-            .title("更多功能")
+            .title($r("app.string.More_Title"))
             .height(StyleConstants.FULL_PERCENT)
             .width(StyleConstants.FULL_PERCENT)
             .onReady((context: NavDestinationContext) => {

@@ -35,6 +35,10 @@
     {
       "name": "transparent",
       "value": "#00000080"
+    },
+    {
+      "name": "more_clear_confirm_button_color",
+      "value": "#FFFFFF"
     }
   ]
 }

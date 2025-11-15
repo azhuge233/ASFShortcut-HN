@@ -239,6 +239,38 @@
     {
       "name": "More_Help_Label",
       "value": "帮助"
+    },
+    {
+      "name": "More_Title",
+      "value": "更多功能"
+    },
+    {
+      "name": "More_Clear_Confirm_Title",
+      "value": "注意!"
+    },
+    {
+      "name": "More_Clear_Confirm_Content",
+      "value": "这会删除所有指令条目，确认继续？"
+    },
+    {
+      "name": "More_Clear_Success",
+      "value": "清除成功!"
+    },
+    {
+      "name": "More_Clear_Failed_Try_Again",
+      "value": "清除失败，请重试"
+    },
+    {
+      "name": "More_Clear_Failed",
+      "value": "清除失败"
+    },
+    {
+      "name": "More_Clear_Confirm_Button_Confirm",
+      "value": "确认"
+    },
+    {
+      "name": "More_Clear_Confirm_Button_Cancel",
+      "value": "取消"
     }
   ]
 }

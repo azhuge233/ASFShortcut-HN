@@ -239,6 +239,38 @@
     {
       "name": "More_Help_Label",
       "value": "Help"
+    },
+    {
+      "name": "More_Title",
+      "value": "More"
+    },
+    {
+      "name": "More_Clear_Confirm_Title",
+      "value": "Warning!"
+    },
+    {
+      "name": "More_Clear_Confirm_Content",
+      "value": "This will delete all commands. Continue?"
+    },
+    {
+      "name": "More_Clear_Success",
+      "value": "Commands clear successfully"
+    },
+    {
+      "name": "More_Clear_Failed_Try_Again",
+      "value": "Clear failed. Please try again."
+    },
+    {
+      "name": "More_Clear_Failed",
+      "value": "Clear failed."
+    },
+    {
+      "name": "More_Clear_Confirm_Button_Confirm",
+      "value": "Confirm"
+    },
+    {
+      "name": "More_Clear_Confirm_Button_Cancel",
+      "value": "Cancel"
     }
   ]
 }
