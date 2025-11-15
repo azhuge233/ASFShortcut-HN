@@ -75,6 +75,9 @@ class StyleConstants {
     public ADD_COMMAND_BORDER_RADIUS = 8;
     public ADD_COMMAND_LABEL_FONT_SIZE = 18;
     public ADD_COMMAND_CHECK_LABEL_FONT_SIZE = 16;
+
+    public MORE_MENU_ITEM_ICON_SIZE = 28;
+    public MORE_MENU_ITEM_FONT_SIZE = 17;
 }
 
 export default new StyleConstants();
