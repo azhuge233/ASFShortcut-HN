@@ -23,6 +23,18 @@
     {
       "name": "dialog_background_color",
       "value": "#000000"
+    },
+    {
+      "name": "delete_button_color",
+      "value": "#FF0000"
+    },
+    {
+      "name": "edit_button_color",
+      "value": "#00FF00"
+    },
+    {
+      "name": "transparent",
+      "value": "#00000080"
     }
   ]
 }
