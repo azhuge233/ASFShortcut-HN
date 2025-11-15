@@ -1,5 +1,6 @@
 import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
 import Logger from '../../common/utils/Logger';
+import StyleConstants from '../../common/constants/StyleConstants';
 
 @ComponentV2
 export struct CommandListItem {
@@ -36,56 +37,56 @@ export struct CommandListItem {
 
     build() {
         Row() {
-            Column({ space: 12 }) {
-                Column({ space: 6 }) {
+            Column({ space: StyleConstants.COMMAND_TILE_COL_SPACE }) {
+                Column({ space: StyleConstants.COMMAND_TILE_COL_SPACE / 2 }) {
                     Text(this.item.nickname)
-                        .fontSize(16)
+                        .fontSize(StyleConstants.COMMAND_TILE_NAME_FONT_SIZE)
                         .fontWeight(FontWeight.Medium)
                         .maxLines(1)
                         .textOverflow({ overflow: TextOverflow.Ellipsis })
-                        .width('100%')
+                        .width(StyleConstants.FULL_PERCENT)
 
                     Text(this.item.command)
-                        .fontSize(13)
+                        .fontSize(StyleConstants.COMMAND_TILE_COMMAND_FONT_SIZE)
                         .maxLines(2)
                         .textOverflow({ overflow: TextOverflow.Ellipsis })
-                        .width('100%')
+                        .width(StyleConstants.FULL_PERCENT)
                 }
-                .width('100%')
+                .width(StyleConstants.FULL_PERCENT)
 
-                Row({ space: 8 }) {
+                Row({ space: StyleConstants.COMMAND_TILE_ROW_SPACE }) {
                     if (this.item.accountInputRequired === 1 || this.item.idInputRequired === 1) {
                         Text($r("app.string.CommandTile_Input_Required_Label"))
-                            .fontSize(11)
+                            .fontSize(StyleConstants.COMMAND_TILE_LABEL_FONT_SIZE)
                             .margin({
-                                right: 2
+                                right: StyleConstants.PADDING_TWO
                             })
                     }
 
                     if (this.item.accountInputRequired === 1) {
                         Text($r("app.string.CommandTile_Input_Required_ASF_Account_Label"))
-                            .fontSize(11)
+                            .fontSize(StyleConstants.COMMAND_TILE_LABEL_FONT_SIZE)
                             .fontColor($r('app.color.tag_account_text'))
                             .backgroundColor($r('app.color.tag_account_bg'))
                             .padding({
-                                left: 8,
-                                right: 8,
-                                top: 2,
-                                bottom: 2
+                                left: StyleConstants.PADDING_EIGHT,
+                                right: StyleConstants.PADDING_EIGHT,
+                                top: StyleConstants.PADDING_TWO,
+                                bottom: StyleConstants.PADDING_TWO
                             })
                             .borderRadius(10)
                     }
 
                     if (this.item.idInputRequired === 1) {
                         Text($r("app.string.CommandTile_Input_Required_ASF_ID_Label"))
-                            .fontSize(11)
+                            .fontSize(StyleConstants.COMMAND_TILE_LABEL_FONT_SIZE)
                             .fontColor($r('app.color.tag_id_text'))
                             .backgroundColor($r('app.color.tag_id_bg'))
                             .padding({
-                                left: 8,
-                                right: 8,
-                                top: 2,
-                                bottom: 2
+                                left: StyleConstants.PADDING_EIGHT,
+                                right: StyleConstants.PADDING_EIGHT,
+                                top: StyleConstants.PADDING_TWO,
+                                bottom: StyleConstants.PADDING_TWO
                             })
                             .borderRadius(10)
                     }
@@ -93,31 +94,31 @@ export struct CommandListItem {
                     // 如果没有标签，添加一个占位空间保持高度一致
                     if (this.item.accountInputRequired === 0 && this.item.idInputRequired === 0) {
                         Text(' ')
-                            .fontSize(11)
+                            .fontSize(StyleConstants.COMMAND_TILE_LABEL_FONT_SIZE)
                             .opacity(0)
                     }
                 }
-                .width('100%')
+                .width(StyleConstants.FULL_PERCENT)
             }
-            .width('75%')
+            .width(StyleConstants.SEVENTY_FIVE_PERCENT)
             .padding({
-                top: 16,
-                bottom: 16,
-                left: 20,
-                right: 16
+                top: StyleConstants.PADDING_SIXTEEN,
+                bottom: StyleConstants.PADDING_SIXTEEN,
+                left: StyleConstants.PADDING_TWENTY,
+                right: StyleConstants.PADDING_SIXTEEN
             })
 
-            Column({ space: 12 }) {
+            Column({ space: StyleConstants.COMMAND_TILE_COL_SPACE }) {
                 Button($r("app.string.CommandTile_Button_Label"))
                     .onClick(() => {
                         this.runCommand();
                     })
             }
-            .width('25%')
+            .width(StyleConstants.TWENTY_FIVE_PERCENT)
             .padding({
-                right: 5
+                right: StyleConstants.PADDING_FIVE
             })
         }
-        .width('100%')
+        .width(StyleConstants.FULL_PERCENT)
     }
 }
