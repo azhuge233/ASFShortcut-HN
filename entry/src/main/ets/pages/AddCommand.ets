@@ -4,6 +4,7 @@ import { promptAction } from '@kit.ArkUI';
 import Logger from '../common/utils/Logger';
 import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
 import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
+import StyleConstants from '../common/constants/StyleConstants';
 
 @Builder
 export function AddCommandBuilder() {
@@ -69,80 +70,80 @@ struct AddCommand {
 
     build() {
         NavDestination() {
-            Column({ space: 20 }) {
+            Column({ space: StyleConstants.ADD_COMMAND_COL_SPACE }) {
                 Blank()
-                    .margin({ top: 10, bottom: 10 })
+                    .margin({ top: StyleConstants.MARGIN_TEN, bottom: StyleConstants.MARGIN_TEN })
 
                 // 名称输入
                 Text($r("app.string.AddCommand_Name_Label"))
-                    .fontSize(18)
+                    .fontSize(StyleConstants.ADD_COMMAND_LABEL_FONT_SIZE)
                     .alignSelf(ItemAlign.Start)
-                    .margin({ left: 20 })
+                    .margin({ left: StyleConstants.MARGIN_TWENTY })
                 TextInput({ placeholder: $r("app.string.AddCommand_Name_Input_Placeholder"), text: this.newCommandViewModel.nickname })
                     .onChange((value: string) => {
                         this.newCommandViewModel.nickname = value;
                     })
-                    .margin({ left: 20, right: 20 })
-                    .padding(10)
-                    .border({ width: 1, color: Color.Gray })
-                    .borderRadius(8)
+                    .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
+                    .padding(StyleConstants.PADDING_TEN)
+                    .border({ width: StyleConstants.ADD_COMMAND_BORDER_WIDTH, color: Color.Gray })
+                    .borderRadius(StyleConstants.ADD_COMMAND_BORDER_RADIUS)
 
                 // 命令输入
                 Text($r("app.string.AddCommand_Command_Label"))
-                    .fontSize(18)
+                    .fontSize(StyleConstants.ADD_COMMAND_LABEL_FONT_SIZE)
                     .alignSelf(ItemAlign.Start)
-                    .margin({ left: 20, top: 20 })
+                    .margin({ left: StyleConstants.MARGIN_TWENTY, top: StyleConstants.MARGIN_TWENTY })
                 TextInput({ placeholder: $r("app.string.AddCommand_Command_Input_Placeholder"), text: this.newCommandViewModel.command })
                     .onChange((value: string) => {
                         this.newCommandViewModel.command = value;
                     })
-                    .margin({ left: 20, right: 20 })
-                    .padding(10)
-                    .border({ width: 1, color: Color.Gray })
-                    .borderRadius(8)
+                    .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
+                    .padding(StyleConstants.PADDING_TEN)
+                    .border({ width: StyleConstants.ADD_COMMAND_BORDER_WIDTH, color: Color.Gray })
+                    .borderRadius(StyleConstants.ADD_COMMAND_BORDER_RADIUS)
 
                 // 选项区域 - 使用 Toggle 组件
-                Column({ space: 15 }) {
+                Column({ space: StyleConstants.ADD_COMMAND_OPTION_COL_SPACE }) {
                     Text($r("app.string.AddCommand_Options_Label"))
-                        .fontSize(18)
+                        .fontSize(StyleConstants.ADD_COMMAND_LABEL_FONT_SIZE)
                         .alignSelf(ItemAlign.Start)
-                        .margin({ bottom: 10 })
+                        .margin({ bottom: StyleConstants.MARGIN_TEN })
 
                     // 需要输入账户的选项
-                    Row({ space: 10 }) {
+                    Row({ space: StyleConstants.ADD_COMMAND_ROW_SPACE }) {
                         Toggle({ type: ToggleType.Checkbox, isOn: this.newCommandViewModel.accountRequired })
                             .onChange((value: boolean) => {
                                 this.newCommandViewModel.accountRequired = value;
                             })
                         Text($r("app.string.AddCommand_Needs_ASF_Account_Input_Label"))
-                            .fontSize(16)
+                            .fontSize(StyleConstants.ADD_COMMAND_CHECK_LABEL_FONT_SIZE)
                     }
                     .justifyContent(FlexAlign.Start)
-                    .width('100%')
+                    .width(StyleConstants.FULL_PERCENT)
 
                     // 需要输入 App ID 的选项
-                    Row({ space: 10 }) {
+                    Row({ space: StyleConstants.ADD_COMMAND_ROW_SPACE }) {
                         Toggle({ type: ToggleType.Checkbox, isOn: this.newCommandViewModel.idRequired })
                             .onChange((value: boolean) => {
                                 this.newCommandViewModel.idRequired = value;
                             })
                         Text($r("app.string.AddCommand_Needs_ASF_ID_Input_Label"))
-                            .fontSize(16)
+                            .fontSize(StyleConstants.ADD_COMMAND_CHECK_LABEL_FONT_SIZE)
                     }
                     .justifyContent(FlexAlign.Start)
-                    .width('100%')
+                    .width(StyleConstants.FULL_PERCENT)
                 }
                 .alignSelf(ItemAlign.Start)
-                .margin({ left: 20, top: 20, right: 20 })
-                .padding(15)
-                .border({ width: 1, color: Color.Gray })
-                .borderRadius(8)
-                .width('90%')
+                .margin({ left: StyleConstants.MARGIN_TWENTY, top: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
+                .padding(StyleConstants.PADDING_FIFTEEN)
+                .border({ width: StyleConstants.ADD_COMMAND_BORDER_WIDTH, color: Color.Gray })
+                .borderRadius(StyleConstants.ADD_COMMAND_BORDER_RADIUS)
+                .width(StyleConstants.NINETY_PERCENT)
 
                 // 按钮区域
                 Button($r("app.string.AddCommand_Add_Button_Label"))
-                    .width('70%')
-                    .margin({ top: 40 })
+                    .width(StyleConstants.SEVENTY_PERCENT)
+                    .margin({ top: StyleConstants.MARGIN_FORTY })
                     .onClick(() => {
                         this.saveCommand();
                     })
@@ -150,11 +151,11 @@ struct AddCommand {
                 // 占位空间
                 Blank()
             }
-            .padding(20)
+            .padding(StyleConstants.PADDING_TWENTY)
         }
         .title($r("app.string.AddCommand_Title"))
-        .height('100%')
-        .width('100%')
+        .height(StyleConstants.FULL_PERCENT)
+        .width(StyleConstants.FULL_PERCENT)
         .onReady((context: NavDestinationContext) => {
             this.pathStack = context.pathStack;
             this.listViewModel = context.pathInfo.param as CommandEntryListViewModel;
