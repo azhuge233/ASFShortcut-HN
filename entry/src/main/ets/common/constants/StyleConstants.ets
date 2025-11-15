@@ -1,5 +1,6 @@
 class StyleConstants {
     public FULL_PERCENT = '100%';
+    public NINETY_PERCENT = '90%';
     public EIGHTY_PERCENT = '80%';
     public SEVENTY_FIVE_PERCENT = '75%';
     public SEVENTY_PERCENT = '70%';
@@ -17,11 +18,15 @@ class StyleConstants {
     public TWO_PERCENT = '2%';
     public ONE_PERCENT = '1%';
 
+    public MARGIN_FIFTY = 50;
+    public MARGIN_FORTY = 40;
+    public MARGIN_THIRTY = 30;
     public MARGIN_TWENTY = 20;
     public MARGIN_TEN = 10;
 
     public PADDING_TWENTY = 20;
     public PADDING_SIXTEEN = 16;
+    public PADDING_TEN = 10;
     public PADDING_EIGHT = 8;
     public PADDING_FIVE = 5;
     public PADDING_TWO = 2;
@@ -34,6 +39,12 @@ class StyleConstants {
     public COMMAND_TILE_NAME_FONT_SIZE = 16;
     public COMMAND_TILE_COMMAND_FONT_SIZE = 13;
     public COMMAND_TILE_LABEL_FONT_SIZE = 11;
+
+    public SETTINGS_PAGE_INPUT_BORDER_WIDTH = 1;
+    public SETTINGS_PAGE_INPUT_BORDER_RADIUS = 8;
+    public SETTINGS_PAGE_INPUT_HEIGHT = 50;
+    public SETTINGS_PAGE_TITLE_FONT_SIZE = 24;
+    public SETTINGS_PAGE_LABEL_FONT_SIZE = 17;
 }
 
 export default new StyleConstants();
