@@ -187,6 +187,18 @@
     {
       "name": "Index_Title",
       "value": "ASF Shortcut"
+    },
+    {
+      "name": "CommandTile_Input_Required_Label",
+      "value": "Input required:"
+    },
+    {
+      "name": "CommandTile_Input_Required_ASF_Account_Label",
+      "value": "ASF Bot"
+    },
+    {
+      "name": "CommandTile_Input_Required_ASF_ID_Label",
+      "value": "App/Sub/Def ID"
     }
   ]
 }

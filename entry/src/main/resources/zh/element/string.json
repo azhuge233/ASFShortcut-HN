@@ -187,6 +187,18 @@
     {
       "name": "Index_Title",
       "value": "ASF 快捷方式"
+    },
+    {
+      "name": "CommandTile_Input_Required_Label",
+      "value": "需要输入："
+    },
+    {
+      "name": "CommandTile_Input_Required_ASF_Account_Label",
+      "value": "ASF 机器人"
+    },
+    {
+      "name": "CommandTile_Input_Required_ASF_ID_Label",
+      "value": "App/Sub/Def ID"
     }
   ]
 }

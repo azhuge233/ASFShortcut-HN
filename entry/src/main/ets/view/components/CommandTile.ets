@@ -55,7 +55,7 @@ export struct CommandListItem {
 
                 Row({ space: 8 }) {
                     if (this.item.accountInputRequired === 1 || this.item.idInputRequired === 1) {
-                        Text('需要输入:')
+                        Text($r("app.string.CommandTile_Input_Required_Label"))
                             .fontSize(11)
                             .margin({
                                 right: 2
@@ -63,7 +63,7 @@ export struct CommandListItem {
                     }
 
                     if (this.item.accountInputRequired === 1) {
-                        Text('ASF账户')
+                        Text($r("app.string.CommandTile_Input_Required_ASF_Account_Label"))
                             .fontSize(11)
                             .fontColor($r('app.color.tag_account_text'))
                             .backgroundColor($r('app.color.tag_account_bg'))
@@ -77,7 +77,7 @@ export struct CommandListItem {
                     }
 
                     if (this.item.idInputRequired === 1) {
-                        Text('App/Sub/Def ID')
+                        Text($r("app.string.CommandTile_Input_Required_ASF_ID_Label"))
                             .fontSize(11)
                             .fontColor($r('app.color.tag_id_text'))
                             .backgroundColor($r('app.color.tag_id_bg'))
