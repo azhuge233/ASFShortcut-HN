@@ -1,5 +1,6 @@
 import CommandEntry from '../model/CommandEntry';
 import CommandEntryList from '../model/CommandEntryList';
+import { CommandEntryJsonObject } from '../model/JsonObjects';
 import { CommandEntryViewModel } from "./CommandEntryViewModel";
 
 @ObservedV2
@@ -53,9 +54,8 @@ export default class CommandEntryListViewModel {
         return false;
     }
 
-    getNextId(): number {
-        if (this.commandEntries.length === 0) return 1;
-        const maxId = Math.max(...this.commandEntries.map(item => item.id));
-        return maxId + 1;
+    async toCommandEntryJsonObjectList(): Promise<Array<CommandEntryJsonObject>> {
+        await this.loadCommandEntries();
+        return this.commandEntries.map(entry => entry.toCommandEntryJsonObject());
     }
 }

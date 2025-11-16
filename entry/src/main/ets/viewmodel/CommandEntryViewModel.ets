@@ -1,4 +1,5 @@
 import CommandEntry from '../model/CommandEntry'
+import { CommandEntryJsonObject } from '../model/JsonObjects'
 
 @ObservedV2
 export class CommandEntryViewModel {
@@ -19,6 +20,15 @@ export class CommandEntryViewModel {
     toCommandEntry(): CommandEntry {
         return new CommandEntry(
             this.id,
+            this.nickname,
+            this.command,
+            this.accountInputRequired,
+            this.idInputRequired
+        );
+    }
+
+    toCommandEntryJsonObject(): CommandEntryJsonObject {
+        return new CommandEntryJsonObject(
             this.nickname,
             this.command,
             this.accountInputRequired,
