@@ -46,7 +46,7 @@ class CommonUtils {
                     return;
                 }
 
-                Logger.info(this.LOG_TAG, 'Succeed in querying effect');
+                Logger.info(this.LOG_TAG, '设置支持 haptic.effect.hard 振动');
 
                 if (state) {
                     try {
