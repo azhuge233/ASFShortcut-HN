@@ -283,6 +283,14 @@
     {
       "name": "More_Import_Success",
       "value": "Import successfully"
+    },
+    {
+      "name": "More_Import_Confirm_Title",
+      "value": "Warning!"
+    },
+    {
+      "name": "More_Import_Confirm_Content",
+      "value": "This action will:\n• Clear all current commands and restore them from backup\n• Restore ASF settings from backup\n\nContinue?"
     }
   ]
 }

@@ -108,6 +108,26 @@ struct MorePage {
         }
     }
 
+    async importConfirm() {
+        this.promptAction.showDialog({
+            title: $r("app.string.More_Import_Confirm_Title"),
+            message: $r("app.string.More_Import_Confirm_Content"),
+            buttons: [
+                {
+                    text: $r("app.string.More_Confirm_Button_Confirm"),
+                    color: $r("app.color.more_confirm_button_color")
+                },
+                {
+                    text: $r("app.string.More_Confirm_Button_Cancel"),
+                    color: $r("app.color.more_confirm_button_color")
+                }
+            ]
+        }).then(async (result) => {
+            if(result.index == 0) await this.import();
+            else Logger.debug(this.LOG_TAG, "导入已取消");
+        });
+    }
+
     clear() {
         try {
             this.promptAction.showDialog({
@@ -115,12 +135,12 @@ struct MorePage {
                 message: $r("app.string.More_Clear_Confirm_Content"),
                 buttons: [
                     {
-                        text: $r("app.string.More_Clear_Confirm_Button_Confirm"),
-                        color: $r("app.color.more_clear_confirm_button_color")
+                        text: $r("app.string.More_Confirm_Button_Confirm"),
+                        color: $r("app.color.more_confirm_button_color")
                     },
                     {
-                        text: $r("app.string.More_Clear_Confirm_Button_Cancel"),
-                        color: $r("app.color.more_clear_confirm_button_color")
+                        text: $r("app.string.More_Confirm_Button_Cancel"),
+                        color: $r("app.color.more_confirm_button_color")
                     }
                 ]
             }).then(async (result) => {
@@ -205,7 +225,7 @@ struct MorePage {
                         menuText: $r("app.string.More_Import_Label"),
                         menuIcon: $r("app.media.arrow_down_circle"),
                         doJob: async () => {
-                            await this.import();
+                            await this.importConfirm();
                         }
                     })
 
