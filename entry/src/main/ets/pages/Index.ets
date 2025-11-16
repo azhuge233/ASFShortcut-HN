@@ -111,6 +111,7 @@ struct Index {
         this.asf.setASFPassword(this.currentASFPassword)
     }
 
+    // debug
     // 删除数据库内 ASF 设置条目
     // 重置设置状态
     async resetSettings(): Promise<void> {
