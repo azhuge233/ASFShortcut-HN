@@ -94,7 +94,7 @@
     },
     {
       "name": "EditPage_Needs_ASF_ID_Input_Label",
-      "value": "手动输入 App/Sub/Def ID"
+      "value": "手动输入 App/Sub/Def ID | Key"
     },
     {
       "name": "EditPage_Save_Button_Label",
@@ -146,7 +146,7 @@
     },
     {
       "name": "AddCommand_Needs_ASF_ID_Input_Label",
-      "value": "手动输入 App/Sub/Def ID"
+      "value": "手动输入 App/Sub/Def ID | Key"
     },
     {
       "name": "AddCommand_Add_Button_Label",
@@ -202,7 +202,7 @@
     },
     {
       "name": "CommandTile_Input_Required_ASF_ID_Label",
-      "value": "App/Sub/Def ID"
+      "value": "App/Sub/Def ID | Key"
     },
     {
       "name": "Account_Input_Dialog_Label",
@@ -218,7 +218,7 @@
     },
     {
       "name": "ID_Input_Dialog_Label",
-      "value": "输入 App/Sub/Def ID"
+      "value": "输入 App/Sub/Def ID | Key"
     },
     {
       "name": "More_Settings_Label",
