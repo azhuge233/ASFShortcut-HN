@@ -19,11 +19,19 @@ export struct CommandListItem {
             let command = this.item.command;
 
             if (this.item.accountInputRequired === 1 && this.onAccountInput) {
-                command = `${command} ${await this.onAccountInput()}`;
+                let asfAcc = await this.onAccountInput();
+                if(asfAcc === "") {
+                    Logger.debug(this.LOG_TAG, `未输入ASF账户，取消执行`);
+                    return;
+                } else command = `${command} ${asfAcc}`;
             }
 
             if (this.item.idInputRequired === 1 && this.onIDInput) {
-                command = `${command} ${await this.onIDInput()}`;
+                let asfId = await this.onIDInput();
+                if(asfId === "") {
+                    Logger.debug(this.LOG_TAG, `未输入App/Sub/Def ID，取消执行`);
+                    return;
+                } else command = `${command} ${await this.onIDInput()}`;
             }
 
             this.onProcessingChange(true);
