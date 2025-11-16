@@ -53,7 +53,7 @@ export class ASF {
         try {
             Logger.debug(this.LOG_TAG, `发送指令: ${command}`);
             Logger.debug(this.LOG_TAG, `ASF 地址: ${this.address}`);
-            Logger.debug(this.LOG_TAG, `ASF 密码: ${this.asfPassword}}`);
+            Logger.debug(this.LOG_TAG, `ASF 密码: ${this.asfPassword}`);
 
             const response = await httpRequest.request(this.address, this.httpRequestOptions);
 
