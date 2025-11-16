@@ -250,7 +250,7 @@
     },
     {
       "name": "More_Clear_Confirm_Content",
-      "value": "这会删除所有指令条目，确认继续？"
+      "value": "此操作会删除所有指令条目，确认继续？"
     },
     {
       "name": "More_Clear_Success",

@@ -250,7 +250,7 @@
     },
     {
       "name": "More_Clear_Confirm_Content",
-      "value": "This will delete all commands. Continue?"
+      "value": "This action will delete all commands. Continue?"
     },
     {
       "name": "More_Clear_Success",
