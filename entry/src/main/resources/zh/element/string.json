@@ -271,6 +271,18 @@
     {
       "name": "More_Clear_Confirm_Button_Cancel",
       "value": "取消"
+    },
+    {
+      "name": "More_Export_Success",
+      "value": "导出成功"
+    },
+    {
+      "name": "More_Export_Failed",
+      "value": "导出失败，请重试"
+    },
+    {
+      "name": "More_Import_Success",
+      "value": "导入成功"
     }
   ]
 }

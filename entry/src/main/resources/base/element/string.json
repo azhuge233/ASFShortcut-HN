@@ -271,6 +271,18 @@
     {
       "name": "More_Clear_Confirm_Button_Cancel",
       "value": "Cancel"
+    },
+    {
+      "name": "More_Export_Success",
+      "value": "Export successfully"
+    },
+    {
+      "name": "More_Export_Failed",
+      "value": "Export failed. Please try again."
+    },
+    {
+      "name": "More_Import_Success",
+      "value": "Import successfully"
     }
   ]
 }
