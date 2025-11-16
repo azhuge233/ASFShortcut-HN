@@ -31,7 +31,7 @@ export struct CommandListItem {
                 if(asfId === "") {
                     Logger.debug(this.LOG_TAG, `未输入App/Sub/Def ID，取消执行`);
                     return;
-                } else command = `${command} ${await this.onIDInput()}`;
+                } else command = `${command} ${asfId}`;
             }
 
             this.onProcessingChange(true);
