@@ -123,6 +123,7 @@ struct AddCommand {
                 // 按钮区域
                 Button($r("app.string.AddCommand_Add_Button_Label"))
                     .width(StyleConstants.SEVENTY_PERCENT)
+                    .enabled(this.newCommandViewModel.nickname.trim() !== "" && this.newCommandViewModel.command.trim() !== "")
                     .margin({ top: StyleConstants.MARGIN_FORTY })
                     .onClick(() => {
                         this.saveCommand();

@@ -35,6 +35,7 @@ export struct AccInputDialog {
 
                 Button($r("app.string.Dialog_Button_Label"))
                     .alignSelf(ItemAlign.Stretch)
+                    .enabled(this.inputValue.trim() !== "")
                     .margin({
                         top: StyleConstants.MARGIN_TWENTY
                     })
