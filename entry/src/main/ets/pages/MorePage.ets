@@ -217,10 +217,10 @@ struct MorePage {
                         }
                     })
 
-                    MoreMenuItem({
-                        menuText: $r("app.string.More_Help_Label"),
-                        menuIcon: $r("app.media.info_circle")
-                    })
+                    // MoreMenuItem({
+                    //     menuText: $r("app.string.More_Help_Label"),
+                    //     menuIcon: $r("app.media.info_circle")
+                    // })
                 }
                 .height(StyleConstants.FULL_PERCENT)
                 .width(StyleConstants.FULL_PERCENT)
