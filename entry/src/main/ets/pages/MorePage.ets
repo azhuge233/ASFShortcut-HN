@@ -93,7 +93,7 @@ struct MorePage {
                     this.newCommandViewModel.accountInputRequired = commandEntryJsonObject.AIR;
                     this.newCommandViewModel.idInputRequired = commandEntryJsonObject.IIR;
 
-                    this.listViewModel.addCommandEntry(this.newCommandViewModel.toCommandEntry());
+                    await this.listViewModel.addCommandEntry(this.newCommandViewModel.toCommandEntry());
                 }
 
                 CommonUtils.alert($r("app.string.More_Import_Success"), this.promptAction);
