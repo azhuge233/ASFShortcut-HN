@@ -4,6 +4,7 @@ import { PromptAction } from '@ohos.arkui.UIContext';
 import { picker, fileIo as fs } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
 import { buffer } from '@kit.ArkTS';
+import { vibrator } from '@kit.SensorServiceKit';
 
 import Logger from './Logger';
 import { ExportJson } from '../../model/JsonObjects';
@@ -35,6 +36,40 @@ class CommonUtils {
     public returnFromSubPage(popInfo: PopInfo): void {
         Logger.debug(this.LOG_TAG,
             `从 [${popInfo.info.name}] 页面返回, 携带参数: ${JSON.stringify(popInfo.result)}`);
+    }
+
+    public vibrate() {
+        try {
+            vibrator.isSupportEffect('haptic.effect.hard', (err: BusinessError, state: boolean) => {
+                if (err) {
+                    Logger.error(this.LOG_TAG, `查询振动效果失败, 代码: ${err.code}, 错误信息: ${err.message}`);
+                    return;
+                }
+
+                Logger.info(this.LOG_TAG, 'Succeed in querying effect');
+
+                if (state) {
+                    try {
+                        // 触发马达振动
+                        vibrator.startVibration({
+                            type: 'preset',
+                            effectId: 'haptic.effect.hard',
+                            count: 1,
+                            intensity: 100,
+                        }, {
+                            usage: 'unknown'
+                        }, (error: BusinessError) => {
+                            if (error) Logger.error(this.LOG_TAG, `振动触发失败, 代码: ${error.code}, 错误信息: ${error.message}`);
+                            else Logger.info(this.LOG_TAG, '成功触发振动');
+                        });
+                    } catch (error) {
+                        Logger.error(this.LOG_TAG, `振动发生未知错误, ${error}`);
+                    }
+                }
+            });
+        } catch (error) {
+            Logger.error(this.LOG_TAG, `振动发生未知错误, ${error}`);
+        }
     }
 
     // 获取时间（毫秒）
