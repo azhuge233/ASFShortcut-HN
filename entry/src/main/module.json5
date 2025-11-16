@@ -51,6 +51,10 @@
       {
         "name" : "ohos.permission.INTERNET",
         "reason": "$string:NetworkPermissionReason"
+      },
+      {
+        "name" : "ohos.permission.VIBRATE",
+        "reason": "$string:VibratePermissionReason"
       }
     ]
   }

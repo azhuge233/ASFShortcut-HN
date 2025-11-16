@@ -17,6 +17,10 @@
       "value": "Send ASF commands"
     },
     {
+      "name": "VibratePermissionReason",
+      "value": "Vibrate after pressing run button"
+    },
+    {
       "name": "SettingsPage_Title",
       "value": "ASF Settings"
     },
