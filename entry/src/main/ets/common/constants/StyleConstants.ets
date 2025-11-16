@@ -37,7 +37,7 @@ class StyleConstants {
     public DIALOG_CONTENT_FONT_SIZE = 18;
 
     public PROGRESS_STROKE_WIDTH = 18;
-    public PROGRESS_WIDTH = 22;
+    public PROGRESS_WIDTH = 72;
     public PROGRESS_TEXT_FONT_SIZE = 17;
     public BLUE_LEVEL = 10;
 
