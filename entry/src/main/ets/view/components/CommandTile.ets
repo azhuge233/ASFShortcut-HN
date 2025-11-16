@@ -1,6 +1,7 @@
 import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
 import Logger from '../../common/utils/Logger';
 import StyleConstants from '../../common/constants/StyleConstants';
+import CommonUtils from '../../common/utils/CommonUtils';
 
 @ComponentV2
 export struct CommandListItem {
@@ -119,6 +120,7 @@ export struct CommandListItem {
             Column({ space: StyleConstants.COMMAND_TILE_COL_SPACE }) {
                 Button($r("app.string.CommandTile_Button_Label"))
                     .onClick(() => {
+                        CommonUtils.vibrate();
                         this.runCommand();
                     })
             }
