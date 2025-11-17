@@ -43,14 +43,12 @@ export class ASF {
 
     // 发送正常指令
     async send(command: string): Promise<http.HttpResponse> {
-        this.setHttpRequestOptions(this.asfPassword, command);
-        return await this.sendRequest(this.address);
+        return await this.sendRequest(this.address, this.asfPassword, command);
     }
 
     // 发送测试指令
-    async sendTest(address: string, password: string, command: string) {
-        this.setHttpRequestOptions(password, command);
-        return await this.sendRequest(this.getFinalAddress(address));
+    async sendTest(address: string, password: string, command: string): Promise<http.HttpResponse> {
+        return await this.sendRequest(this.getFinalAddress(address), password, command);
     }
 
     // 删除地址末尾 '/'
@@ -75,11 +73,15 @@ export class ASF {
     }
 
     // 发送请求
-    private async sendRequest(address: string) {
+    private async sendRequest(address: string, password: string, command: string) {
         let httpRequest = http.createHttp();
 
+        this.setHttpRequestOptions(password, command);
+
         try {
-            Logger.debug(this.LOG_TAG, `服务器地址：${address}`);
+            Logger.debug(this.LOG_TAG, `ASF 服务器地址：${address}`);
+            Logger.debug(this.LOG_TAG, `ASF 密码：${password}`);
+            Logger.debug(this.LOG_TAG, `ASF 指令：${command}`);
 
             const response = await httpRequest.request(address, this.httpRequestOptions);
 
