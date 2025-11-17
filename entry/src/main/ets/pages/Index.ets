@@ -121,12 +121,13 @@ struct Index {
 
     // 处理 ASF 响应
     private handleResponse(resp: http.HttpResponse) {
+        const result: Record<string, string> = JSON.parse(resp.result.toString());
+
         if (resp.responseCode == 200) {
-            const result: Record<string, string> = JSON.parse(resp.result.toString());
             Logger.debug(this.LOG_TAG, `${result["Result"]}`)
             this.resultPopup(result["Result"]);
         } else {
-            const result: Record<string, string> = JSON.parse(resp.result.toString());
+            Logger.debug(this.LOG_TAG, `${result["Message"]}`)
             CommonUtils.alert(`${result["Message"]} 响应码: ${resp.responseCode}`, this.promptAction);
         }
     }
