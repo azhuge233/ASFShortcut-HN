@@ -39,6 +39,14 @@
     {
       "name": "more_confirm_button_color",
       "value": "#000000"
+    },
+    {
+      "name": "index_tab_label_unselected",
+      "value": "#99182431"
+    },
+    {
+      "name": "index_tab_label_selected",
+      "value": "#FF007DFF"
     }
   ]
 }
