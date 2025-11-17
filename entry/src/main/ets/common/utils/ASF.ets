@@ -50,7 +50,7 @@ export class ASF {
     // 发送测试指令
     async sendTest(address: string, password: string, command: string) {
         this.setHttpRequestOptions(password, command);
-        return await this.sendRequest(address);
+        return await this.sendRequest(this.getFinalAddress(address));
     }
 
     // 删除地址末尾 '/'
@@ -81,7 +81,7 @@ export class ASF {
         try {
             Logger.debug(this.LOG_TAG, `服务器地址：${address}`);
 
-            const response = await httpRequest.request(this.address, this.httpRequestOptions);
+            const response = await httpRequest.request(address, this.httpRequestOptions);
 
             Logger.debug(this.LOG_TAG, `响应代码：${response.responseCode}`);
             // Logger.debug(this.LOG_TAG, `Result Type: ${JSON.stringify(response.resultType)}`);
@@ -90,8 +90,8 @@ export class ASF {
 
             return response;
         } catch (err) {
-            Logger.error(this.LOG_TAG, `发送请求失败, ${err}`);
-            throw new Error(`发送请求失败, ${JSON.stringify(err)}`);
+            Logger.error(this.LOG_TAG, `发送请求失败, ${JSON.stringify(err)}`);
+            throw err as Error;
         } finally {
             this.httpRequestOptions.extraData = this.defaultDataCommand;
             httpRequest.destroy();
