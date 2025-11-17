@@ -140,7 +140,8 @@ struct Index {
 
             this.handleResponse(resp);
         } catch (err) {
-            Logger.error(this.LOG_TAG, `<sendCommand> error: ${err}`)
+            Logger.error(this.LOG_TAG, `<sendCommand> 错误`);
+            CommonUtils.alert(JSON.stringify(err), this.promptAction);
         } finally {
             this.isProcessing = false;
         }
@@ -154,7 +155,8 @@ struct Index {
 
             this.handleResponse(resp);
         } catch (err) {
-            Logger.error(this.LOG_TAG, `<sendCommand> error: ${err}`)
+            Logger.error(this.LOG_TAG, `<sendTestCommand> 错误`);
+            CommonUtils.alert(JSON.stringify(err), this.promptAction);
         } finally {
             this.isProcessing = false;
         }
