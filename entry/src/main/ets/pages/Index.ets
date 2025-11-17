@@ -47,6 +47,36 @@ struct Index {
         this.safeCloseSwipeActions();
     }
 
+    // 发送指令
+    async sendCommand(command: string): Promise<void> {
+        try {
+            const resp = await this.asf.send(command);
+            this.isProcessing = false;
+
+            this.handleResponse(resp);
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `<sendCommand> 错误`);
+            CommonUtils.alert(JSON.stringify(err), this.promptAction);
+        } finally {
+            this.isProcessing = false;
+        }
+    }
+
+    // 发送测试指令
+    async sendTestCommand(address: string, password: string, command: string): Promise<void> {
+        try {
+            const resp = await this.asf.sendTest(address, password, command);
+            this.isProcessing = false;
+
+            this.handleResponse(resp);
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `<sendTestCommand> 错误`);
+            CommonUtils.alert(JSON.stringify(err), this.promptAction);
+        } finally {
+            this.isProcessing = false;
+        }
+    }
+
     // 执行指令后，显示结果的对话框
     private resultPopup(message: string) {
         this.pageStack.pushPath({
@@ -131,36 +161,6 @@ struct Index {
         } else {
             Logger.debug(this.LOG_TAG, `${result["Message"]}`)
             CommonUtils.alert(`${result["Message"]} 响应码: ${resp.responseCode}`, this.promptAction);
-        }
-    }
-
-    // 发送指令
-    async sendCommand(command: string): Promise<void> {
-        try {
-            const resp = await this.asf.send(command);
-            this.isProcessing = false;
-
-            this.handleResponse(resp);
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `<sendCommand> 错误`);
-            CommonUtils.alert(JSON.stringify(err), this.promptAction);
-        } finally {
-            this.isProcessing = false;
-        }
-    }
-
-    // 发送测试指令
-    async sendTestCommand(address: string, password: string, command: string): Promise<void> {
-        try {
-            const resp = await this.asf.sendTest(address, password, command);
-            this.isProcessing = false;
-
-            this.handleResponse(resp);
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `<sendTestCommand> 错误`);
-            CommonUtils.alert(JSON.stringify(err), this.promptAction);
-        } finally {
-            this.isProcessing = false;
         }
     }
 
