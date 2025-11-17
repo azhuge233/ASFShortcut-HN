@@ -295,6 +295,46 @@
     {
       "name": "More_Import_Confirm_Content",
       "value": "This action will:\n• Clear all current commands and restore them from backup\n• Restore ASF settings from backup\n\nContinue?"
+    },
+    {
+      "name": "LiveTest_Notice_Title",
+      "value": "Test Page Instructions"
+    },
+    {
+      "name": "LiveTest_Notice_Content",
+      "value": "This page is for testing ASF server connections and will ignore the saved server settings in the app. Please enter the server address, password, and command you want to test here."
+    },
+    {
+      "name": "LiveTest_Address_Label",
+      "value": "Server Address"
+    },
+    {
+      "name": "LiveTest_Address_Input_Placeholder",
+      "value": "Enter server address"
+    },
+    {
+      "name": "LiveTest_Password_Label",
+      "value": "ASF Password"
+    },
+    {
+      "name": "LiveTest_Password_Input_Placeholder",
+      "value": "Enter ASF password"
+    },
+    {
+      "name": "LiveTest_Command_Label",
+      "value": "Test Command"
+    },
+    {
+      "name": "LiveTest_Command_Input_Placeholder",
+      "value": "Enter ASF command to test"
+    },
+    {
+      "name": "LiveTest_Send_Button_Label",
+      "value": "Send Test Command"
+    },
+    {
+      "name": "LiveTest_Processing",
+      "value": "Testing command execution..."
     }
   ]
 }

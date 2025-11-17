@@ -7,6 +7,7 @@ import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
 import { CommandListItem } from '../view/components/CommandTile';
 import StyleConstants from '../common/constants/StyleConstants';
 import CommonUtils from '../common/utils/CommonUtils';
+import http from '@ohos.net.http';
 
 @Entry
 @ComponentV2
@@ -15,11 +16,16 @@ struct Index {
 
     @Local listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
 
+    @Local currentIndex: number = 0;
     @Local showSetupDialog: boolean = false;
     @Local private isProcessing: boolean = false;
 
     @Local currentAddress: string = '';
     @Local currentASFPassword: string = '';
+
+    @Local testAddress: string = '';
+    @Local testPassword: string = '';
+    @Local testCommand: string = '';
 
     private uiContext = this.getUIContext();
     private promptAction = this.uiContext.getPromptAction();
@@ -76,7 +82,7 @@ struct Index {
     }
 
     // 安全关闭左滑菜单
-    // 防止列表没有条目时闪退、报错
+    // 防止列表没有条目时闪退
     private safeCloseSwipeActions(): void {
         try {
             if (this.listViewModel.commandEntries.length > 0) {
@@ -87,9 +93,22 @@ struct Index {
         }
     }
 
+    // 从数据库加载设置条目
+    private async loadSettings() {
+        this.currentAddress = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address);
+        this.currentASFPassword = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password);
+    }
+
+    // 初始化 ASF 服务
+    // 设置服务器地址和 ASF 密码
+    private initASF() {
+        this.asf.setAddress(this.currentAddress);
+        this.asf.setASFPassword(this.currentASFPassword)
+    }
+
     // 检查数据库是否存在设置
     // 并初始化 ASF 的服务器地址和密码
-    async checkSettingsAndInit(): Promise<void> {
+    private async checkSettingsAndInit(): Promise<void> {
         const isComplete = await this.db.areSettingsComplete();
         if (!isComplete) this.showSetupDialog = true;
         else {
@@ -99,40 +118,39 @@ struct Index {
         }
     }
 
-    // 从数据库加载设置条目
-    async loadSettings() {
-        this.currentAddress = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address);
-        this.currentASFPassword = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password);
-    }
-
-    // 初始化 ASF 服务
-    initASF() {
-        this.asf.setAddress(this.currentAddress);
-        this.asf.setASFPassword(this.currentASFPassword)
-    }
-
-    // debug
-    // 删除数据库内 ASF 设置条目
-    // 重置设置状态
-    async resetSettings(): Promise<void> {
-        await this.db.clearTableSettings();
-        this.showSetupDialog = true;
+    // 处理 ASF 响应
+    private handleResponse(resp: http.HttpResponse) {
+        if (resp.responseCode == 200) {
+            const result: Record<string, string> = JSON.parse(resp.result.toString());
+            Logger.debug(this.LOG_TAG, `${result["Result"]}`)
+            this.resultPopup(result["Result"]);
+        } else {
+            const result: Record<string, string> = JSON.parse(resp.result.toString());
+            CommonUtils.alert(`${result["Message"]} 响应码: ${resp.responseCode}`, this.promptAction);
+        }
     }
 
     // 发送指令
     async sendCommand(command: string): Promise<void> {
         try {
-            const resp = await this.asf?.send(command);
+            const resp = await this.asf.send(command);
             this.isProcessing = false;
 
-            if (resp.responseCode == 200) {
-                const result: Record<string, string> = JSON.parse(resp.result.toString());
-                Logger.debug(this.LOG_TAG, `${result["Result"]}`)
-                this.resultPopup(result["Result"]);
-            } else {
-                const result: Record<string, string> = JSON.parse(resp.result.toString());
-                CommonUtils.alert(`${result["Message"]} 响应码: ${resp.responseCode}`, this.promptAction);
-            }
+            this.handleResponse(resp);
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `<sendCommand> error: ${err}`)
+        } finally {
+            this.isProcessing = false;
+        }
+    }
+
+    // 发送测试指令
+    async sendTestCommand(address: string, password: string, command: string): Promise<void> {
+        try {
+            const resp = await this.asf.sendTest(address, password, command);
+            this.isProcessing = false;
+
+            this.handleResponse(resp);
         } catch (err) {
             Logger.error(this.LOG_TAG, `<sendCommand> error: ${err}`)
         } finally {
@@ -263,17 +281,33 @@ struct Index {
             .width(StyleConstants.FULL_PERCENT)
             .height(StyleConstants.FULL_PERCENT)
             .justifyContent(FlexAlign.Center)
-            .onClick(() => {
-            })
+            .onClick(() => {})
         }
-        .onClick(() => {
-        })
+        .onClick(() => {})
         .onAppear(() => {
             Logger.debug(this.LOG_TAG, "Setup stack loaded!");
         })
     }
 
-    // 主要界面
+    // 构建底部导航栏标签
+    @Builder
+    TabBuilder(index: number, normalIcon: Resource, selectedIcon: Resource, text: string) {
+        Column() {
+            Image(this.currentIndex === index ? selectedIcon : normalIcon)
+                .width(StyleConstants.INDEX_TAB_ICON_SIZE)
+                .height(StyleConstants.INDEX_TAB_ICON_SIZE)
+                .opacity(this.currentIndex === index ? 1 : 0.6)
+
+            Text(text)
+                .fontSize(StyleConstants.INDEX_TAB_LABEL_FONT_SIZE)
+                .fontColor(this.currentIndex === index ? $r("app.color.index_tab_label_selected") : $r("app.color.index_tab_label_unselected"))
+        }
+        .width(StyleConstants.FULL_PERCENT)
+        .height(StyleConstants.INDEX_TAB_HEIGHT)
+        .justifyContent(FlexAlign.Center)
+    }
+
+    // 主页
     @Builder
     MainContent() {
         Column() {
@@ -331,11 +365,162 @@ struct Index {
         .justifyContent(FlexAlign.Center)
     }
 
+    // 测试页
+    @Builder
+    LiveTestContent() {
+        Scroll() {
+            Column() {
+                // 提示信息
+                Column() {
+                    Text($r("app.string.LiveTest_Notice_Title"))
+                        .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE)
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor(Color.Red)
+                        .margin({ bottom: StyleConstants.MARGIN_TEN })
+
+                    Text($r("app.string.LiveTest_Notice_Content"))
+                        .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE - 2)
+                        .fontColor(Color.Gray)
+                        .textAlign(TextAlign.Start)
+                }
+                .width(StyleConstants.NINETY_PERCENT)
+                .padding(StyleConstants.PADDING_TEN)
+                .backgroundColor($r("app.color.index_test_page_notice_background"))
+                .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
+                .margin({ bottom: StyleConstants.MARGIN_TEN })
+
+                // 服务器地址输入
+                Text($r("app.string.LiveTest_Address_Label"))
+                    .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE)
+                    .alignSelf(ItemAlign.Start)
+                    .margin({
+                        left: StyleConstants.FIVE_PERCENT,
+                        bottom: StyleConstants.MARGIN_TEN
+                    })
+
+                Row() {
+                    TextInput({
+                        text: this.testAddress,
+                        placeholder: $r("app.string.LiveTest_Address_Input_Placeholder")
+                    })
+                        .layoutWeight(1)
+                        .border({
+                            width: StyleConstants.INPUT_BORDER_WIDTH,
+                            color: Color.Gray
+                        })
+                        .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
+                        .padding(StyleConstants.PADDING_TEN)
+                        .onChange((value: string) => {
+                            this.testAddress = value;
+                        })
+
+                    Text("/Api/Command")
+                        .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE - 2)
+                        .margin({ left: StyleConstants.MARGIN_TEN })
+                }
+                .width(StyleConstants.NINETY_PERCENT)
+                .margin({ bottom: StyleConstants.MARGIN_TEN })
+
+                // 密码输入
+                Text($r("app.string.LiveTest_Password_Label"))
+                    .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE)
+                    .alignSelf(ItemAlign.Start)
+                    .margin({
+                        left: StyleConstants.FIVE_PERCENT,
+                        bottom: StyleConstants.MARGIN_TEN
+                    })
+
+                TextInput({
+                    text: this.testPassword,
+                    placeholder: $r("app.string.LiveTest_Password_Input_Placeholder")
+                })
+                    .type(InputType.Password)
+                    .width(StyleConstants.NINETY_PERCENT)
+                    .border({
+                        width: StyleConstants.INPUT_BORDER_WIDTH,
+                        color: Color.Gray
+                    })
+                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
+                    .padding(StyleConstants.PADDING_TEN)
+                    .onChange((value: string) => {
+                        this.testPassword = value;
+                    })
+                    .margin({ bottom: StyleConstants.MARGIN_TEN })
+
+                // 指令输入
+                Text($r("app.string.LiveTest_Command_Label"))
+                    .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE)
+                    .alignSelf(ItemAlign.Start)
+                    .margin({
+                        left: StyleConstants.FIVE_PERCENT,
+                        bottom: StyleConstants.MARGIN_TEN
+                    })
+
+                TextInput({
+                    text: this.testCommand,
+                    placeholder: $r("app.string.LiveTest_Command_Input_Placeholder")
+                })
+                    .width(StyleConstants.NINETY_PERCENT)
+                    .border({
+                        width: StyleConstants.INPUT_BORDER_WIDTH,
+                        color: Color.Gray
+                    })
+                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
+                    .padding(StyleConstants.PADDING_TEN)
+                    .onChange((value: string) => {
+                        this.testCommand = value;
+                    })
+                    .margin({ bottom: StyleConstants.MARGIN_FORTY })
+
+                // 发送按钮
+                Button($r("app.string.LiveTest_Send_Button_Label"), { type: ButtonType.Capsule })
+                    .width(StyleConstants.EIGHTY_PERCENT)
+                    .fontColor(Color.White)
+                    .enabled(!this.isProcessing &&
+                        this.testAddress.trim() !== '' &&
+                        this.testPassword.trim() !== '' &&
+                        this.testCommand.trim() !== '')
+                    .onClick(async () => {
+                        this.isProcessing = true;
+                        CommonUtils.vibrate();
+                        await this.sendTestCommand(this.testAddress, this.testPassword, this.testCommand);
+                    })
+                    .margin({ bottom: StyleConstants.MARGIN_TWENTY })
+            }
+            .width(StyleConstants.FULL_PERCENT)
+            .height(StyleConstants.FULL_PERCENT)
+            .justifyContent(FlexAlign.Start)
+            .padding({
+                top: StyleConstants.MARGIN_THIRTY,
+                bottom: StyleConstants.MARGIN_THIRTY
+            })
+        }
+        .scrollable(ScrollDirection.Vertical)
+        .scrollBar(BarState.Auto)
+    }
+
     build() {
         Stack() {
             Navigation(this.pageStack) {
                 Stack({ alignContent: Alignment.Top }) {
-                    if(!this.showSetupDialog) this.MainContent();
+                    Tabs({ barPosition: BarPosition.End }) {
+                        TabContent() {
+                            if(!this.showSetupDialog) this.MainContent();
+                        }
+                        .tabBar(this.TabBuilder(
+                            0, $r("app.media.house"), $r("app.media.house_fill"), "主页"
+                        ))
+
+                        TabContent() {
+                            if(!this.showSetupDialog) this.LiveTestContent();
+                        }
+                        .tabBar(this.TabBuilder(
+                            1, $r("app.media.worldclock"), $r("app.media.worldclock_fill"), "测试"
+                        ))
+                    }
+                    .onChange((index: number) => {
+                        this.currentIndex = index;
+                    })
                 }
             }
             .menus([

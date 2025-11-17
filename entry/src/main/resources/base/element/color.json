@@ -47,6 +47,10 @@
     {
       "name": "index_tab_label_selected",
       "value": "#FF007DFF"
+    },
+    {
+      "name": "index_test_page_notice_background",
+      "value": "#F5F5F5"
     }
   ]
 }

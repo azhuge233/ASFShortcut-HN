@@ -295,6 +295,46 @@
     {
       "name": "More_Import_Confirm_Content",
       "value": "此操作会：\n• 清除当前所有指令并还原为备份文件中的内容\n• ASF设置会被还原为备份文件中的内容\n\n确认继续？"
+    },
+    {
+      "name": "LiveTest_Notice_Title",
+      "value": "测试页面说明"
+    },
+    {
+      "name": "LiveTest_Notice_Content",
+      "value": "此页面用于测试ASF服务器连接，将忽略应用中已保存的服务器设置。请在此输入要测试的服务器地址、密码和指令。"
+    },
+    {
+      "name": "LiveTest_Address_Label",
+      "value": "服务器地址"
+    },
+    {
+      "name": "LiveTest_Address_Input_Placeholder",
+      "value": "请输入服务器地址"
+    },
+    {
+      "name": "LiveTest_Password_Label",
+      "value": "ASF密码"
+    },
+    {
+      "name": "LiveTest_Password_Input_Placeholder",
+      "value": "请输入ASF密码"
+    },
+    {
+      "name": "LiveTest_Command_Label",
+      "value": "测试指令"
+    },
+    {
+      "name": "LiveTest_Command_Input_Placeholder",
+      "value": "请输入要测试的ASF指令"
+    },
+    {
+      "name": "LiveTest_Send_Button_Label",
+      "value": "发送测试指令"
+    },
+    {
+      "name": "LiveTest_Processing",
+      "value": "测试指令执行中..."
     }
   ]
 }
