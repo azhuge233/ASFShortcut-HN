@@ -36,6 +36,9 @@ class StyleConstants {
     public DIALOG_TITLE_FONT_SIZE = 23;
     public DIALOG_CONTENT_FONT_SIZE = 18;
 
+    public INPUT_BORDER_WIDTH = 1;
+    public INPUT_BORDER_RADIUS = 8;
+
     public PROGRESS_STROKE_WIDTH = 18;
     public PROGRESS_WIDTH = 72;
     public PROGRESS_TEXT_FONT_SIZE = 17;
@@ -47,14 +50,13 @@ class StyleConstants {
     public COMMAND_TILE_COMMAND_FONT_SIZE = 13;
     public COMMAND_TILE_LABEL_FONT_SIZE = 11;
 
-    public SETTINGS_PAGE_INPUT_BORDER_WIDTH = 1;
-    public SETTINGS_PAGE_INPUT_BORDER_RADIUS = 8;
-    public SETTINGS_PAGE_INPUT_HEIGHT = 50;
     public SETTINGS_PAGE_TITLE_FONT_SIZE = 24;
     public SETTINGS_PAGE_LABEL_FONT_SIZE = 17;
 
     public INDEX_SWIPE_BUTTON_SIZE = 40;
-
+    public INDEX_TAB_ICON_SIZE = 30;
+    public INDEX_TAB_HEIGHT = 40;
+    public INDEX_TAB_LABEL_FONT_SIZE = 12;
     public INDEX_SETUP_FONT_SIZE = 20;
     public INDEX_NO_ENTRY_TITLE_FONT_SIZE = 18;
     public INDEX_NO_ENTRY_SECOND_TITLE_FONT_SIZE = 14;
@@ -63,21 +65,20 @@ class StyleConstants {
     public EDIT_PAGE_BLANK_COL_SPACE = 20;
     public EDIT_PAGE_OPTION_COL_SPACE = 15;
     public EDIT_PAGE_ROW_SPACE = 10;
-    public EDIT_PAGE_BORDER_WIDTH = 1;
-    public EDIT_PAGE_BORDER_RADIUS = 8;
     public EDIT_PAGE_LABEL_FONT_SIZE = 18;
     public EDIT_PAGE_CHECK_LABEL_FONT_SIZE = 16;
 
     public ADD_COMMAND_COL_SPACE = 20;
     public ADD_COMMAND_OPTION_COL_SPACE = 15;
     public ADD_COMMAND_ROW_SPACE = 10;
-    public ADD_COMMAND_BORDER_WIDTH = 1;
-    public ADD_COMMAND_BORDER_RADIUS = 8;
     public ADD_COMMAND_LABEL_FONT_SIZE = 18;
     public ADD_COMMAND_CHECK_LABEL_FONT_SIZE = 16;
 
     public MORE_MENU_ITEM_ICON_SIZE = 28;
     public MORE_MENU_ITEM_FONT_SIZE = 17;
+
+    public LIVE_TEST_LABEL_FONT_SIZE = 17;
+    public LIVE_TEST_INPUT_BORDER_WIDTH = 1;
 }
 
 export default new StyleConstants();

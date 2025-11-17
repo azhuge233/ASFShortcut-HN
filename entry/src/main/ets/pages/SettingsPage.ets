@@ -62,9 +62,8 @@ struct SettingsPage {
 
                 TextInput({ text: this.address, placeholder: $r("app.string.SettingsPage_Address_Input_Placeholder") })
                     .width(StyleConstants.NINETY_PERCENT)
-                    .height(StyleConstants.SETTINGS_PAGE_INPUT_HEIGHT)
-                    .border({ width: StyleConstants.SETTINGS_PAGE_INPUT_BORDER_WIDTH, color: Color.Gray })
-                    .borderRadius(StyleConstants.SETTINGS_PAGE_INPUT_BORDER_RADIUS)
+                    .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
+                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
                     .padding(StyleConstants.PADDING_TEN)
                     .onChange((value: string) => {
                         this.address = value;
@@ -79,9 +78,8 @@ struct SettingsPage {
                 TextInput({ text: this.asfPassword, placeholder: $r("app.string.SettingsPage_Password_Input_Placeholder") })
                     .type(InputType.Password)
                     .width(StyleConstants.NINETY_PERCENT)
-                    .height(StyleConstants.SETTINGS_PAGE_INPUT_HEIGHT)
-                    .border({ width: StyleConstants.SETTINGS_PAGE_INPUT_BORDER_WIDTH, color: Color.Gray })
-                    .borderRadius(StyleConstants.SETTINGS_PAGE_INPUT_BORDER_RADIUS)
+                    .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
+                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
                     .padding(StyleConstants.PADDING_TEN)
                     .onChange((value: string) => {
                         this.asfPassword = value;

@@ -65,8 +65,8 @@ struct AddCommand {
                     })
                     .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
                     .padding(StyleConstants.PADDING_TEN)
-                    .border({ width: StyleConstants.ADD_COMMAND_BORDER_WIDTH, color: Color.Gray })
-                    .borderRadius(StyleConstants.ADD_COMMAND_BORDER_RADIUS)
+                    .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
+                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
 
                 // 命令输入
                 Text($r("app.string.AddCommand_Command_Label"))
@@ -79,8 +79,8 @@ struct AddCommand {
                     })
                     .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
                     .padding(StyleConstants.PADDING_TEN)
-                    .border({ width: StyleConstants.ADD_COMMAND_BORDER_WIDTH, color: Color.Gray })
-                    .borderRadius(StyleConstants.ADD_COMMAND_BORDER_RADIUS)
+                    .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
+                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
 
                 // 选项区域 - 使用 Toggle 组件
                 Column({ space: StyleConstants.ADD_COMMAND_OPTION_COL_SPACE }) {
@@ -116,8 +116,8 @@ struct AddCommand {
                 .alignSelf(ItemAlign.Start)
                 .margin({ left: StyleConstants.MARGIN_TWENTY, top: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
                 .padding(StyleConstants.PADDING_FIFTEEN)
-                .border({ width: StyleConstants.ADD_COMMAND_BORDER_WIDTH, color: Color.Gray })
-                .borderRadius(StyleConstants.ADD_COMMAND_BORDER_RADIUS)
+                .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
+                .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
                 .width(StyleConstants.NINETY_PERCENT)
 
                 // 按钮区域
