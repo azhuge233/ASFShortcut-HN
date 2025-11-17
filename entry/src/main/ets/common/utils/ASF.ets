@@ -1,4 +1,5 @@
 import { http } from '@kit.NetworkKit';
+import CommonUtils from './CommonUtils';
 
 import Logger from './Logger';
 
@@ -51,14 +52,9 @@ export class ASF {
         return await this.sendRequest(this.getFinalAddress(address), password, command);
     }
 
-    // 删除地址末尾 '/'
-    private trimAddress(address: string) {
-        return address.slice(-1) == "/" ? address.slice(0, -1) : address;
-    }
-
     // 返回拼接 API endpoint 后的最终地址
     private getFinalAddress(address: string) {
-        return `${this.trimAddress(address)}${this.apiEndpoint}`;
+        return `${CommonUtils.trimAddress(address)}${this.apiEndpoint}`;
     }
 
     // 发送请求前设置请求选项

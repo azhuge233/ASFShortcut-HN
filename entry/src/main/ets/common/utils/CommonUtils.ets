@@ -38,6 +38,11 @@ class CommonUtils {
             `从 [${popInfo.info.name}] 页面返回, 携带参数: ${JSON.stringify(popInfo.result)}`);
     }
 
+    // 删除服务器地址末尾的 '/'
+    public trimAddress(address: string) {
+        return address.replace(/\/+$/, "");
+    }
+
     // 设备振动
     public vibrate() {
         try {

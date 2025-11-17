@@ -39,7 +39,7 @@ struct SettingsPage {
     async saveSettings(): Promise<boolean> {
         this.isSaving = true;
 
-        const success1 = await this.db.saveSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address, this.address);
+        const success1 = await this.db.saveSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address, CommonUtils.trimAddress(this.address));
         const success2 = await this.db.saveSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password, this.asfPassword);
 
         this.isSaving = false;
