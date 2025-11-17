@@ -1,3 +1,5 @@
+import http from '@ohos.net.http';
+
 import Logger from '../common/utils/Logger';
 import { ASF } from '../common/utils/ASF';
 import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
@@ -7,7 +9,6 @@ import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
 import { CommandListItem } from '../view/components/CommandTile';
 import StyleConstants from '../common/constants/StyleConstants';
 import CommonUtils from '../common/utils/CommonUtils';
-import http from '@ohos.net.http';
 
 @Entry
 @ComponentV2
