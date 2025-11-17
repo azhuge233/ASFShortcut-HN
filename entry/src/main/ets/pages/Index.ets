@@ -120,7 +120,9 @@ struct Index {
     }
 
     // 处理 ASF 响应
-    private handleResponse(resp: http.HttpResponse) {
+    private handleResponse(resp: http.HttpResponse | undefined) {
+        if(resp === undefined) throw new Error(`空响应`);
+
         const result: Record<string, string> = JSON.parse(resp.result.toString());
 
         if (resp.responseCode == 200) {
