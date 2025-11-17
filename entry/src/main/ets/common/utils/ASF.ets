@@ -23,8 +23,8 @@ export class ASF {
         priority: 1, // 可选，默认为1。
         // 开发者根据自身业务需要添加header字段。
         header: {}, // 每次请求动态设置
-        readTimeout: 60000, // 可选，默认为60000ms。
-        connectTimeout: 60000, // 可选，默认为60000ms。
+        readTimeout: 30000, // 可选，默认为60000ms。
+        connectTimeout: 30000, // 可选，默认为60000ms。
         usingProtocol: http.HttpProtocol.HTTP2, // 可选，协议类型默认值由系统自动指定。
         usingProxy: false, //可选，默认不使用网络代理，自API 10开始支持该属性。
     };
