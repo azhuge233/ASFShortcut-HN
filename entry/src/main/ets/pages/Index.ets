@@ -55,8 +55,8 @@ struct Index {
 
             this.handleResponse(resp);
         } catch (err) {
-            Logger.error(this.LOG_TAG, `<sendCommand> 错误`);
-            CommonUtils.alert(JSON.stringify(err), this.promptAction);
+            Logger.error(this.LOG_TAG, `<sendCommand> 错误, ${(err as Error).message}`);
+            CommonUtils.alert(`错误: ${(err as Error).message}`, this.promptAction);
         } finally {
             this.isProcessing = false;
         }
@@ -70,8 +70,8 @@ struct Index {
 
             this.handleResponse(resp);
         } catch (err) {
-            Logger.error(this.LOG_TAG, `<sendTestCommand> 错误`);
-            CommonUtils.alert(JSON.stringify(err), this.promptAction);
+            Logger.error(this.LOG_TAG, `<sendTestCommand> 错误, ${(err as Error).message}`);
+            CommonUtils.alert(`错误: ${(err as Error).message}`, this.promptAction);
         } finally {
             this.isProcessing = false;
         }
@@ -151,16 +151,20 @@ struct Index {
 
     // 处理 ASF 响应
     private handleResponse(resp: http.HttpResponse | undefined) {
-        if(resp === undefined) throw new Error(`空响应`);
+        if (resp === undefined) throw new Error(`空响应`);
+        try {
+            const result: Record<string, string> = JSON.parse(resp.result.toString());
 
-        const result: Record<string, string> = JSON.parse(resp.result.toString());
-
-        if (resp.responseCode == 200) {
-            Logger.debug(this.LOG_TAG, `${result["Result"]}`)
-            this.resultPopup(result["Result"]);
-        } else {
-            Logger.debug(this.LOG_TAG, `${result["Message"]}`)
-            CommonUtils.alert(`${result["Message"]} 响应码: ${resp.responseCode}`, this.promptAction);
+            if (resp.responseCode == 200) {
+                Logger.debug(this.LOG_TAG, `${result["Result"]}`)
+                this.resultPopup(result["Result"]);
+            } else {
+                Logger.debug(this.LOG_TAG, `${result["Message"]}`)
+                CommonUtils.alert(`${result["Message"]} 响应码: ${resp.responseCode}`, this.promptAction);
+            }
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `<handleResponse> 错误`);
+            throw err as Error;
         }
     }
 
