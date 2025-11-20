@@ -244,6 +244,13 @@ struct MorePage {
                 }
                 .height(StyleConstants.FULL_PERCENT)
                 .width(StyleConstants.FULL_PERCENT)
+
+                Text($r("app.string.app_version"))
+                    .width(StyleConstants.FULL_PERCENT)
+                    .fontColor(Color.Grey)
+                    .fontSize(StyleConstants.MORE_MENU_VERSION_FONT_SIZE)
+                    .alignSelf(ItemAlign.End)
+                    .textAlign(TextAlign.Center)
             }
             .title($r("app.string.More_Title"))
             .height(StyleConstants.FULL_PERCENT)

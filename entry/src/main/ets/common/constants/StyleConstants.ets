@@ -76,6 +76,7 @@ class StyleConstants {
 
     public MORE_MENU_ITEM_ICON_SIZE = 28;
     public MORE_MENU_ITEM_FONT_SIZE = 17;
+    public MORE_MENU_VERSION_FONT_SIZE = 13;
 
     public LIVE_TEST_LABEL_FONT_SIZE = 17;
     public LIVE_TEST_INPUT_BORDER_WIDTH = 1;
