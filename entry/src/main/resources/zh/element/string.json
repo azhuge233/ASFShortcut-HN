@@ -222,7 +222,7 @@
     },
     {
       "name": "Selectable_Dialog_Label",
-      "value": "执行结果"
+      "value": "%s 执行结果"
     },
     {
       "name": "ID_Input_Dialog_Label",
@@ -339,6 +339,10 @@
     {
       "name": "LiveTest_Processing",
       "value": "测试指令执行中..."
+    },
+    {
+      "name": "LiveTest_Result_Title",
+      "value": "测试指令"
     }
   ]
 }

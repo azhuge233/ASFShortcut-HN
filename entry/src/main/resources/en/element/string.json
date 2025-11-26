@@ -222,7 +222,7 @@
     },
     {
       "name": "Selectable_Dialog_Label",
-      "value": "Result"
+      "value": "%s Result"
     },
     {
       "name": "ID_Input_Dialog_Label",
@@ -339,6 +339,10 @@
     {
       "name": "LiveTest_Processing",
       "value": "Testing command execution..."
+    },
+    {
+      "name": "LiveTest_Result_Title",
+      "value": "Test Command"
     }
   ]
 }

@@ -9,12 +9,13 @@ export function SelectableDialogBuilder() {
 export struct SelectableDialog {
     pathStack: NavPathStack = new NavPathStack();
 
+    @Local commandNickname: string = "";
     @Local message: string = "";
 
     build() {
         NavDestination() {
             Column() {
-                Text($r("app.string.Selectable_Dialog_Label"))
+                Text($r("app.string.Selectable_Dialog_Label", this.commandNickname))
                     .fontWeight(FontWeight.Bold)
                     .alignSelf(ItemAlign.Start)
                     .fontSize(StyleConstants.DIALOG_TITLE_FONT_SIZE)
@@ -59,7 +60,9 @@ export struct SelectableDialog {
         })
         .onReady((context) => {
             this.pathStack = context.pathStack;
-            this.message = context.pathInfo.param as string;
+            let params = context.pathInfo.param as string[];
+            this.commandNickname = params[0];
+            this.message = params[1];
         });
     }
 }

@@ -1,4 +1,5 @@
 import http from '@ohos.net.http';
+import { common } from '@kit.AbilityKit';
 
 import Logger from '../common/utils/Logger';
 import { ASF } from '../common/utils/ASF';
@@ -29,6 +30,7 @@ struct Index {
     @Local testCommand: string = '';
 
     private uiContext = this.getUIContext();
+    private context = this.uiContext.getHostContext() as common.UIAbilityContext;
     private promptAction = this.uiContext.getPromptAction();
 
     private scrollerForList: ListScroller = new ListScroller();
@@ -48,12 +50,12 @@ struct Index {
     }
 
     // 发送指令
-    async sendCommand(command: string): Promise<void> {
+    async sendCommand(nickname: string, command: string): Promise<void> {
         try {
             const resp = await this.asf.send(command);
             this.isProcessing = false;
 
-            this.handleResponse(resp);
+            this.handleResponse(nickname, resp);
         } catch (err) {
             Logger.error(this.LOG_TAG, `<sendCommand> 错误, ${(err as Error).message}`);
             CommonUtils.alert(`错误: ${(err as Error).message}`, this.promptAction);
@@ -68,7 +70,7 @@ struct Index {
             const resp = await this.asf.sendTest(address, password, command);
             this.isProcessing = false;
 
-            this.handleResponse(resp);
+            this.handleResponse(this.context.resourceManager.getStringSync($r("app.string.LiveTest_Result_Title").id), resp);
         } catch (err) {
             Logger.error(this.LOG_TAG, `<sendTestCommand> 错误, ${(err as Error).message}`);
             CommonUtils.alert(`错误: ${(err as Error).message}`, this.promptAction);
@@ -78,10 +80,10 @@ struct Index {
     }
 
     // 执行指令后，显示结果的对话框
-    private resultPopup(message: string) {
+    private resultPopup(commandNickname: string, message: string) {
         this.pageStack.pushPath({
             name: "SelectableDialog",
-            param: message,
+            param: [commandNickname, message],
             onPop: (popInfo) => {
                 CommonUtils.returnFromSubPage(popInfo);
             }
@@ -150,14 +152,14 @@ struct Index {
     }
 
     // 处理 ASF 响应
-    private handleResponse(resp: http.HttpResponse | undefined) {
+    private handleResponse(commandNickname: string, resp: http.HttpResponse | undefined) {
         if (resp === undefined) throw new Error(`空响应`);
         try {
             const result: Record<string, string> = JSON.parse(resp.result.toString());
 
             if (resp.responseCode == 200) {
                 Logger.debug(this.LOG_TAG, `${result["Result"]}`)
-                this.resultPopup(result["Result"]);
+                this.resultPopup(commandNickname, result["Result"]);
             } else {
                 Logger.debug(this.LOG_TAG, `${result["Message"]}`)
                 CommonUtils.alert(`${result["Message"]} 响应码: ${resp.responseCode}`, this.promptAction);
@@ -342,7 +344,7 @@ struct Index {
                                 item: item,
                                 onAccountInput: () => this.inputPopup("Account"),
                                 onIDInput: () => this.inputPopup("ID"),
-                                onSendCommand: (command: string) => this.sendCommand(command),
+                                onSendCommand: (command: string) => this.sendCommand(item.nickname ,command),
                                 onProcessingChange: (processing: boolean) => {
                                     this.isProcessing = processing;
                                 }
