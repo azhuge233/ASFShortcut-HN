@@ -197,8 +197,12 @@
       "value": "ASF Shortcut"
     },
     {
-      "name": "CommandTile_Button_Label",
+      "name": "CommandTile_Button_Label_Run",
       "value": "Run"
+    },
+    {
+      "name": "CommandTile_Button_Label_Running",
+      "value": "Running"
     },
     {
       "name": "CommandTile_Input_Required_Label",

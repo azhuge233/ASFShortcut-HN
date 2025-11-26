@@ -197,8 +197,12 @@
       "value": "ASF 快捷指令"
     },
     {
-      "name": "CommandTile_Button_Label",
+      "name": "CommandTile_Button_Label_Run",
       "value": "运行"
+    },
+    {
+      "name": "CommandTile_Button_Label_Running",
+      "value": "运行中"
     },
     {
       "name": "CommandTile_Input_Required_Label",
