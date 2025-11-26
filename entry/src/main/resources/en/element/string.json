@@ -197,6 +197,14 @@
       "value": "ASF Shortcut"
     },
     {
+      "name": "Index_Tab_Label_Home",
+      "value": "Commands"
+    },
+    {
+      "name": "Index_Tab_Label_Test",
+      "value": "ASF Test"
+    },
+    {
       "name": "CommandTile_Button_Label_Run",
       "value": "Run"
     },
