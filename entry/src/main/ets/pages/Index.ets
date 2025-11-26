@@ -520,14 +520,14 @@ struct Index {
                             if(!this.showSetupDialog) this.MainContent();
                         }
                         .tabBar(this.TabBuilder(
-                            0, $r("app.media.house"), $r("app.media.house_fill"), "主页"
+                            0, $r("app.media.doc_plaintext"), $r("app.media.doc_plaintext_fill"), $r("app.string.Index_Tab_Label_Home")
                         ))
 
                         TabContent() {
                             if(!this.showSetupDialog) this.LiveTestContent();
                         }
                         .tabBar(this.TabBuilder(
-                            1, $r("app.media.worldclock"), $r("app.media.worldclock_fill"), "测试"
+                            1, $r("app.media.worldclock"), $r("app.media.worldclock_fill"), $r("app.string.Index_Tab_Label_Test")
                         ))
                     }
                     .onChange((index: number) => {
