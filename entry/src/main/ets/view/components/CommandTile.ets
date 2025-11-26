@@ -66,7 +66,7 @@ export struct CommandListItem {
     @Builder
     RunningBlock() {
         Column()
-            .height(StyleConstants.FIFTEEN_PERCENT)
+            .height(StyleConstants.THIRTEEN_PERCENT)
             .width(StyleConstants.FULL_PERCENT)
             .backgroundColor($r("app.color.transparent"))
             .blur(StyleConstants.BLUE_LEVEL)

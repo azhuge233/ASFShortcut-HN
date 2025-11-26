@@ -11,6 +11,7 @@ class StyleConstants {
     public TWENTY_FIVE_PERCENT = '25%';
     public TWENTY_PERCENT = '20%';
     public FIFTEEN_PERCENT = '15%';
+    public THIRTEEN_PERCENT = '13%';
     public TEN_PERCENT = '10%';
     public FIVE_PERCENT = '5%';
     public FOUR_PERCENT = '4%';
