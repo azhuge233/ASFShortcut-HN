@@ -18,9 +18,14 @@ struct Index {
 
     @Local listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
 
+    // 正在显示的底部导航栏下标，控制导航栏文字、图标的样式
     @Local currentIndex: number = 0;
+    // 用于控制初始化覆盖层的显示状态
     @Local showSetupDialog: boolean = false;
+    // 指令执行状态，用于控制测试指令覆盖层的显示状态
     @Local private isProcessing: boolean = false;
+    // 正在执行的指令ID集合，用于控制对应条目的左滑操作：.enabled(true/false)
+    @Local private runningCommandIDs: Set<number> = new Set<number>();
 
     @Local currentAddress: string = '';
     @Local currentASFPassword: string = '';
@@ -303,7 +308,7 @@ struct Index {
 
     // 构建底部导航栏标签
     @Builder
-    TabBuilder(index: number, normalIcon: Resource, selectedIcon: Resource, text: string) {
+    TabBuilder(index: number, normalIcon: Resource, selectedIcon: Resource, text: Resource) {
         Column() {
             Image(this.currentIndex === index ? selectedIcon : normalIcon)
                 .width(StyleConstants.INDEX_TAB_ICON_SIZE)
@@ -345,11 +350,14 @@ struct Index {
                                 onAccountInput: () => this.inputPopup("Account"),
                                 onIDInput: () => this.inputPopup("ID"),
                                 onSendCommand: (command: string) => this.sendCommand(item.nickname ,command),
-                                onProcessingChange: (processing: boolean) => {
-                                    this.isProcessing = processing;
+                                onRunningStateChange: (isRunning: boolean) => {
+                                    if(isRunning) this.runningCommandIDs.add(item.id);
+                                    else this.runningCommandIDs.delete(item.id);
+                                    Logger.debug(this.LOG_TAG, `正在运行的指令：${Array.from(this.runningCommandIDs).join(', ')}`);
                                 }
                             })
                         }
+                        .enabled(!this.runningCommandIDs.has(item.id))
                         .swipeAction({
                             end: {
                                 builder: () => {

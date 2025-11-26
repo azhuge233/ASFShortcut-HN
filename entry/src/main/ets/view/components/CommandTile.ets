@@ -13,10 +13,29 @@ export struct CommandListItem {
     @Param onAccountInput: () => Promise<string> = () => Promise.resolve("");
     @Param onIDInput: () => Promise<string> = () => Promise.resolve("");
     @Param onSendCommand: (command: string) => Promise<void> = async () => {};
-    @Param onProcessingChange: (processing: boolean) => void = () => {};
+    @Param onRunningStateChange: (processing: boolean) => void = () => {};
 
-    async runCommand() {
+    @Local isRunning: boolean = false;
+
+    // debug
+    // 模拟长时间执行
+    private async sleep(time: number) {
+        await new Promise<void>(resolve => setTimeout(resolve, time));
+    }
+
+    // 设置条目运行状态
+    // 设置本地运行状态参数，控制加载覆盖层的显示
+    // 再向回调函数传出运行状态，供主页面控制本条目的启用/禁用
+    private changeRunningState(isRunning: boolean) {
+        this.isRunning = isRunning;
+        this.onRunningStateChange(isRunning);
+    }
+
+    // 点击执行按钮后执行指令
+    // 根据条目设置，弹出对应的输入页面
+    private async runCommand() {
         try {
+            this.changeRunningState(true);
             let command = this.item.command;
 
             if (this.item.accountInputRequired === 1 && this.onAccountInput) {
@@ -35,16 +54,43 @@ export struct CommandListItem {
                 } else command = `${command} ${asfId}`;
             }
 
-            this.onProcessingChange(true);
             await this.onSendCommand(command);
         } catch (err) {
             Logger.error(this.LOG_TAG, `<runCommand> error: ${err}`);
         } finally {
-            this.onProcessingChange(false);
+            this.changeRunningState(false);
         }
     }
 
-    build() {
+    // 运行时的覆盖层
+    @Builder
+    RunningBlock() {
+        Column()
+            .height(StyleConstants.FIFTEEN_PERCENT)
+            .width(StyleConstants.FULL_PERCENT)
+            .backgroundColor($r("app.color.transparent"))
+            .blur(StyleConstants.BLUE_LEVEL)
+            .onClick(() => {})
+
+        Column() {
+            Progress({ value: 0, total: 100, type: ProgressType.Ring })
+                .width(StyleConstants.COMMAND_TILE_PROGRESS_WIDTH)
+                .style({
+                    strokeWidth: StyleConstants.COMMAND_TILE_PROGRESS_STROKE_WIDTH,
+                    status: ProgressStatus.LOADING,
+                    shadow: true,
+                    enableScanEffect: true,
+                    enableSmoothEffect: true
+                })
+        }
+        .width(StyleConstants.FULL_PERCENT)
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {})
+    }
+
+    // 条目的主要内容
+    @Builder
+    MainContent() {
         Row() {
             Column({ space: StyleConstants.COMMAND_TILE_COL_SPACE }) {
                 Column({ space: StyleConstants.COMMAND_TILE_COL_SPACE / 2 }) {
@@ -118,7 +164,10 @@ export struct CommandListItem {
             })
 
             Column({ space: StyleConstants.COMMAND_TILE_COL_SPACE }) {
-                Button($r("app.string.CommandTile_Button_Label"))
+                Button(this.isRunning ? $r("app.string.CommandTile_Button_Label_Running") :
+                    $r("app.string.CommandTile_Button_Label_Run"))
+                    .enabled(!this.isRunning)
+                    .stateEffect(true)
                     .onClick(() => {
                         CommonUtils.vibrate();
                         this.runCommand();
@@ -128,6 +177,16 @@ export struct CommandListItem {
             .padding({
                 right: StyleConstants.PADDING_FIVE
             })
+        }
+    }
+
+    build() {
+        Stack({ alignContent: Alignment.Center }) {
+            this.MainContent();
+
+            if (this.isRunning) {
+                this.RunningBlock();
+            }
         }
         .width(StyleConstants.FULL_PERCENT)
     }
