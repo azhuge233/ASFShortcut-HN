@@ -21,12 +21,14 @@ export class SettingsJsonObject {
 export class CommandEntryJsonObject {
     Nickname: string = "";
     Command: string = "";
+    OrderIndex: number = -1;
     AIR: number = 0;
     IIR: number = 0;
 
-    constructor(nickname: string, command: string, air: number, iir: number) {
+    constructor(nickname: string, command: string, orderIndex: number, air: number, iir: number) {
         this.Nickname = nickname;
         this.Command = command;
+        this.OrderIndex = orderIndex;
         this.AIR = air;
         this.IIR = iir;
     }

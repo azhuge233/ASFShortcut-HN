@@ -32,6 +32,7 @@ export class DB {
 
     private KEY_CommandEntries_Nickname = 'NICKNAME';
     private KEY_CommandEntries_Command = 'COMMAND';
+    private KEY_CommandEntries_OrderIndex = 'ORDERINDEX';
     private KEY_CommandEntries_AccountInputRequired = 'AIR';
     private KEY_CommandEntries_IdInputRequired = 'IIR';
 
@@ -44,6 +45,7 @@ export class DB {
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
         ${this.KEY_CommandEntries_Nickname} TEXT NOT NULL,
         ${this.KEY_CommandEntries_Command} TEXT NOT NULL,
+        ${this.KEY_CommandEntries_OrderIndex} INTEGER DEFAULT 0,
         ${this.KEY_CommandEntries_AccountInputRequired} INTEGER NOT NULL,
         ${this.KEY_CommandEntries_IdInputRequired} INTEGER NOT NULL
     )`;
@@ -219,6 +221,7 @@ export class DB {
             this.KEY_ID,
             this.KEY_CommandEntries_Nickname,
             this.KEY_CommandEntries_Command,
+            this.KEY_CommandEntries_OrderIndex,
             this.KEY_CommandEntries_AccountInputRequired,
             this.KEY_CommandEntries_IdInputRequired
         ]);
@@ -234,15 +237,18 @@ export class DB {
                 const id = queryResult.getLong(queryResult.getColumnIndex(this.KEY_ID));
                 const nickname = queryResult.getString(queryResult.getColumnIndex(this.KEY_CommandEntries_Nickname));
                 const command = queryResult.getString(queryResult.getColumnIndex(this.KEY_CommandEntries_Command));
+                const orderIndex = queryResult.getLong(queryResult.getColumnIndex(this.KEY_CommandEntries_OrderIndex));
                 const accountInputRequired =
                     queryResult.getLong(queryResult.getColumnIndex(this.KEY_CommandEntries_AccountInputRequired));
                 const idInputRequired =
                     queryResult.getLong(queryResult.getColumnIndex(this.KEY_CommandEntries_IdInputRequired));
 
                 commandEntries.push(new CommandEntry(
-                    id, nickname, command, accountInputRequired, idInputRequired
+                    id, nickname, command, orderIndex, accountInputRequired, idInputRequired
                 ));
             }
+
+            commandEntries.sort((a, b) => a.orderIndex - b.orderIndex);
 
             Logger.debug(this.LOG_TAG, `指令列表长度: ${commandEntries.length}`);
 
@@ -263,6 +269,7 @@ export class DB {
             const valueBucket: relationalStore.ValuesBucket = {
                 "NICKNAME": commandEntry.nickname,
                 "COMMAND": commandEntry.command,
+                "ORDERINDEX": commandEntry.orderIndex,
                 "AIR": commandEntry.accountInputRequired,
                 "IIR": commandEntry.idInputRequired
             };
@@ -271,6 +278,7 @@ export class DB {
                 `Adding new command -
                 Nickname: ${commandEntry.nickname},
                 Command: ${commandEntry.command},
+                OrderIndex: ${commandEntry.orderIndex},
                 AIR: ${commandEntry.accountInputRequired},
                 IIR: ${commandEntry.idInputRequired}`
             );
@@ -292,6 +300,7 @@ export class DB {
             ID: ${commandEntry.id},
             Nickname: ${commandEntry.nickname},
             Command: ${commandEntry.command},
+            OrderIndex: ${commandEntry.orderIndex},
             AIR: ${commandEntry.accountInputRequired},
             IIR: ${commandEntry.idInputRequired}`
         );
@@ -303,6 +312,7 @@ export class DB {
             const valueBucket: relationalStore.ValuesBucket = {
                 "NICKNAME": commandEntry.nickname,
                 "COMMAND": commandEntry.command,
+                "ORDERINDEX": commandEntry.orderIndex,
                 "AIR": commandEntry.accountInputRequired,
                 "IIR": commandEntry.idInputRequired
             };

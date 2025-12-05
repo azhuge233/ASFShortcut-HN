@@ -6,6 +6,7 @@ export class CommandEntryViewModel {
     @Trace id: number = -1;
     @Trace nickname: string = "";
     @Trace command: string = "";
+    @Trace orderIndex: number = 0;
     @Trace accountInputRequired: number = 0;
     @Trace idInputRequired: number = 0;
 
@@ -13,6 +14,7 @@ export class CommandEntryViewModel {
         this.id = commandEntry.id;
         this.nickname = commandEntry.nickname;
         this.command = commandEntry.command;
+        this.orderIndex = commandEntry.orderIndex;
         this.accountInputRequired = commandEntry.accountInputRequired;
         this.idInputRequired = commandEntry.idInputRequired;
     }
@@ -22,6 +24,7 @@ export class CommandEntryViewModel {
             this.id,
             this.nickname,
             this.command,
+            this.orderIndex,
             this.accountInputRequired,
             this.idInputRequired
         );
@@ -31,6 +34,7 @@ export class CommandEntryViewModel {
         return new CommandEntryJsonObject(
             this.nickname,
             this.command,
+            this.orderIndex,
             this.accountInputRequired,
             this.idInputRequired
         );

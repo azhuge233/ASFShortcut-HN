@@ -90,6 +90,7 @@ struct MorePage {
                 for(let commandEntryJsonObject of exportJson.CommandEntryList) {
                     this.newCommandViewModel.nickname = commandEntryJsonObject.Nickname;
                     this.newCommandViewModel.command = commandEntryJsonObject.Command;
+                    this.newCommandViewModel.orderIndex = commandEntryJsonObject.OrderIndex == -1 ? commandOrder : commandEntryJsonObject.OrderIndex;
                     this.newCommandViewModel.accountInputRequired = commandEntryJsonObject.AIR;
                     this.newCommandViewModel.idInputRequired = commandEntryJsonObject.IIR;
 
