@@ -44,22 +44,22 @@ class CommonUtils {
     }
 
     // 设备振动
-    public vibrate() {
+    public vibrate(effectId: string) {
         try {
-            vibrator.isSupportEffect('haptic.effect.hard', (err: BusinessError, state: boolean) => {
+            vibrator.isSupportEffect(effectId, (err: BusinessError, state: boolean) => {
                 if (err) {
                     Logger.error(this.LOG_TAG, `查询振动效果失败, 代码: ${err.code}, 错误信息: ${err.message}`);
                     return;
                 }
 
-                Logger.info(this.LOG_TAG, '设置支持 haptic.effect.hard 振动');
+                Logger.info(this.LOG_TAG, `设置支持 ${effectId} 振动`);
 
                 if (state) {
                     try {
                         // 触发马达振动
                         vibrator.startVibration({
                             type: 'preset',
-                            effectId: 'haptic.effect.hard',
+                            effectId: effectId,
                             count: 1,
                             intensity: 100,
                         }, {

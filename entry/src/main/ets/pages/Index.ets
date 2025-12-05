@@ -502,7 +502,7 @@ struct Index {
                         this.testCommand.trim() !== '')
                     .onClick(async () => {
                         this.isProcessing = true;
-                        CommonUtils.vibrate();
+                        CommonUtils.vibrate(CommonConstants.Vibrate_Effect_ID_HARD);
                         await this.sendTestCommand(this.testAddress, this.testPassword, this.testCommand);
                     })
                     .margin({ bottom: StyleConstants.MARGIN_TWENTY })

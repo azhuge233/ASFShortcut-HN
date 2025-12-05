@@ -2,6 +2,7 @@ import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
 import Logger from '../../common/utils/Logger';
 import StyleConstants from '../../common/constants/StyleConstants';
 import CommonUtils from '../../common/utils/CommonUtils';
+import CommonConstants from '../../common/constants/CommonConstants';
 
 @ComponentV2
 export struct CommandListItem {
@@ -169,7 +170,7 @@ export struct CommandListItem {
                     .enabled(!this.isRunning)
                     .stateEffect(true)
                     .onClick(() => {
-                        CommonUtils.vibrate();
+                        CommonUtils.vibrate(CommonConstants.Vibrate_Effect_ID_HARD);
                         this.runCommand();
                     })
             }
