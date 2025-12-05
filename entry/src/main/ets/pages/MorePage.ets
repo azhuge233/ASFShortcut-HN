@@ -86,6 +86,8 @@ struct MorePage {
 
                 if(!success1 || !success2) throw new Error("恢复ASF设置失败");
 
+                let commandOrder = 0;
+
                 // 恢复ASF指令
                 for(let commandEntryJsonObject of exportJson.CommandEntryList) {
                     this.newCommandViewModel.nickname = commandEntryJsonObject.Nickname;
@@ -95,6 +97,8 @@ struct MorePage {
                     this.newCommandViewModel.idInputRequired = commandEntryJsonObject.IIR;
 
                     await this.listViewModel.addCommandEntry(this.newCommandViewModel.toCommandEntry());
+
+                    commandOrder++;
                 }
 
                 CommonUtils.alert($r("app.string.More_Import_Success"), this.promptAction);
