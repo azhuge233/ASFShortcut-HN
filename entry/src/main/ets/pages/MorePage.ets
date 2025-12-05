@@ -78,7 +78,7 @@ struct MorePage {
 
                 // 清空表
                 await this.db.clearTableSettings();
-                await this.db.clearTableCommandEntries();
+                await this.listViewModel.clearCommandEntry();
 
                 // 恢复ASF设置
                 const success1 = await this.db.saveSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address, exportJson.Settings.Address);
