@@ -345,4 +345,43 @@ export class DB {
             throw new Error(err);
         }
     }
+
+    async batchUpdateOrderIndices(orderUpdates: Array<Array<number>>): Promise<boolean> {
+        await this.waitForReady();
+
+        if (!this.rdbStore) {
+            Logger.error(this.LOG_TAG, "数据库实例不存在，无法更新排序");
+            return false;
+        }
+
+        try {
+            // 开始事务
+            this.rdbStore.beginTransaction();
+
+            for (const update of orderUpdates) {
+                const id = update[0];
+                const orderIndex = update[1];
+
+                const predicates = new relationalStore.RdbPredicates(this.TN_CommandEntries);
+                predicates.equalTo(this.KEY_ID, id);
+
+                const valueBucket: relationalStore.ValuesBucket = {
+                    "ORDERINDEX": orderIndex // 只更新排序字段
+                };
+
+                await this.rdbStore.update(valueBucket, predicates);
+                // Logger.debug(this.LOG_TAG, `已更新条目 ID：${id} 的排序索引为：${orderIndex}`);
+            }
+
+            // 提交事务
+            this.rdbStore.commit();
+            Logger.info(this.LOG_TAG, `批量排序更新成功，共处理 ${orderUpdates.length} 个条目。`);
+            return true;
+        } catch (err) {
+            // 回滚事务
+            this.rdbStore.rollBack();
+            Logger.error(this.LOG_TAG, `批量更新排序索引失败，已回滚: ${err}`);
+            return false;
+        }
+    }
 }

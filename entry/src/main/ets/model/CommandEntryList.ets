@@ -28,6 +28,14 @@ export default class CommandEntryList {
         await this.db.waitForReady();
 
         try {
+            let newOrderIndex = 0;
+            if (this.commandEntries.length > 0) {
+                const maxOrderIndex = Math.max(...this.commandEntries.map(entry => entry.orderIndex));
+                newOrderIndex = maxOrderIndex + 1;
+            }
+
+            commandEntry.orderIndex = newOrderIndex;
+
             const result = await this.db.addCommandEntry(commandEntry);
             Logger.debug(this.LOG_TAG, `新命令添加成功，ID: ${result}`);
             return true;
@@ -72,6 +80,19 @@ export default class CommandEntryList {
             return true;
         } catch (err) {
             Logger.error(this.LOG_TAG, `清除指令列表失败, ${err}`);
+            return false;
+        }
+    }
+
+    async updateEntriesOrder(reorderedEntries: Array<Array<number>>): Promise<boolean> {
+        await this.db.waitForReady();
+
+        try {
+            await this.db.batchUpdateOrderIndices(reorderedEntries);
+            Logger.debug(this.LOG_TAG, `顺序更新成功，共更新 ${reorderedEntries.length} 个命令。`);
+            return true;
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `更新命令顺序失败: ${err}`);
             return false;
         }
     }

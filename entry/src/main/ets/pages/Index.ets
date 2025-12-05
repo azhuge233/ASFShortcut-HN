@@ -373,6 +373,14 @@ struct Index {
                             bottom: StyleConstants.TWO_PERCENT
                         })
                     })
+                        .onMove((from: number, to: number) => {
+                            const success = this.listViewModel.reorderEntries(from, to);
+                            return success;
+                        }, {
+                            onLongPress: () => {
+                                CommonUtils.vibrate(CommonConstants.Vibrate_Effect_ID_SOFT);
+                            }
+                        })
                 }
                 .padding(StyleConstants.PADDING_EIGHT)
                 .layoutWeight(StyleConstants.INDEX_LAYOUT_WEIGHT)
