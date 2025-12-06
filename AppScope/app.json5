@@ -2,8 +2,8 @@
   "app": {
     "bundleName": "com.azhuge233.asfshortcut",
     "vendor": "example",
-    "versionCode": 1210100,
-    "versionName": "1.2.1",
+    "versionCode": 1220000,
+    "versionName": "1.2.2",
     "icon": "$media:layered_image",
     "label": "$string:app_name"
   }
