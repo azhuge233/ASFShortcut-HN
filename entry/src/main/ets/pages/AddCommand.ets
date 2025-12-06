@@ -63,6 +63,7 @@ struct AddCommand {
                     .onChange((value: string) => {
                         this.newCommandViewModel.nickname = value;
                     })
+                    .defaultFocus(true)
                     .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
                     .padding(StyleConstants.PADDING_TEN)
                     .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
@@ -77,6 +78,7 @@ struct AddCommand {
                     .onChange((value: string) => {
                         this.newCommandViewModel.command = value;
                     })
+                    .defaultFocus(false)
                     .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
                     .padding(StyleConstants.PADDING_TEN)
                     .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
