@@ -369,7 +369,7 @@ struct Index {
                         .margin({
                             top: StyleConstants.TWO_PERCENT,
                             left: StyleConstants.ONE_PERCENT,
-                            right: StyleConstants.THREE_PERCENT,
+                            right: StyleConstants.ONE_PERCENT,
                             bottom: StyleConstants.TWO_PERCENT
                         })
                     })

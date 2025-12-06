@@ -176,7 +176,7 @@ export struct CommandListItem {
             }
             .width(StyleConstants.TWENTY_FIVE_PERCENT)
             .padding({
-                right: StyleConstants.PADDING_FIVE
+                right: StyleConstants.PADDING_TWO
             })
         }
     }
