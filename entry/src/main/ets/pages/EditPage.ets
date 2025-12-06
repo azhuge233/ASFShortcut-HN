@@ -1,3 +1,5 @@
+import { KeyboardAvoidMode } from '@kit.ArkUI'
+
 import StyleConstants from '../common/constants/StyleConstants';
 import CommonUtils from '../common/utils/CommonUtils';
 import Logger from '../common/utils/Logger';
@@ -22,6 +24,10 @@ struct EditPage {
     private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
 
     pathStack: NavPathStack | undefined = undefined;
+
+    aboutToAppear(): void {
+        this.uiContext.setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET);
+    }
 
     async saveCommand() {
         if (!this.updatingCommandEntry.nickname.trim() || !this.updatingCommandEntry.command.trim()) {
@@ -124,6 +130,8 @@ struct EditPage {
                 // 占位空间
                 Blank()
             }
+            .height(StyleConstants.FULL_PERCENT)
+            .justifyContent(FlexAlign.Center)
             .padding(StyleConstants.PADDING_TWENTY)
         }
         .title($r("app.string.EditPage_Title"))

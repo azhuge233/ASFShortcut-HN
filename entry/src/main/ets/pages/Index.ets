@@ -1,5 +1,6 @@
 import http from '@ohos.net.http';
 import { common } from '@kit.AbilityKit';
+import { KeyboardAvoidMode } from '@kit.ArkUI'
 
 import Logger from '../common/utils/Logger';
 import { ASF } from '../common/utils/ASF';
@@ -44,6 +45,10 @@ struct Index {
     private asf = new ASF();
 
     pageStack: NavPathStack = new NavPathStack();
+
+    aboutToAppear(): void {
+        this.uiContext.setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET);
+    }
 
     async onPageShow() {
         if(this.pageStack.size() === 0) await this.checkSettingsAndInit();

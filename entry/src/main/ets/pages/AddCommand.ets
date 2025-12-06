@@ -1,3 +1,5 @@
+import { KeyboardAvoidMode } from '@kit.ArkUI'
+
 import Logger from '../common/utils/Logger';
 import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
 import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
@@ -22,6 +24,10 @@ struct AddCommand {
     private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
 
     pathStack: NavPathStack | undefined = undefined;
+
+    aboutToAppear(): void {
+        this.uiContext.setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET);
+    }
 
     clearInput() {
         this.newCommandViewModel.nickname = '';
@@ -134,6 +140,8 @@ struct AddCommand {
                 // 占位空间
                 Blank()
             }
+            .height(StyleConstants.FULL_PERCENT)
+            .justifyContent(FlexAlign.Center)
             .padding(StyleConstants.PADDING_TWENTY)
         }
         .title($r("app.string.AddCommand_Title"))
