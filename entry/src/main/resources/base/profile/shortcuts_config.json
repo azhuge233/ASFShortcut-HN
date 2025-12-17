@@ -1,7 +1,7 @@
 {
   "shortcuts": [
     {
-      "shortcutId": "id_company",
+      "shortcutId": "id_add_new_command",
       "label": "$string:App_Shortcut_Label_Add_Shortcut",
       "icon": "$media:plus_shortcut",
       "wants": [
