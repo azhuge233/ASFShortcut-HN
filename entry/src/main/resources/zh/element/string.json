@@ -17,6 +17,14 @@
       "value": "ASF 快捷指令"
     },
     {
+      "name": "App_Shortcut_Label_Add_Shortcut",
+      "value": "添加新指令"
+    },
+    {
+      "name": "App_Shortcut_Add_Shortcut_Not_Init_Alert",
+      "value": "请先设置 ASF 地址和密码"
+    },
+    {
       "name": "NetworkPermissionReason",
       "value": "Send ASF commands"
     },

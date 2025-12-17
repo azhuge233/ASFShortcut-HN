@@ -17,6 +17,14 @@
       "value": "ASF Shortcut"
     },
     {
+      "name": "App_Shortcut_Label_Add_Shortcut",
+      "value": "Add New Shortcut"
+    },
+    {
+      "name": "App_Shortcut_Add_Shortcut_Not_Init_Alert",
+      "value": "Please set ASF address and password first"
+    },
+    {
       "name": "NetworkPermissionReason",
       "value": "Send ASF commands"
     },
