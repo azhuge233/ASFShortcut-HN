@@ -20,6 +20,13 @@ export default class EntryAbility extends UIAbility {
         hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Ability onCreate');
 
         DB.getInstance().initDB(this.context);
+
+        if(want?.parameters?.isFromShortcut ?? false) AppStorage.setOrCreate('want', want);
+    }
+
+    onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+        if(want?.parameters?.isFromShortcut ?? false) AppStorage.setOrCreate('want', want);
+        hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Ability onNewWant');
     }
 
     onDestroy(): void {

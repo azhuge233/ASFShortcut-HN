@@ -1,5 +1,5 @@
 import http from '@ohos.net.http';
-import { common } from '@kit.AbilityKit';
+import { common, Want } from '@kit.AbilityKit';
 import { KeyboardAvoidMode } from '@kit.ArkUI'
 
 import Logger from '../common/utils/Logger';
@@ -53,6 +53,14 @@ struct Index {
     async onPageShow() {
         if(this.pageStack.size() === 0) await this.checkSettingsAndInit();
         this.listViewModel.loadCommandEntries();
+
+        if(AppStorage.has('want')) {
+            let want: Want | undefined = AppStorage.get('want');
+            if (want) {
+                this.goToSpecifyPage(want);
+                AppStorage.delete('want');
+            }
+        }
     }
 
     onPageHide(): void {
@@ -177,6 +185,36 @@ struct Index {
         } catch (err) {
             Logger.error(this.LOG_TAG, `<handleResponse> 错误`);
             throw err as Error;
+        }
+    }
+
+    // 快捷方式跳转判断
+    private async goToSpecifyPage(want?: Want): Promise<void> {
+        // 应用未初始化，不跳转
+        const isComplete = await this.db.areSettingsComplete();
+        if(!isComplete) {
+            CommonUtils.alert($r("app.string.App_Shortcut_Add_Shortcut_Not_Init_Alert"), this.promptAction);
+            Logger.debug(this.LOG_TAG, `应用未完成初始化，停止跳转`);
+            return;
+        }
+
+        // 如果应用内已经进入其他页面，返回到主页面
+        if(this.pageStack.size() > 0) this.pageStack.clear();
+
+        let shortCutKey = want?.parameters?.shortCutKey;
+
+        try {
+            if (shortCutKey && shortCutKey === 'AddCommand') {
+                this.pageStack.pushPath({
+                    name: "AddCommand",
+                    param: this.listViewModel,
+                    onPop: async (popInfo) => {
+                        CommonUtils.returnFromSubPage(popInfo);
+                    }
+                });
+            }
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `Failed to push url, ${err}`);
         }
     }
 

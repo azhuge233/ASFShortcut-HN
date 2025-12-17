@@ -1,0 +1,20 @@
+{
+  "shortcuts": [
+    {
+      "shortcutId": "id_company",
+      "label": "$string:App_Shortcut_Label_Add_Shortcut",
+      "icon": "$media:plus_shortcut",
+      "wants": [
+        {
+          "bundleName": "com.azhuge233.asfshortcut",
+          "moduleName": "entry",
+          "abilityName": "EntryAbility",
+          "parameters": {
+            "isFromShortcut": "true",
+            "shortCutKey": "AddCommand"
+          }
+        }
+      ]
+    }
+  ]
+}
