@@ -17,6 +17,22 @@
       "value": "ASF Shortcut"
     },
     {
+      "name": "EntryFormAbility_desc",
+      "value": "ASF Shortcut Widget"
+    },
+    {
+      "name": "EntryFormAbility_label",
+      "value": "ASF Shortcut Widget"
+    },
+    {
+      "name": "ASFCommandWidget_desc",
+      "value": "ASF Shortcut Widget."
+    },
+    {
+      "name": "ASFCommandWidget_display_name",
+      "value": "ASF Shortcut"
+    },
+    {
       "name": "App_Shortcut_Label_Add_Shortcut",
       "value": "Add New Shortcut"
     },

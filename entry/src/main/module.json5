@@ -51,15 +51,28 @@
             "resource": "$profile:backup_config"
           }
         ],
+      },
+      {
+        "name": "EntryFormAbility",
+        "srcEntry": "./ets/entryformability/EntryFormAbility.ets",
+        "label": "$string:EntryFormAbility_label",
+        "description": "$string:EntryFormAbility_desc",
+        "type": "form",
+        "metadata": [
+          {
+            "name": "ohos.extension.form",
+            "resource": "$profile:form_config"
+          }
+        ]
       }
     ],
-    "requestPermissions":[
+    "requestPermissions": [
       {
-        "name" : "ohos.permission.INTERNET",
+        "name": "ohos.permission.INTERNET",
         "reason": "$string:NetworkPermissionReason"
       },
       {
-        "name" : "ohos.permission.VIBRATE",
+        "name": "ohos.permission.VIBRATE",
         "reason": "$string:VibratePermissionReason"
       }
     ]

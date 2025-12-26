@@ -17,6 +17,22 @@
       "value": "ASF 快捷指令"
     },
     {
+      "name": "EntryFormAbility_desc",
+      "value": "ASF 快捷指令卡片"
+    },
+    {
+      "name": "EntryFormAbility_label",
+      "value": "ASF 快捷指令卡片"
+    },
+    {
+      "name": "ASFCommandWidget_desc",
+      "value": "ASF 快捷指令卡片"
+    },
+    {
+      "name": "ASFCommandWidget_display_name",
+      "value": "ASF 快捷指令"
+    },
+    {
       "name": "App_Shortcut_Label_Add_Shortcut",
       "value": "添加新指令"
     },
