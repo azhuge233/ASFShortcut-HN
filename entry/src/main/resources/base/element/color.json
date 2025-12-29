@@ -51,6 +51,10 @@
     {
       "name": "index_test_page_notice_background",
       "value": "#F5F5F5"
+    },
+    {
+      "name": "form_background",
+      "value": "#162231"
     }
   ]
 }
