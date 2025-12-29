@@ -379,6 +379,38 @@
     {
       "name": "LiveTest_Result_Title",
       "value": "测试指令"
+    },
+    {
+      "name": "FormEdit_Title",
+      "value": "选择指令"
+    },
+    {
+      "name": "FormEdit_No_Commands_Label",
+      "value": "暂无指令"
+    },
+    {
+      "name": "FormEdit_Create_First_Label",
+      "value": "在 App 中新建指令"
+    },
+    {
+      "name": "FormEdit_Notice_Label",
+      "value": "只有不包含自定义输入的指令才会在这里显示"
+    },
+    {
+      "name": "FormEdit_No_Setup_Label",
+      "value": "未设置 ASF 地址和密码"
+    },
+    {
+      "name": "FormEdit_Go_To_Settings_Label",
+      "value": "请先在应用内设置 ASF 地址和密码！"
+    },
+    {
+      "name": "Form_Unbound_Title",
+      "value": "点击选择指令"
+    },
+    {
+      "name": "FormEdit_Confirm_Button_Text",
+      "value": "确认"
     }
   ]
 }

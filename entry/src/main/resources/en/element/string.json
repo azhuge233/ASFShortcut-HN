@@ -379,6 +379,38 @@
     {
       "name": "LiveTest_Result_Title",
       "value": "Test Command"
+    },
+    {
+      "name": "FormEdit_Title",
+      "value": "Choose shortcut"
+    },
+    {
+      "name": "FormEdit_No_Commands_Label",
+      "value": "No shortcuts."
+    },
+    {
+      "name": "FormEdit_Create_First_Label",
+      "value": "Create your first shortcut in App."
+    },
+    {
+      "name": "FormEdit_Notice_Label",
+      "value": "Only shortcuts without custom input will appear here."
+    },
+    {
+      "name": "FormEdit_No_Setup_Label",
+      "value": "Missing ASF address and password."
+    },
+    {
+      "name": "FormEdit_Go_To_Settings_Label",
+      "value": "Open the App and set ASF address and password first!"
+    },
+    {
+      "name": "Form_Unbound_Title",
+      "value": "Press to choose Shortcut"
+    },
+    {
+      "name": "FormEdit_Confirm_Button_Text",
+      "value": "Confirm"
     }
   ]
 }
