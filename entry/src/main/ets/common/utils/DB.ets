@@ -210,6 +210,49 @@ export class DB {
         await this.clearTable(this.TN_CommandEntries);
     }
 
+    async getCommandByID(queryID: number): Promise<CommandEntry | null> {
+        await this.waitForReady();
+
+        if (!this.rdbStore) throw new Error("数据库实例不存在");
+
+        const predicates = new relationalStore.RdbPredicates(this.TN_CommandEntries);
+        predicates.equalTo(this.KEY_ID, queryID);
+
+        try {
+            const queryResult = await this.rdbStore.query(predicates, [
+                this.KEY_ID,
+                this.KEY_CommandEntries_Nickname,
+                this.KEY_CommandEntries_Command,
+                this.KEY_CommandEntries_OrderIndex,
+                this.KEY_CommandEntries_AccountInputRequired,
+                this.KEY_CommandEntries_IdInputRequired
+            ]);
+
+            if(queryResult.goToNextRow()) {
+                const id = queryResult.getLong(queryResult.getColumnIndex(this.KEY_ID));
+                const nickname = queryResult.getString(queryResult.getColumnIndex(this.KEY_CommandEntries_Nickname));
+                const command = queryResult.getString(queryResult.getColumnIndex(this.KEY_CommandEntries_Command));
+                const orderIndex = queryResult.getLong(queryResult.getColumnIndex(this.KEY_CommandEntries_OrderIndex));
+                const accountInputRequired =
+                    queryResult.getLong(queryResult.getColumnIndex(this.KEY_CommandEntries_AccountInputRequired));
+                const idInputRequired =
+                    queryResult.getLong(queryResult.getColumnIndex(this.KEY_CommandEntries_IdInputRequired));
+
+                const commandEntry = new CommandEntry(id, nickname, command, orderIndex, accountInputRequired, idInputRequired);
+
+                Logger.debug(this.LOG_TAG, `查询到 ${queryID}: ${JSON.stringify(commandEntry)}`);
+
+                return commandEntry;
+            }
+
+            Logger.debug(this.LOG_TAG, `没有查询到 ID = ${queryID} 的结果`)
+            return null;
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `getCommandByID 执行失败, ${err}`);
+            return null;
+        }
+    }
+
     async getCommandList() {
         await this.waitForReady();
 
