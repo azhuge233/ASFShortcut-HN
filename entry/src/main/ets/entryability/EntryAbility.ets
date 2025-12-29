@@ -3,6 +3,8 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 
 import { DB } from '../common/utils/DB';
+import CommonConstants from '../common/constants/CommonConstants';
+import { PM } from '../common/utils/PM';
 
 const DOMAIN = 0x0000;
 
@@ -10,6 +12,9 @@ export default class EntryAbility extends UIAbility {
     private LOG_PREFIX = "[ASFShortcut]";
     private LOG_FORMAT = '%{public}s -> %{public}s';
     private LOG_TAG = "[EntryAbility]";
+
+    private targetPage: string = 'pages/Index'; // 指定页面，默认为 Index
+    private currentWindowStage: window.WindowStage | null = null;
 
     onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
         try {
@@ -20,13 +25,46 @@ export default class EntryAbility extends UIAbility {
         hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Ability onCreate');
 
         DB.getInstance().initDB(this.context);
+        PM.getInstance().init(this.context);
 
-        if(want?.parameters?.isFromShortcut ?? false) AppStorage.setOrCreate('want', want);
+        // 由卡片转入
+        if(want?.parameters?.params) {
+            let params: Record<string, Object> = JSON.parse(want.parameters.params as string);
+            this.targetPage = params.targetPage as string;
+
+            const formID = params.formID as string;
+
+            if((formID ?? false) && formID.trim() !== '') AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_FormID, formID);
+        }
+
+        // 由长按快捷方式转入
+        if (want?.parameters?.isFromShortcut ?? false) AppStorage.setOrCreate('want', want);
+
+        hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, `onCreate targetPage: ${this.targetPage}`);
     }
 
     onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
-        if(want?.parameters?.isFromShortcut ?? false) AppStorage.setOrCreate('want', want);
         hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Ability onNewWant');
+
+        // 由卡片转入
+        if(want?.parameters?.params) {
+            let params: Record<string, Object> = JSON.parse(want.parameters.params as string);
+            this.targetPage = params.targetPage as string;
+
+            const formID = params.formID as string;
+
+            if((formID ?? false) && formID.trim() !== '') AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_FormID, formID);
+        }
+
+        // 由长按快捷方式转入
+        if(want?.parameters?.isFromShortcut ?? false) AppStorage.setOrCreate('want', want);
+
+        // 将当前 window 替换为新 window
+        if (this.currentWindowStage !== null) {
+            this.onWindowStageCreate(this.currentWindowStage);
+        }
+
+        hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, `onNewWant targetPage: ${this.targetPage}`);
     }
 
     onDestroy(): void {
@@ -37,7 +75,13 @@ export default class EntryAbility extends UIAbility {
         // Main window is created, set main page for this ability
         hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Ability onWindowStageCreate');
 
-        windowStage.loadContent('pages/Index', (err) => {
+        // 创建新 window
+        if (this.currentWindowStage === null) {
+            this.currentWindowStage = windowStage;
+        }
+
+        // 加载指定页面 targetPage
+        windowStage.loadContent(this.targetPage, (err) => {
             if (err.code) {
                 hilog.error(DOMAIN, this.LOG_PREFIX,this.LOG_FORMAT, this.LOG_TAG, `Failed to load the content. Cause: ${JSON.stringify(err)}`, );
                 return;
