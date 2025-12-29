@@ -40,6 +40,8 @@ class StyleConstants {
     public INPUT_BORDER_WIDTH = 1;
     public INPUT_BORDER_RADIUS = 8;
 
+    public LOADING_WIDTH = 128;
+
     public PROGRESS_STROKE_WIDTH = 18;
     public PROGRESS_WIDTH = 72;
     public PROGRESS_TEXT_FONT_SIZE = 17;
