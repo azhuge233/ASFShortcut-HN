@@ -5,11 +5,11 @@ class CommonConstants {
     public readonly Vibrate_Effect_ID_SOFT = 'haptic.effect.soft';
     public readonly Vibrate_Effect_ID_HARD = 'haptic.effect.hard';
 
+    public readonly AppStorage_KEY_ShortcutPath = 'path';
     public readonly AppStorage_KEY_FormID = 'formID';
-    public readonly AppStorage_KEY_FormDimensions = 'formDimensions';
 
     public readonly FormMessage_Update = 'update';
-    public readonly FormMessage_Run = 'run';
+    public readonly FormCall_Run = 'run';
 }
 
 export default new CommonConstants();
