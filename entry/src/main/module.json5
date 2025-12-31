@@ -37,6 +37,16 @@
             "resource": "$profile:shortcuts_config"
           }
         ]
+      },
+      {
+        "name": 'ASFCommandWidgetEntryAbility',
+        "srcEntry": "./ets/asfcommandwidget/asfcommandwidgetentryability/ASFCommandWidgetEntryAbility.ets",
+        "description": '$string:WidgetEventCallCard_desc',
+        "icon": "$media:app_icon_layered",
+        "label": "$string:WidgetEventCallCard_label",
+        "startWindowIcon": "$media:startIcon",
+        "startWindowBackground": "$color:start_window_background",
+        "launchType": "multiton"
       }
     ],
     "extensionAbilities": [
@@ -74,6 +84,10 @@
       {
         "name": "ohos.permission.VIBRATE",
         "reason": "$string:VibratePermissionReason"
+      },
+      {
+        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING",
+        "reason": "$string:BackgroundPermissionReason"
       }
     ]
   }
