@@ -99,7 +99,7 @@ export default class ASFCommandWidgetEntryAbility extends UIAbility {
         const commandEntry = await this.db.getCommandByID(this.shortcutID);
         if(commandEntry) {
             const dbCommand = commandEntry.command;
-            if(dbCommand != this.command) {
+            if(dbCommand !== this.command) {
                 Logger.warn(this.LOG_TAG, `DB 指令: ${commandEntry.command}, 卡片指令: ${this.command}, 不一致，使用 DB 指令`);
                 this.command = commandEntry.command;
             }
