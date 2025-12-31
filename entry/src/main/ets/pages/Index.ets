@@ -1,6 +1,6 @@
 import http from '@ohos.net.http';
 import { common, Want } from '@kit.AbilityKit';
-import { KeyboardAvoidMode } from '@kit.ArkUI'
+import { UIContext, KeyboardAvoidMode } from '@kit.ArkUI'
 
 import Logger from '../common/utils/Logger';
 import { ASF } from '../common/utils/ASF';
@@ -52,13 +52,15 @@ struct Index {
 
     async onPageShow() {
         if(this.pageStack.size() === 0) await this.checkSettingsAndInit();
-        this.listViewModel.loadCommandEntries();
+        await this.listViewModel.loadCommandEntries();
 
-        if(AppStorage.has('want')) {
-            let want: Want | undefined = AppStorage.get('want');
-            if (want) {
-                this.goToSpecifyPage(want);
-                AppStorage.delete('want');
+        if(AppStorage.has(CommonConstants.AppStorage_KEY_ShortcutPath)) {
+            Logger.debug(this.LOG_TAG, `检测到长按快捷方式页面`);
+
+            const path: string | undefined = AppStorage.get(CommonConstants.AppStorage_KEY_ShortcutPath);
+            if (path) {
+                await this.goToSpecifyPage(path);
+                AppStorage.delete(CommonConstants.AppStorage_KEY_ShortcutPath);
             }
         }
     }
@@ -67,8 +69,35 @@ struct Index {
         this.safeCloseSwipeActions();
     }
 
+    // 快捷方式跳转判断
+    private async goToSpecifyPage(path: string): Promise<void> {
+        // 应用未初始化，不跳转
+        const isComplete = await this.db.areSettingsComplete();
+        if(!isComplete) {
+            CommonUtils.alert($r("app.string.App_Shortcut_Add_Shortcut_Not_Init_Alert"), this.promptAction);
+            Logger.debug(this.LOG_TAG, `应用未完成初始化，停止跳转`);
+            return;
+        }
+
+        // 如果应用内已经进入其他页面，返回到主页面
+        if(this.pageStack.size() > 0) this.pageStack.clear();
+
+        try {
+            Logger.debug(this.LOG_TAG, `跳转至页面 ${path}`);
+            this.pageStack.pushPath({
+                name: path,
+                param: this.listViewModel,
+                onPop: async (popInfo) => {
+                    CommonUtils.returnFromSubPage(popInfo);
+                }
+            });
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `${path} 页面跳转失败, ${err}`);
+        }
+    }
+
     // 发送指令
-    async sendCommand(nickname: string, command: string): Promise<void> {
+    private async sendCommand(nickname: string, command: string): Promise<void> {
         try {
             const resp = await this.asf.send(command);
             this.isProcessing = false;
@@ -83,7 +112,7 @@ struct Index {
     }
 
     // 发送测试指令
-    async sendTestCommand(address: string, password: string, command: string): Promise<void> {
+    private async sendTestCommand(address: string, password: string, command: string): Promise<void> {
         try {
             const resp = await this.asf.sendTest(address, password, command);
             this.isProcessing = false;
@@ -171,50 +200,21 @@ struct Index {
 
     // 处理 ASF 响应
     private handleResponse(commandNickname: string, resp: http.HttpResponse | undefined) {
-        if (resp === undefined) throw new Error(`空响应`);
+        if (!resp) throw new Error(`空响应`);
+
         try {
             const result: Record<string, string> = JSON.parse(resp.result.toString());
 
             if (resp.responseCode == 200) {
-                Logger.debug(this.LOG_TAG, `${result["Result"]}`)
+                Logger.debug(this.LOG_TAG, `${result["Result"]}`);
                 this.resultPopup(commandNickname, result["Result"]);
             } else {
-                Logger.debug(this.LOG_TAG, `${result["Message"]}`)
+                Logger.debug(this.LOG_TAG, `${result["Message"]}`);
                 CommonUtils.alert(`${result["Message"]} 响应码: ${resp.responseCode}`, this.promptAction);
             }
         } catch (err) {
-            Logger.error(this.LOG_TAG, `<handleResponse> 错误`);
+            Logger.error(this.LOG_TAG, `handleResponse() 错误`);
             throw err as Error;
-        }
-    }
-
-    // 快捷方式跳转判断
-    private async goToSpecifyPage(want?: Want): Promise<void> {
-        // 应用未初始化，不跳转
-        const isComplete = await this.db.areSettingsComplete();
-        if(!isComplete) {
-            CommonUtils.alert($r("app.string.App_Shortcut_Add_Shortcut_Not_Init_Alert"), this.promptAction);
-            Logger.debug(this.LOG_TAG, `应用未完成初始化，停止跳转`);
-            return;
-        }
-
-        // 如果应用内已经进入其他页面，返回到主页面
-        if(this.pageStack.size() > 0) this.pageStack.clear();
-
-        let shortCutKey = want?.parameters?.shortCutKey;
-
-        try {
-            if (shortCutKey && shortCutKey === 'AddCommand') {
-                this.pageStack.pushPath({
-                    name: "AddCommand",
-                    param: this.listViewModel,
-                    onPop: async (popInfo) => {
-                        CommonUtils.returnFromSubPage(popInfo);
-                    }
-                });
-            }
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `Failed to push url, ${err}`);
         }
     }
 
