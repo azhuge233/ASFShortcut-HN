@@ -44,12 +44,20 @@ export class ASF {
 
     // 发送正常指令
     async send(command: string): Promise<http.HttpResponse> {
-        return await this.sendRequest(this.address, this.asfPassword, command);
+        try {
+            return await this.sendRequest(this.address, this.asfPassword, command);
+        } catch (err) {
+            throw err as Error;
+        }
     }
 
     // 发送测试指令
     async sendTest(address: string, password: string, command: string): Promise<http.HttpResponse> {
-        return await this.sendRequest(this.getFinalAddress(address), password, command);
+        try {
+            return await this.sendRequest(this.getFinalAddress(address), password, command);
+        } catch (err) {
+            throw err as Error;
+        }
     }
 
     // 返回拼接 API endpoint 后的最终地址
