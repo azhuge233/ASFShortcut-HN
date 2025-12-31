@@ -54,7 +54,7 @@
       },
       {
         "name": "EntryFormAbility",
-        "srcEntry": "./ets/entryformability/EntryFormAbility.ets",
+        "srcEntry": "./ets/asfcommandwidget/entryformability/EntryFormAbility.ets",
         "label": "$string:EntryFormAbility_label",
         "description": "$string:EntryFormAbility_desc",
         "type": "form",
