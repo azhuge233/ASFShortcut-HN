@@ -9,6 +9,7 @@ import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
 import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
 import FormData from '../asfcommandwidget/model/FormData';
 import CommonConstants from '../common/constants/CommonConstants';
+import CommonUtils from '../common/utils/CommonUtils';
 
 @Entry
 @ComponentV2
@@ -43,23 +44,12 @@ struct FormEdit {
     }
 
     onPageHide(): void {
-        Logger.debug(this.LOG_TAG, '退出应用');
-        this.closeApplication();
-    }
-
-    private closeApplication() {
-        this.context.terminateSelf().catch((err: BusinessError) => {
-            Logger.error(this.LOG_TAG, `关闭应用失败, ${err}`);
-        });
+        CommonUtils.closeApplication(this.LOG_TAG, this.context);
     }
 
     private async checkSettings(): Promise<void> {
         const isComplete = await this.db.areSettingsComplete();
         if (!isComplete) this.isDBInitialized = false;
-    }
-
-    private trimStringForForm(str: string): string {
-        return str.length > 12 ? `${str.substring(0, 9)}...` : str;
     }
 
     private handleParamsFromForm(): void {
@@ -71,6 +61,15 @@ struct FormEdit {
                 AppStorage.delete(CommonConstants.AppStorage_KEY_FormID);
             }
         }
+
+        // if(AppStorage.has(CommonConstants.AppStorage_KEY_FormDimensions)) {
+        //     const formDimensionsParam: number | undefined = AppStorage.get(CommonConstants.AppStorage_KEY_FormDimensions);
+        //     if(formDimensionsParam) {
+        //         this.formDimensions = formDimensionsParam as number;
+        //         Logger.debug(this.LOG_TAG, `传入 formDimensions: ${formDimensionsParam}`);
+        //         AppStorage.delete(CommonConstants.AppStorage_KEY_FormDimensions);
+        //     }
+        // }
     }
 
     private handleCheckboxChange(itemId: number, isChecked: boolean): void {
@@ -102,8 +101,8 @@ struct FormEdit {
             const formData: FormData = new FormData(this.formID, true);
 
             formData.shortcutID = selectedItem.id;
-            formData.nickname = this.trimStringForForm(selectedItem.nickname);
-            formData.command = this.trimStringForForm(selectedItem.command);
+            formData.nickname = selectedItem.nickname;
+            formData.command = selectedItem.command;
 
             // 持久化存储卡片绑定信息
             await this.pm.bind(this.formID, formData);
@@ -111,12 +110,12 @@ struct FormEdit {
             // 创建表单绑定数据
             const formInfo: formBindingData.FormBindingData = formBindingData.createFormBindingData(formData);
             // 更新卡片
-            await formProvider.updateForm(this.formID, formInfo);
+            await formProvider.updateForm(this.formID as string, formInfo);
 
             Logger.debug(this.LOG_TAG, `卡片更新成功: formID: ${this.formID}, commandId: ${selectedItem.id}`);
 
             // 更新成功后关闭页面
-            this.closeApplication();
+            CommonUtils.closeApplication(this.LOG_TAG, this.context);
         } catch (error) {
             Logger.error(this.LOG_TAG, `更新卡片失败: ${error}`);
         } finally {
