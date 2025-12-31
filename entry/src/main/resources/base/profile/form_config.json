@@ -11,14 +11,18 @@
         "autoDesignWidth": true
       },
       "colorMode": "auto",
+      "fontScaleFollowSystem": false,
+      "resizable": false,
       "isDynamic": true,
       "isDefault": true,
-      "updateEnabled": false,
+      "updateEnabled": true,
       "scheduledUpdateTime": "10:30",
       "updateDuration": 1,
       "defaultDimension": "1*2",
       "supportDimensions": [
-        "1*2"
+        "1*2",
+        "2*2",
+        "2*4"
       ]
     }
   ]
