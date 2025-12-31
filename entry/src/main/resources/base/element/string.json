@@ -17,6 +17,14 @@
       "value": "ASF Shortcut"
     },
     {
+      "name": "WidgetEventCallCard_desc",
+      "value": "ASF Shortcut Widget Event Call"
+    },
+    {
+      "name": "WidgetEventCallCard_label",
+      "value": "Widget Event Call"
+    },
+    {
       "name": "EntryFormAbility_desc",
       "value": "ASF Shortcut Widget"
     },
@@ -47,6 +55,10 @@
     {
       "name": "VibratePermissionReason",
       "value": "Vibrate after pressing run button"
+    },
+    {
+      "name": "BackgroundPermissionReason",
+      "value": "For card(form) interaction"
     },
     {
       "name": "SettingsPage_Title",
@@ -411,6 +423,18 @@
     {
       "name": "FormEdit_Confirm_Button_Text",
       "value": "Confirm"
+    },
+    {
+      "name": "Form_Run_Complete_Label",
+      "value": "Press again to restore"
+    },
+    {
+      "name": "Form_Running_Label",
+      "value": "Running"
+    },
+    {
+      "name": "Form_Run_Failed_Message",
+      "value": "ASF command run failed, please check device network or ASF settings"
     }
   ]
 }

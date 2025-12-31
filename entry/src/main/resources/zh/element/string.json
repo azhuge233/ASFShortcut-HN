@@ -17,6 +17,14 @@
       "value": "ASF 快捷指令"
     },
     {
+      "name": "WidgetEventCallCard_desc",
+      "value": "ASF 快捷指令桌面卡片事件监听"
+    },
+    {
+      "name": "WidgetEventCallCard_label",
+      "value": "桌面卡片事件监听"
+    },
+    {
       "name": "EntryFormAbility_desc",
       "value": "ASF 快捷指令卡片"
     },
@@ -42,11 +50,15 @@
     },
     {
       "name": "NetworkPermissionReason",
-      "value": "Send ASF commands"
+      "value": "通过网络发送 ASF 指令"
     },
     {
       "name": "VibratePermissionReason",
-      "value": "Vibrate after pressing run button"
+      "value": "点击按钮时振动"
+    },
+    {
+      "name": "BackgroundPermissionReason",
+      "value": "用于桌面卡片互动"
     },
     {
       "name": "SettingsPage_Title",
@@ -411,6 +423,18 @@
     {
       "name": "FormEdit_Confirm_Button_Text",
       "value": "确认"
+    },
+    {
+      "name": "Form_Run_Complete_Label",
+      "value": "再次点击以恢复"
+    },
+    {
+      "name": "Form_Running_Label",
+      "value": "正在运行"
+    },
+    {
+      "name": "Form_Run_Failed_Message",
+      "value": "ASF 指令执行失败，请检查设备网络和 ASF 设置"
     }
   ]
 }
