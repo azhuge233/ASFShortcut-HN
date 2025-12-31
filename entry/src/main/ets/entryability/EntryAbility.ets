@@ -1,107 +1,104 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
-import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 
 import { DB } from '../common/utils/DB';
 import CommonConstants from '../common/constants/CommonConstants';
 import { PM } from '../common/utils/PM';
-
-const DOMAIN = 0x0000;
+import Logger from '../common/utils/Logger';
 
 export default class EntryAbility extends UIAbility {
-    private LOG_PREFIX = "[ASFShortcut]";
-    private LOG_FORMAT = '%{public}s -> %{public}s';
     private LOG_TAG = "[EntryAbility]";
 
     private targetPage: string = 'pages/Index'; // 指定页面，默认为 Index
     private currentWindowStage: window.WindowStage | null = null;
 
     onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+        Logger.debug(this.LOG_TAG, 'onCreate()');
+
         try {
             this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
         } catch (err) {
-            hilog.error(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, `Failed to set colorMode. Cause: ${JSON.stringify(err)}`);
+            Logger.error(this.LOG_TAG, `设置颜色主题失败, ${JSON.stringify(err)}`);
         }
-        hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Ability onCreate');
 
         DB.getInstance().initDB(this.context);
         PM.getInstance().init(this.context);
 
-        // 由卡片转入
-        if(want?.parameters?.params) {
-            let params: Record<string, Object> = JSON.parse(want.parameters.params as string);
-            this.targetPage = params.targetPage as string;
+        if(want?.parameters?.params) this.handleFormWant(want);
+        else if (want?.parameters?.isFromShortcut) this.handleShortcutWant(want);
+        else Logger.debug(this.LOG_TAG, `onCreate() 应用图标转入`);
 
-            const formID = params.formID as string;
-
-            if((formID ?? false) && formID.trim() !== '') AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_FormID, formID);
-        }
-
-        // 由长按快捷方式转入
-        if (want?.parameters?.isFromShortcut ?? false) AppStorage.setOrCreate('want', want);
-
-        hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, `onCreate targetPage: ${this.targetPage}`);
+        Logger.debug(this.LOG_TAG, `onCreate() targetPage: ${this.targetPage}`);
     }
 
     onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
-        hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Ability onNewWant');
+        Logger.debug(this.LOG_TAG, 'onNewWant()');
 
-        // 由卡片转入
         if(want?.parameters?.params) {
-            let params: Record<string, Object> = JSON.parse(want.parameters.params as string);
-            this.targetPage = params.targetPage as string;
+            this.handleFormWant(want);
+            // 手动进入目标页面
+            this.loadContent();
+        } else if(want?.parameters?.isFromShortcut) this.handleShortcutWant(want);
+        else Logger.debug(this.LOG_TAG, `onCreate() 应用图标转入`);
 
-            const formID = params.formID as string;
-
-            if((formID ?? false) && formID.trim() !== '') AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_FormID, formID);
-        }
-
-        // 由长按快捷方式转入
-        if(want?.parameters?.isFromShortcut ?? false) AppStorage.setOrCreate('want', want);
-
-        // 将当前 window 替换为新 window
-        if (this.currentWindowStage !== null) {
-            this.onWindowStageCreate(this.currentWindowStage);
-        }
-
-        hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, `onNewWant targetPage: ${this.targetPage}`);
+        Logger.debug(this.LOG_TAG, `onNewWant() targetPage: ${this.targetPage}`);
     }
 
     onDestroy(): void {
-        hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Ability onDestroy');
+        Logger.debug(this.LOG_TAG, 'onDestroy()');
     }
 
     onWindowStageCreate(windowStage: window.WindowStage): void {
         // Main window is created, set main page for this ability
-        hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Ability onWindowStageCreate');
+        Logger.debug(this.LOG_TAG, 'onWindowStageCreate()');
 
-        // 创建新 window
-        if (this.currentWindowStage === null) {
-            this.currentWindowStage = windowStage;
-        }
+        // 设置当前窗口为传入窗口
+        if (this.currentWindowStage === null) this.currentWindowStage = windowStage;
 
-        // 加载指定页面 targetPage
-        windowStage.loadContent(this.targetPage, (err) => {
-            if (err.code) {
-                hilog.error(DOMAIN, this.LOG_PREFIX,this.LOG_FORMAT, this.LOG_TAG, `Failed to load the content. Cause: ${JSON.stringify(err)}`, );
-                return;
-            }
-            hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Succeeded in loading the content.');
-        });
+        // 加载页面
+        this.loadContent();
     }
 
     onWindowStageDestroy(): void {
         // Main window is destroyed, release UI related resources
-        hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Ability onWindowStageDestroy');
+        Logger.debug(this.LOG_TAG, 'onWindowStageDestroy()');
     }
 
     onForeground(): void {
         // Ability has brought to foreground
-        hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Ability onForeground');
+        Logger.debug(this.LOG_TAG, 'onForeground()');
     }
 
     onBackground(): void {
         // Ability has back to background
-        hilog.debug(DOMAIN, this.LOG_PREFIX, this.LOG_FORMAT, this.LOG_TAG, 'Ability onBackground');
+        Logger.debug(this.LOG_TAG, 'onBackground()');
+    }
+
+    private loadContent(): void {
+        if(this.currentWindowStage) {
+            this.currentWindowStage.loadContent(this.targetPage, (err) => {
+                if (err.code) {
+                    Logger.error(this.LOG_TAG, `loadContent() 加载 ${this.targetPage} 失败 ${JSON.stringify(err)}`,);
+                    return;
+                }
+                Logger.debug(this.LOG_TAG, `loadContent() 加载 ${this.targetPage} 成功`);
+            });
+        } else Logger.warn(this.LOG_TAG, 'loadContent() 当前窗口为空');
+    }
+
+    private handleFormWant(want: Want): void {
+        Logger.debug(this.LOG_TAG, `桌面卡片转入`);
+
+        const params: Record<string, Object> = JSON.parse(want?.parameters?.params as string);
+
+        this.targetPage = params.targetPage as string; // 目标页面
+        const formID = params.formID as string; // formID
+
+        if(formID && formID.trim() !== '') AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_FormID, formID);
+    }
+
+    private handleShortcutWant(want: Want): void {
+        Logger.debug(this.LOG_TAG, `长按快捷方式转入`);
+        if(want?.parameters?.shortCutKey) AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_ShortcutPath, want?.parameters?.shortCutKey as string);
     }
 }
