@@ -55,6 +55,10 @@
     {
       "name": "form_background",
       "value": "#162231"
+    },
+    {
+      "name": "form_font_color",
+      "value": "#4b70a3"
     }
   ]
 }
