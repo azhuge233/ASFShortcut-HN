@@ -3,6 +3,7 @@ import { deviceInfo } from '@kit.BasicServicesKit';
 
 import Logger from './Logger';
 import FormData from '../../asfcommandwidget/model/FormData';
+import CommandEntry from '../../model/CommandEntry';
 
 export class PM {
     private LOG_TAG = '[PM]';
@@ -96,20 +97,66 @@ export class PM {
         }
     }
 
-    async removeBindingsByShortcutId(shortcutID: number): Promise<void> {
-        if (!this.dataPreferences) return;
+    async updateByShortcut(commandEntry: CommandEntry): Promise<string[]> {
+        if (!this.dataPreferences) return [];
 
         try {
             const formDataArr = await this.getAllCardBindings();
 
-            // 删除所有绑定该指令的卡片
+            let updatedFormIDs: string[] = [];
+
+            // 更新所有绑定该指令的卡片，统计受影响的 formID
+            formDataArr.forEach(async formData => {
+                if(formData.shortcutID === commandEntry.id) {
+                    updatedFormIDs.push(formData.formID);
+
+                    formData.nickname = commandEntry.nickname;
+                    formData.command = commandEntry.command;
+
+                    await this.bind(formData.formID, formData);
+                }
+            });
+
+            return updatedFormIDs;
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `更新指令绑定失败, ${err}`);
+            return [];
+        }
+    }
+
+    async removeBindingsByShortcutId(shortcutID: number): Promise<string[]> {
+        if (!this.dataPreferences) return [];
+
+        try {
+            const formDataArr = await this.getAllCardBindings();
+
+            let removedFormIDs: string[] = [];
+
+            // 删除所有绑定该指令的卡片，统计受影响的 formID
             formDataArr.forEach(async formData => {
                 if(formData.shortcutID === shortcutID) {
+                    removedFormIDs.push(formData.formID);
                     await this.unbind(formData.formID);
                 }
             });
+
+            return removedFormIDs;
         } catch (err) {
             Logger.error(this.LOG_TAG, `删除指令绑定失败, ${err}`);
+            return [];
+        }
+    }
+
+    async clearAllBindings(): Promise<boolean> {
+        if (!this.dataPreferences) return false;
+
+        try {
+            await this.dataPreferences.clear();
+            if(!this.isGSKVSupported) await this.dataPreferences.flush();
+            return true;
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `清空绑定失败, ${err}`);
+            return false;
         }
     }
 }
