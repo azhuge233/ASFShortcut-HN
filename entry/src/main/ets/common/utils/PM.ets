@@ -9,6 +9,11 @@ export class PM {
     private LOG_TAG = '[PM]';
 
     private static instance: PM | null = null;
+
+    private isInitialized: boolean = false; // 初始化标志
+    private initPromise: Promise<void> | null = null;
+    private resolveInit: (() => void) | null = null;
+
     private dataPreferences: preferences.Preferences | null = null;
 
     private readonly PREFERENCES_NAME = 'ASFS_Forms_Preferences';
@@ -22,20 +27,32 @@ export class PM {
         return PM.instance;
     }
 
-    async init(context: Context): Promise<void> {
-        try {
+    init(context: Context) {
+        if(this.initPromise) return;
+
+        this.initPromise = new Promise((resolve) => {
+            this.resolveInit = resolve;
+
             let options: preferences.Options = {
                 name: this.PREFERENCES_NAME,
                 storageType: this.isGSKVSupported ? preferences.StorageType.GSKV : preferences.StorageType.XML
             }
 
-            this.dataPreferences = await preferences.getPreferences(context, options);
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `初始化失败, ${err}`);
-        }
+            // 异步初始化
+            preferences.getPreferences(context, options).then((preference) => {
+                this.dataPreferences = preference;
+                this.isInitialized = true;
+                resolve(); // 解析Promise表示初始化完成
+            }).catch((err: BusinessError) => {
+                Logger.error(this.LOG_TAG, `首选项初始化失败, ${err}`);
+                resolve(); // 即使失败也要resolve，避免永久阻塞
+            });
+        });
     }
 
     async bind(formId: string, formData: FormData): Promise<boolean> {
+        await this.waitForReady();
+
         if (!this.dataPreferences) return false;
 
         try {
@@ -50,6 +67,8 @@ export class PM {
     }
 
     async unbind(formId: string): Promise<boolean> {
+        await this.waitForReady();
+
         if (!this.dataPreferences) return false;
 
         try {
@@ -68,6 +87,8 @@ export class PM {
     }
 
     async getFormDataByID(formId: string): Promise<FormData | null> {
+        await this.waitForReady();
+
         if (!this.dataPreferences) return null;
 
         try {
@@ -84,6 +105,8 @@ export class PM {
     }
 
     async getAllCardBindings(): Promise<Array<FormData>> {
+        await this.waitForReady();
+
         if (!this.dataPreferences) return [];
 
         try {
@@ -98,6 +121,8 @@ export class PM {
     }
 
     async updateByShortcut(commandEntry: CommandEntry): Promise<string[]> {
+        await this.waitForReady();
+
         if (!this.dataPreferences) return [];
 
         try {
@@ -125,6 +150,8 @@ export class PM {
     }
 
     async removeBindingsByShortcutId(shortcutID: number): Promise<string[]> {
+        await this.waitForReady();
+
         if (!this.dataPreferences) return [];
 
         try {
@@ -148,6 +175,8 @@ export class PM {
     }
 
     async clearAllBindings(): Promise<boolean> {
+        await this.waitForReady();
+
         if (!this.dataPreferences) return false;
 
         try {
@@ -158,5 +187,10 @@ export class PM {
             Logger.error(this.LOG_TAG, `清空绑定失败, ${err}`);
             return false;
         }
+    }
+
+    private async waitForReady(): Promise<void> {
+        if (!this.initPromise) throw new Error("首选项未初始化. 先调用 init()");
+        await this.initPromise;
     }
 }
