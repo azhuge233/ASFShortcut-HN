@@ -21,7 +21,8 @@ export default class EntryAbility extends UIAbility {
             Logger.error(this.LOG_TAG, `设置颜色主题失败, ${JSON.stringify(err)}`);
         }
 
-        DB.getInstance().initDB(this.context);
+        // 持久化存储初始化
+        DB.getInstance().init(this.context);
         PM.getInstance().init(this.context);
 
         if(want?.parameters?.params) this.handleFormWant(want);
@@ -39,7 +40,7 @@ export default class EntryAbility extends UIAbility {
             // 手动进入目标页面
             this.loadContent();
         } else if(want?.parameters?.isFromShortcut) this.handleShortcutWant(want);
-        else Logger.debug(this.LOG_TAG, `onCreate() 应用图标转入`);
+        else Logger.debug(this.LOG_TAG, `onNewWant() 应用图标转入`);
 
         Logger.debug(this.LOG_TAG, `onNewWant() targetPage: ${this.targetPage}`);
     }

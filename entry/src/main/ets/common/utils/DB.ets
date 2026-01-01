@@ -7,6 +7,8 @@ import CommonConstants from '../constants/CommonConstants'
 import CommandEntry from '../../model/CommandEntry';
 
 export class DB {
+    private LOG_TAG = '[DB]'
+
     private static instance: DB | null = null;
 
     private isInitialized: boolean = false; // 初始化标志
@@ -14,8 +16,6 @@ export class DB {
     private resolveInit: (() => void) | null = null;
 
     private rdbStore: relationalStore.RdbStore | undefined;
-
-    private LOG_TAG = '[DB]'
 
     private STORE_CONFIG: relationalStore.StoreConfig = {
         name: 'ASFShortcut.db',
@@ -59,7 +59,7 @@ export class DB {
         return DB.instance;
     }
 
-    public initDB(context: Context) {
+    public init(context: Context) {
         if (this.initPromise) return;
 
         this.initPromise = new Promise((resolve) => {
@@ -78,11 +78,6 @@ export class DB {
                 resolve(); // 即使失败也要resolve，避免永久阻塞
             });
         });
-    }
-
-    public async waitForReady(): Promise<void> {
-        if (!this.initPromise) throw new Error("数据库未初始化. 先调用 initDB()");
-        await this.initPromise;
     }
 
     async saveSetting(key: string, value: string): Promise<boolean> {
@@ -158,6 +153,8 @@ export class DB {
 
     // debug 方法
     async getAllSettings(): Promise<Map<string, string>> {
+        await this.waitForReady();
+
         const settings = new Map<string, string>();
 
         if (!this.rdbStore) {
@@ -260,20 +257,20 @@ export class DB {
 
         const predicates = new relationalStore.RdbPredicates(this.TN_CommandEntries);
 
-        const queryResult = await this.rdbStore.query(predicates, [
-            this.KEY_ID,
-            this.KEY_CommandEntries_Nickname,
-            this.KEY_CommandEntries_Command,
-            this.KEY_CommandEntries_OrderIndex,
-            this.KEY_CommandEntries_AccountInputRequired,
-            this.KEY_CommandEntries_IdInputRequired
-        ]);
-
-        if(queryResult === undefined) throw new Error("查询为空");
-
-        Logger.debug(this.LOG_TAG, `查询结果，行数: ${queryResult.rowCount}, 列数: ${queryResult.columnCount}`)
-
         try {
+            const queryResult = await this.rdbStore.query(predicates, [
+                this.KEY_ID,
+                this.KEY_CommandEntries_Nickname,
+                this.KEY_CommandEntries_Command,
+                this.KEY_CommandEntries_OrderIndex,
+                this.KEY_CommandEntries_AccountInputRequired,
+                this.KEY_CommandEntries_IdInputRequired
+            ]);
+
+            if(queryResult === undefined) throw new Error("查询为空");
+
+            Logger.debug(this.LOG_TAG, `查询结果，行数: ${queryResult.rowCount}, 列数: ${queryResult.columnCount}`)
+
             const commandEntries: Array<CommandEntry> = [];
 
             while (queryResult.goToNextRow()) {
@@ -298,8 +295,6 @@ export class DB {
             return commandEntries;
         } catch (err) {
             throw new Error(`获取快捷指令列表失败, ${err}`);
-        } finally {
-            queryResult.close();
         }
     }
 
@@ -426,5 +421,10 @@ export class DB {
             Logger.error(this.LOG_TAG, `批量更新排序索引失败，已回滚: ${err}`);
             return false;
         }
+    }
+
+    private async waitForReady(): Promise<void> {
+        if (!this.initPromise) throw new Error("数据库未初始化. 先调用 init()");
+        await this.initPromise;
     }
 }

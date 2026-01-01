@@ -1,5 +1,5 @@
 import { common } from '@kit.AbilityKit';
-import { formBindingData, formProvider } from '@kit.FormKit';
+import { formProvider } from '@kit.FormKit';
 
 import StyleConstants from '../common/constants/StyleConstants';
 import { DB } from '../common/utils/DB';
@@ -108,7 +108,7 @@ struct FormEdit {
             await this.pm.bind(this.formID, formData);
 
             // 创建表单绑定数据
-            const formInfo: formBindingData.FormBindingData = formBindingData.createFormBindingData(formData);
+            const formInfo = CommonUtils.createFormBindingData(formData);
             // 更新卡片
             await formProvider.updateForm(this.formID as string, formInfo);
 

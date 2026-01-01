@@ -16,7 +16,6 @@ export default class CommandEntryList {
     }
 
     async loadCommandEntries(): Promise<void> {
-        await this.db.waitForReady();
         try {
             let result = await this.db.getCommandList();
             if(result === undefined) throw new Error("指令列表 undefined");
@@ -27,8 +26,6 @@ export default class CommandEntryList {
     }
 
     async addCommandEntry(commandEntry: CommandEntry): Promise<boolean> {
-        await this.db.waitForReady();
-
         try {
             let newOrderIndex = 0;
             if (this.commandEntries.length > 0) {
@@ -50,8 +47,6 @@ export default class CommandEntryList {
     // 更新成功返回更新 entry 对应的所有 formID
     // 只有更新失败返回布尔值
     async updateCommandEntry(commandEntry: CommandEntry): Promise<boolean | string[]> {
-        await this.db.waitForReady();
-
         try {
             const result = await this.db.updateCommandEntry(commandEntry);
             Logger.debug(this.LOG_TAG, `命令更新成功, ${result}`);
@@ -75,8 +70,6 @@ export default class CommandEntryList {
     // 删除成功返回删除 entry 对应的所有 formID
     // 只有删除失败返回布尔值
     async deleteCommandEntry(commandEntry: CommandEntry): Promise<boolean | string[]> {
-        await this.db.waitForReady();
-
         try {
             const result = await this.db.deleteCommandEntryByID(commandEntry);
             Logger.debug(this.LOG_TAG, `命令删除成功, ${result}`);
@@ -92,8 +85,6 @@ export default class CommandEntryList {
     }
 
     async clearCommandEntry(): Promise<boolean | string[]> {
-        await this.db.waitForReady();
-
         try {
             await this.db.clearTableCommandEntries();
             Logger.debug(this.LOG_TAG, `指令列表清除成功`);
@@ -118,8 +109,6 @@ export default class CommandEntryList {
     }
 
     async updateEntriesOrder(reorderedEntries: Array<Array<number>>): Promise<boolean> {
-        await this.db.waitForReady();
-
         try {
             await this.db.batchUpdateOrderIndices(reorderedEntries);
             Logger.debug(this.LOG_TAG, `顺序更新成功，共更新 ${reorderedEntries.length} 个命令。`);

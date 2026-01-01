@@ -34,7 +34,7 @@ export default class EntryFormAbility extends FormExtensionAbility {
         // Called to notify the form provider that a specified form has been destroyed.
         Logger.debug(this.LOG_TAG, `onRemoveForm() formID: ${formId}`);
 
-        await this.init();
+        this.init();
 
         await this.unbindForm(formId);
     }
@@ -43,7 +43,7 @@ export default class EntryFormAbility extends FormExtensionAbility {
         // Called to notify the form provider to update a specified form.
         Logger.debug(this.LOG_TAG, `${formId} onUpdateForm()`);
 
-        await this.init();
+        this.init();
 
         try {
             const formData = await this.getFormDataByID(formId);
@@ -72,7 +72,7 @@ export default class EntryFormAbility extends FormExtensionAbility {
         // Called when a specified message event defined by the form provider is triggered.
         Logger.debug(this.LOG_TAG, `onFormEvent(), formID: ${formId}, message: ${message}`);
 
-        await this.init();
+        this.init();
 
         // 卡片传参
         const messageObj: Record<string, Object> = JSON.parse(message);
@@ -99,9 +99,9 @@ export default class EntryFormAbility extends FormExtensionAbility {
         Logger.debug(this.LOG_TAG, `onCastToNormalForm() formID: ${formId}`);
     }
 
-    private async init() {
-        this.db.initDB(this.context);
-        await this.pm.init(this.context);
+    private init() {
+        this.db.init(this.context);
+        this.pm.init(this.context);
     }
 
     private async unbindForm(formID: string) {
@@ -125,9 +125,6 @@ export default class EntryFormAbility extends FormExtensionAbility {
             Logger.debug(this.LOG_TAG, `handleUpdateAction() 查询到指令 shortcutID = ${shortcutID} 的 DB 条目`);
 
             const formData = new FormData(formID, true);
-            // const formData = new FormData();
-            // formData.formID = formID;
-            // formData.isInitialized = true;
 
             formData.shortcutID = commandEntry.id;
             formData.nickname = commandEntry.nickname;

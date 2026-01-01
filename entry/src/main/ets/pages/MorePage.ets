@@ -34,8 +34,6 @@ struct MorePage {
     private newCommandViewModel: CommandEntryViewModel = new CommandEntryViewModel();
 
     async export(): Promise<void> {
-        await this.db.waitForReady();
-
         try {
             const settingsJsonObject = new SettingsJsonObject(
                 await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address),
