@@ -81,7 +81,7 @@ export default class EntryFormAbility extends FormExtensionAbility {
 
         // 根据 action 执行：从数据库更新（同步数据库更改）卡片信息（该方法暂时关闭） 或者 从首选项更新卡片信息
         // if(action === CommonConstants.FormMessage_Update) await this.handleUpdateAction(formId, messageObj.data as number); else
-        if(action === CommonConstants.FormMessage_Restore) await this.handleInitAction(formId, messageObj.data as string);
+        if(action === CommonConstants.FormMessage_Restore) await this.handleRestoreAction(formId, messageObj.data as string);
         else Logger.warn(this.LOG_TAG, `onFormEvent() 未知指令: ${action}`);
     }
 
@@ -124,14 +124,14 @@ export default class EntryFormAbility extends FormExtensionAbility {
 
     // 从首选项查询 formID 的绑定数据并输出
     // 不做任何修改，仅输出内容，然后调用 onUpdateForm() 更新卡片 UI
-    private async handleInitAction(formID: string, from: string) {
-        Logger.debug(this.LOG_TAG, `handleInitAction() 调用方: ${from}`);
+    private async handleRestoreAction(formID: string, from: string) {
+        Logger.debug(this.LOG_TAG, `handleRestoreAction() 调用方: ${from}`);
 
         const formData = await this.pm.getFormDataByID(formID);
 
-        if(formData) Logger.debug(this.LOG_TAG, `handleInitAction() 查询到 formID = ${formID} 卡片的绑定数据: ${JSON.stringify(formData)}`);
+        if(formData) Logger.debug(this.LOG_TAG, `handleRestoreAction() 查询到 formID = ${formID} 卡片的绑定数据: ${JSON.stringify(formData)}`);
         else {
-            Logger.warn(this.LOG_TAG, `handleInitAction() 未查询到 formID = ${formID} 卡片的绑定数据`);
+            Logger.warn(this.LOG_TAG, `handleRestoreAction() 未查询到 formID = ${formID} 卡片的绑定数据`);
             await this.unbindForm(formID);
         }
 
