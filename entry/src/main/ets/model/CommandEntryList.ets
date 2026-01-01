@@ -126,7 +126,7 @@ export default class CommandEntryList {
      */
     private async updateAllFormBelongsToEntry(commandEntry: CommandEntry): Promise<string[]> {
         const updatedFormIDs = await this.pm.updateByShortcut(commandEntry);
-        Logger.debug(this.LOG_TAG, `已清除 ${updatedFormIDs.length} 个相关卡片`);
+        Logger.debug(this.LOG_TAG, `已更新 ${updatedFormIDs.length} 个相关卡片`);
         return updatedFormIDs;
     }
 
