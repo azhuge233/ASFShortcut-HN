@@ -44,7 +44,7 @@ export default class ASFCommandWidgetEntryAbility extends UIAbility {
     }
 
     private async init() {
-        this.db.init(this.context);
+        this.db.init(this.context.getApplicationContext());
 
         const asfAddr = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address);
         const asfPwd = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password);
