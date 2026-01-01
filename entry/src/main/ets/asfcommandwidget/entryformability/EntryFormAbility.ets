@@ -77,8 +77,11 @@ export default class EntryFormAbility extends FormExtensionAbility {
         // action 参数
         const action = messageObj.formAction as string;
 
-        // 根据 action 执行：更新卡片信息
-        if(action === CommonConstants.FormMessage_Update) await this.handleUpdateAction(formId, messageObj.data as number);
+        Logger.debug(this.LOG_TAG, `onFormEvent() 接收指令 ${action}`);
+
+        // 根据 action 执行：从数据库更新（同步数据库更改）卡片信息（该方法暂时关闭） 或者 从首选项更新卡片信息
+        // if(action === CommonConstants.FormMessage_Update) await this.handleUpdateAction(formId, messageObj.data as number); else
+        if(action === CommonConstants.FormMessage_Restore) await this.handleInitAction(formId, messageObj.data as string);
         else Logger.warn(this.LOG_TAG, `onFormEvent() 未知指令: ${action}`);
     }
 
@@ -117,31 +120,52 @@ export default class EntryFormAbility extends FormExtensionAbility {
         return formData;
     }
 
-    private async handleUpdateAction(formID: string, shortcutID: number) {
-        const commandEntry = await this.db.getCommandByID(shortcutID);
+    /* 以下为 message 事件相关方法*/
 
-        if(commandEntry && commandEntry.accountInputRequired === 0 && commandEntry.idInputRequired === 0) {
-            Logger.debug(this.LOG_TAG, `handleUpdateAction() 查询到指令 shortcutID = ${shortcutID} 的 DB 条目`);
+    // 从首选项查询 formID 的绑定数据并输出
+    // 不做任何修改，仅输出内容，然后调用 onUpdateForm() 更新卡片 UI
+    private async handleInitAction(formID: string, from: string) {
+        Logger.debug(this.LOG_TAG, `handleInitAction() 调用方: ${from}`);
 
-            const formData = new FormData(formID, true);
+        const formData = await this.pm.getFormDataByID(formID);
 
-            formData.shortcutID = commandEntry.id;
-            formData.nickname = commandEntry.nickname;
-            formData.command = commandEntry.command;
-
-            const success = await this.pm.bind(formID, formData);
-
-            if(success) Logger.debug(this.LOG_TAG, `handleUpdateAction() 已更新 formID = ${formID} 的卡片`);
-            else Logger.warn(this.LOG_TAG, `handleUpdateAction() formID = ${formID} 的卡片更新失败`);
-
-            Logger.debug(this.LOG_TAG, `handleUpdateAction() 已更新 formID = ${formID} 的卡片`);
-        } else {
-            if(!commandEntry) Logger.warn(this.LOG_TAG, `handleUpdateAction() 指令 shortcutID = ${shortcutID} 的条目为空`);
-            else Logger.warn(this.LOG_TAG, `handleUpdateAction() 指令 shortcutID = ${shortcutID} 的条目已更改为包含自定义输入`);
-
+        if(formData) Logger.debug(this.LOG_TAG, `handleInitAction() 查询到 formID = ${formID} 卡片的绑定数据: ${JSON.stringify(formData)}`);
+        else {
+            Logger.warn(this.LOG_TAG, `handleInitAction() 未查询到 formID = ${formID} 卡片的绑定数据`);
             await this.unbindForm(formID);
         }
 
         await this.onUpdateForm(formID);
     }
+
+    // 从数据库查询对应 ID 是否存在条目
+    // 如果存在则将数据库的条目信息同步到卡片绑定数据
+    // 不存在则解绑卡片
+    // private async handleUpdateAction(formID: string, shortcutID: number) {
+    //     const commandEntry = await this.db.getCommandByID(shortcutID);
+    //
+    //     if(commandEntry && commandEntry.accountInputRequired === 0 && commandEntry.idInputRequired === 0) {
+    //         Logger.debug(this.LOG_TAG, `handleUpdateAction() 查询到指令 shortcutID = ${shortcutID} 的 DB 条目`);
+    //
+    //         const formData = new FormData(formID, true);
+    //
+    //         formData.shortcutID = commandEntry.id;
+    //         formData.nickname = commandEntry.nickname;
+    //         formData.command = commandEntry.command;
+    //
+    //         const success = await this.pm.bind(formID, formData);
+    //
+    //         if(success) Logger.debug(this.LOG_TAG, `handleUpdateAction() 已更新 formID = ${formID} 的卡片`);
+    //         else Logger.warn(this.LOG_TAG, `handleUpdateAction() formID = ${formID} 的卡片更新失败`);
+    //
+    //         Logger.debug(this.LOG_TAG, `handleUpdateAction() 已更新 formID = ${formID} 的卡片`);
+    //     } else {
+    //         if(!commandEntry) Logger.warn(this.LOG_TAG, `handleUpdateAction() 指令 shortcutID = ${shortcutID} 的条目为空`);
+    //         else Logger.warn(this.LOG_TAG, `handleUpdateAction() 指令 shortcutID = ${shortcutID} 的条目已更改为包含自定义输入`);
+    //
+    //         await this.unbindForm(formID);
+    //     }
+    //
+    //     await this.onUpdateForm(formID);
+    // }
 }
