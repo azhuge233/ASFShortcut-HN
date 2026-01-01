@@ -21,56 +21,63 @@ export default class ASFCommandWidgetEntryAbility extends UIAbility {
     private command: string = '';
 
     // 如果UIAbility启动，在收到call事件后会触发onCreate生命周期回调
-    async onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): Promise<void> {
+    onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
         Logger.debug(this.LOG_TAG, `onCreate()`);
 
         // Logger.warn(this.LOG_TAG, JSON.stringify(want));
 
-        await this.init();
+        // 直接通过 want 获取 call 事件参数
+        if (want.parameters && want.parameters.params) {
+            const params: Record<string, Object> = JSON.parse(want.parameters.params as string);
 
-        try {
-            // 直接通过 want 获取 call 事件参数
-            if (want.parameters && want.parameters.params) {
-                const params: Record<string, Object> = JSON.parse(want.parameters.params as string);
+            const method = params['method'] as string;
 
-                this.formID = params['formID'] as string;
-                this.shortcutID = params['shortcutID'] as number;
-                this.nickname = params['nickname'] as string;
-                this.command = params['command'] as string;
-
-                Logger.debug(this.LOG_TAG,
-                    `onCreate() 从 call 事件获得参数: ${this.formID}, ${this.shortcutID}, ${this.nickname}, ${this.command}`);
-
-                // 从数据库更新待执行的指令
-                // 防止执行时卡片UI没有及时更新
-                // 对比卡片指令与数据库指令，不一致时使用数据库指令
-                await this.updateCommandFromDB();
-
-                // 向卡片发送正在运行参数
-                await this.sendFormRunning();
-
-                const result = await this.runCommand();
-                await this.showResult(result);
-            } else Logger.warn(this.LOG_TAG, `onCreate() want 为空`);
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `onCreate() 错误, ${err}`);
-        } finally {
-            CommonUtils.closeApplication(this.LOG_TAG, this.context);
-        }
+            // up 方法仅用于拉起应用进程，直接返回
+            // if(method === CommonConstants.FormCall_Up) return; else
+            if(method === CommonConstants.FormCall_Run) this.handleRunMethod(params).then();
+            else Logger.warn(this.LOG_TAG, `onCreate() 未知 method`);
+        } else Logger.warn(this.LOG_TAG, `onCreate() want 为空`);
     }
 
-    async onDestroy(): Promise<void> {
+    onDestroy(): void {
         Logger.debug(this.LOG_TAG, `onDestroy()`);
     }
 
     private async init() {
-        this.db.initDB(this.context);
+        this.db.init(this.context);
 
         const asfAddr = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address);
         const asfPwd = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password);
 
         this.asf.setAddress(asfAddr);
         this.asf.setASFPassword(asfPwd);
+    }
+
+    private async handleRunMethod(params: Record<string, Object>) {
+        try {
+            await this.init();
+
+            this.formID = params['formID'] as string;
+            this.shortcutID = params['shortcutID'] as number;
+            this.nickname = params['nickname'] as string;
+            this.command = params['command'] as string;
+
+            Logger.debug(this.LOG_TAG, `handleRunMethod() 从 call 事件获得参数: ${this.formID}, ${this.shortcutID}, ${this.nickname}, ${this.command}`);
+
+            // 从数据库更新待执行的指令
+            // 防止执行时卡片UI没有及时更新
+            // 对比卡片指令与数据库指令，不一致时使用数据库指令
+            await this.updateCommandFromDB();
+
+            // 向卡片发送正在运行参数
+            await this.sendFormRunning();
+
+            const result = await this.runCommand();
+
+            await this.showResult(result);
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `handleRunMethod() 错误, ${err}`);
+        }
     }
 
     private getNewFormData(): FormData {
@@ -100,8 +107,8 @@ export default class ASFCommandWidgetEntryAbility extends UIAbility {
         if(commandEntry) {
             const dbCommand = commandEntry.command;
             if(dbCommand !== this.command) {
-                Logger.warn(this.LOG_TAG, `DB 指令: ${commandEntry.command}, 卡片指令: ${this.command}, 不一致，使用 DB 指令`);
-                this.command = commandEntry.command;
+                Logger.warn(this.LOG_TAG, `DB 指令: ${dbCommand}, 卡片指令: ${this.command}, 不一致，使用 DB 指令`);
+                this.command = dbCommand;
             }
         }
     }
@@ -114,7 +121,7 @@ export default class ASFCommandWidgetEntryAbility extends UIAbility {
 
             return this.handleResponse(response);
         } catch (err) {
-            Logger.error(this.LOG_TAG, `runCommand() 指令 ${this.command} 执行错误, ${err}`);
+            Logger.error(this.LOG_TAG, `runCommand() 指令 ${this.command} 执行错误`);
             return this.context.resourceManager.getStringSync($r("app.string.Form_Run_Failed_Message").id);
         }
     }
