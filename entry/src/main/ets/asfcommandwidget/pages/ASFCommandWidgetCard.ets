@@ -25,26 +25,19 @@ struct ASFCommandWidgetCard {
 
     private readonly FormEditPageRoute: string = 'pages/FormEdit';
 
-    /* 夺命连环 call
-     * call time 次，对应 Ability 不做任何响应
-     * 仅用于拉起对应 Ability 的进程
-     * 如果 ASF 发送请求时没有 Ability 的进程，有概率谜之中断，进而卡死卡片 UI，卡死时运行一次其他卡片会恢复
-     * 在 ASF 服务端响应慢、网络不稳定时更容易发生，因为 ASF 请求会占用更多时间
-     * 在 Ability 中添加延时无法解决该问题
-     *
-    private bringAppUp(time: number) {
-        for(let i = 0; i < time; i++) {
-            postCardAction(this, {
-                action: this.ActionTypeCall,
-                abilityName: this.WidgetEntryAbilityName,
-                params: {
-                    method: CommonConstants.FormCall_Up,
-                    count: i
-                }
-            });
-        }
+    private sendMessageAction(action: string, data: number | string | null) {
+        postCardAction(this, {
+            action: this.ActionTypeMessage,
+            params: {
+                formAction: action,
+                data: data
+            }
+        });
     }
-    */
+
+    aboutToAppear(): void {
+        this.sendMessageAction(CommonConstants.FormMessage_Restore, 'aboutToAppear()');
+    }
 
     @Builder
     Logo() {
@@ -148,6 +141,9 @@ struct ASFCommandWidgetCard {
         }
         .height(StyleConstants.FULL_PERCENT)
         .width(StyleConstants.FULL_PERCENT)
+        .onAppear(() => {
+            this.sendMessageAction(CommonConstants.FormMessage_Restore, 'Init() Component');
+        })
         .onClick(() => {
             postCardAction(this, {
                 action: this.ActionTypeRouter,
@@ -171,13 +167,7 @@ struct ASFCommandWidgetCard {
         .width(StyleConstants.FULL_PERCENT)
         .onClick(() => {
             if(this.isRunning) {
-                postCardAction(this, {
-                    action: this.ActionTypeMessage,
-                    params: {
-                        formAction: CommonConstants.FormMessage_Update,
-                        data: this.shortcutID
-                    }
-                });
+                this.sendMessageAction(CommonConstants.FormMessage_Restore, 'RunningContent() Component');
             }
         })
     }
@@ -194,13 +184,7 @@ struct ASFCommandWidgetCard {
         .onClick(() => {
             if (!this.isRunning) {
                 if(this.runResult !== '') { // 如果正在显示执行结果，恢复卡片显示
-                    postCardAction(this, {
-                        action: this.ActionTypeMessage,
-                        params: {
-                            formAction: CommonConstants.FormMessage_Update,
-                            data: this.shortcutID
-                        }
-                    });
+                    this.sendMessageAction(CommonConstants.FormMessage_Restore, 'MainContent() Component');
                 } else if (this.isInitialized) { // 正常显示状态，执行指令
                     postCardAction(this, {
                         action: this.ActionTypeCall,
