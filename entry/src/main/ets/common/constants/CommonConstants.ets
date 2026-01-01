@@ -10,6 +10,7 @@ class CommonConstants {
 
     public readonly FormMessage_Update = 'update';
     public readonly FormCall_Run = 'run';
+    // public readonly FormCall_Up = 'up';
 }
 
 export default new CommonConstants();
