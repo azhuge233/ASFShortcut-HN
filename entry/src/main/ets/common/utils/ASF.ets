@@ -13,22 +13,6 @@ export class ASF {
 
     private ContentTypeJson = "application/json";
     private UserAgent = "ASF Shortcut HarmonyOS";
-    private defaultDataCommand = '{"Command": ""}'
-
-    private httpRequestOptions: http.HttpRequestOptions = {
-        method: http.RequestMethod.POST, // 可选，默认为http.RequestMethod.GET。
-        // 当使用POST请求时此字段用于传递请求体内容，具体格式与服务端协商确定。
-        extraData: this.defaultDataCommand,
-        expectDataType: http.HttpDataType.STRING, // 可选，指定返回数据的类型。
-        usingCache: false, // 可选，默认为true。
-        priority: 1, // 可选，默认为1。
-        // 开发者根据自身业务需要添加header字段。
-        header: {}, // 每次请求动态设置
-        readTimeout: 10000, // 可选，默认为60000ms。
-        connectTimeout: 10000, // 可选，默认为60000ms。
-        usingProtocol: http.HttpProtocol.HTTP2, // 可选，协议类型默认值由系统自动指定。
-        usingProxy: false, //可选，默认不使用网络代理，自API 10开始支持该属性。
-    };
 
     // 设置全局服务器地址
     setAddress(address: string) {
@@ -45,8 +29,10 @@ export class ASF {
     // 发送正常指令
     async send(command: string): Promise<http.HttpResponse> {
         try {
-            return await this.sendRequest(this.address, this.asfPassword, command);
+            const result = await this.sendRequest(this.address, this.asfPassword, command);
+            return result;
         } catch (err) {
+            Logger.error(this.LOG_TAG, `send() 错误, ${JSON.stringify(err)}`);
             throw err as Error;
         }
     }
@@ -54,8 +40,10 @@ export class ASF {
     // 发送测试指令
     async sendTest(address: string, password: string, command: string): Promise<http.HttpResponse> {
         try {
-            return await this.sendRequest(this.getFinalAddress(address), password, command);
+            const result = await this.sendRequest(this.getFinalAddress(address), password, command);
+            return result
         } catch (err) {
+            Logger.error(this.LOG_TAG, `sendTest() 错误, ${JSON.stringify(err)}`);
             throw err as Error;
         }
     }
@@ -65,41 +53,40 @@ export class ASF {
         return `${CommonUtils.trimAddress(address)}${this.apiEndpoint}`;
     }
 
-    // 发送请求前设置请求选项
-    // 设置指令参数和 ASF 密码请求头
-    private setHttpRequestOptions(password: string, command: string) {
-        this.httpRequestOptions.extraData = `{"Command":"${command}"}`;
-        this.httpRequestOptions.header = {
-            "Content-Type": this.ContentTypeJson,
-            "User-Agent": this.UserAgent,
-            "Authentication": password
-        }
-    }
-
     // 发送请求
     private async sendRequest(address: string, password: string, command: string) {
-        let httpRequest = http.createHttp();
+        Logger.debug(this.LOG_TAG, `sendRequest() ASF 服务器地址：${address}`);
+        Logger.debug(this.LOG_TAG, `sendRequest() ASF 密码：${password}`);
+        Logger.debug(this.LOG_TAG, `sendRequest() ASF 指令：${command}`);
 
-        this.setHttpRequestOptions(password, command);
+        const httpRequest = http.createHttp();
+
+        // 设置指令参数和 ASF 密码请求头
+        const requestOptions: http.HttpRequestOptions = {
+            method: http.RequestMethod.POST,
+            extraData: `{"Command":"${command}"}`,
+            expectDataType: http.HttpDataType.STRING,
+            usingCache: false,
+            header: {
+                "Content-Type": this.ContentTypeJson,
+                "User-Agent": this.UserAgent,
+                "Authentication": password
+            },
+            readTimeout: 10000,
+            connectTimeout: 3000,
+        };
 
         try {
-            Logger.debug(this.LOG_TAG, `ASF 服务器地址：${address}`);
-            Logger.debug(this.LOG_TAG, `ASF 密码：${password}`);
-            Logger.debug(this.LOG_TAG, `ASF 指令：${command}`);
+            const response = await httpRequest.request(address, requestOptions);
 
-            const response = await httpRequest.request(address, this.httpRequestOptions);
-
-            Logger.debug(this.LOG_TAG, `响应代码：${response.responseCode}`);
-            // Logger.debug(this.LOG_TAG, `Result Type: ${JSON.stringify(response.resultType)}`);
-            // Logger.debug(this.LOG_TAG, `Header: ${JSON.stringify(response.header)}`);
-            Logger.debug(this.LOG_TAG, `响应结果：${response.result}`);
+            Logger.debug(this.LOG_TAG, `sendRequest() 响应代码：${response.responseCode}`);
+            Logger.debug(this.LOG_TAG, `sendRequest() 响应结果：${response.result}`);
 
             return response;
         } catch (err) {
-            Logger.error(this.LOG_TAG, `发送请求失败, ${JSON.stringify(err)}`);
+            Logger.error(this.LOG_TAG, `sendRequest() 发送请求失败, ${JSON.stringify(err)}`);
             throw err as Error;
         } finally {
-            this.httpRequestOptions.extraData = this.defaultDataCommand;
             httpRequest.destroy();
         }
     }
