@@ -32,6 +32,8 @@ export default class ASFCommandWidgetEntryAbility extends UIAbility {
 
             const method = params['method'] as string;
 
+            CommonUtils.vibrate(CommonConstants.Vibrate_Effect_ID_HARD);
+
             // up 方法仅用于拉起应用进程，直接返回（该方法暂时关闭）
             // if(method === CommonConstants.FormCall_Up) return; else
             if(method === CommonConstants.FormCall_Run) this.handleRunMethod(params).then();
