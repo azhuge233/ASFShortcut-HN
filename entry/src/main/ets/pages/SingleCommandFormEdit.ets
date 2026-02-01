@@ -13,7 +13,7 @@ import CommonUtils from '../common/utils/CommonUtils';
 
 @Entry
 @ComponentV2
-struct FormEdit {
+struct SingleCommandFormEdit {
     private LOG_TAG = "[pages/SingleCommandFormEdit]";
 
     @Local listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
