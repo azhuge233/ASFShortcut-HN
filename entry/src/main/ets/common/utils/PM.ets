@@ -50,7 +50,7 @@ export class PM {
         });
     }
 
-    async bind(formId: string, formData: SingleCommandFormData): Promise<boolean> {
+    async bindSingle(formId: string, formData: SingleCommandFormData): Promise<boolean> {
         await this.waitForReady();
 
         if (!this.dataPreferences) return false;
@@ -86,7 +86,7 @@ export class PM {
         }
     }
 
-    async getFormDataByID(formId: string): Promise<SingleCommandFormData | null> {
+    async getFormDataByIDSingle(formId: string): Promise<SingleCommandFormData | null> {
         await this.waitForReady();
 
         if (!this.dataPreferences) return null;
@@ -104,7 +104,7 @@ export class PM {
         }
     }
 
-    async getAllCardBindings(): Promise<Array<SingleCommandFormData>> {
+    async getAllCardBindingsSingle(): Promise<Array<SingleCommandFormData>> {
         await this.waitForReady();
 
         if (!this.dataPreferences) return [];
@@ -120,13 +120,13 @@ export class PM {
         }
     }
 
-    async updateByShortcut(commandEntry: CommandEntry): Promise<string[]> {
+    async updateByShortcutSingle(commandEntry: CommandEntry): Promise<string[]> {
         await this.waitForReady();
 
         if (!this.dataPreferences) return [];
 
         try {
-            const formDataArr = await this.getAllCardBindings();
+            const formDataArr = await this.getAllCardBindingsSingle();
 
             let updatedFormIDs: string[] = [];
 
@@ -149,13 +149,13 @@ export class PM {
         }
     }
 
-    async removeBindingsByShortcutId(shortcutID: number): Promise<string[]> {
+    async removeBindingsByShortcutIdSingle(shortcutID: number): Promise<string[]> {
         await this.waitForReady();
 
         if (!this.dataPreferences) return [];
 
         try {
-            const formDataArr = await this.getAllCardBindings();
+            const formDataArr = await this.getAllCardBindingsSingle();
 
             let removedFormIDs: string[] = [];
 
