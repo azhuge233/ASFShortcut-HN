@@ -61,7 +61,7 @@ export class PM {
             if(!this.isGSKVSupported) await this.dataPreferences.flush();
             return true;
         } catch (err) {
-            Logger.error(this.LOG_TAG, `绑定卡片失败, ${err}`);
+            Logger.error(this.LOG_TAG, `bindSingle() 绑定卡片失败, ${err}`);
             return false;
         }
     }
@@ -81,7 +81,7 @@ export class PM {
 
             return true;
         } catch (err) {
-            Logger.error(this.LOG_TAG, `解除绑定失败, ${err}`);
+            Logger.error(this.LOG_TAG, `unbind() 解除绑定失败, ${err}`);
             return false;
         }
     }
@@ -99,7 +99,7 @@ export class PM {
                 return formData;
             } else return null;
         } catch (err) {
-            Logger.error(this.LOG_TAG, `获取绑定失败, ${err}`);
+            Logger.error(this.LOG_TAG, `getFormDataByIDSingle() 获取绑定失败, ${err}`);
             return null;
         }
     }
@@ -115,7 +115,7 @@ export class PM {
 
             return keys.map(key => JSON.parse(formDataMap[key]) as SingleCommandFormData);
         } catch (err) {
-            Logger.error(this.LOG_TAG, `获取所有绑定失败, ${err}`);
+            Logger.error(this.LOG_TAG, `getAllCardBindingsSingle() 获取所有绑定失败, ${err}`);
             return [];
         }
     }
@@ -131,20 +131,20 @@ export class PM {
             let updatedFormIDs: string[] = [];
 
             // 更新所有绑定该指令的卡片，统计受影响的 formID
-            formDataArr.forEach(async formData => {
+            for(const formData of formDataArr) {
                 if(formData.shortcutID === commandEntry.id) {
                     updatedFormIDs.push(formData.formID);
 
                     formData.nickname = commandEntry.nickname;
                     formData.command = commandEntry.command;
 
-                    await this.bind(formData.formID, formData);
+                    await this.bindSingle(formData.formID, formData);
                 }
-            });
+            }
 
             return updatedFormIDs;
         } catch (err) {
-            Logger.error(this.LOG_TAG, `更新指令绑定失败, ${err}`);
+            Logger.error(this.LOG_TAG, `updateByShortcutSingle() 更新指令绑定失败, ${err}`);
             return [];
         }
     }
@@ -170,6 +170,10 @@ export class PM {
             return removedFormIDs;
         } catch (err) {
             Logger.error(this.LOG_TAG, `删除指令绑定失败, ${err}`);
+            Logger.error(this.LOG_TAG, `removeBindingsByShortcutIdSingle() 删除指令绑定失败, ${err}`);
+            return [];
+        }
+    }
             return [];
         }
     }
