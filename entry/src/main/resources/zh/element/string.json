@@ -33,11 +33,19 @@
       "value": "单个指令卡片"
     },
     {
-      "name": "ASFCommandWidget_desc",
-      "value": "单个指令卡片"
+      "name": "MultipleCommandsWidget_desc",
+      "value": "多指令卡片"
     },
     {
-      "name": "ASFCommandWidget_display_name",
+      "name": "MultipleCommandsWidget_display_name",
+      "value": "ASF 快捷指令"
+    },
+    {
+      "name": "SingleCommandWidget_desc",
+      "value": "单指令卡片"
+    },
+    {
+      "name": "SingleCommandWidget_display_name",
       "value": "ASF 快捷指令"
     },
     {

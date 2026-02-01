@@ -33,11 +33,19 @@
       "value": "Single Command Widget"
     },
     {
-      "name": "ASFCommandWidget_desc",
-      "value": "Single Command Widget."
+      "name": "MultipleCommandsWidget_desc",
+      "value": "Multiple Commands Widget"
     },
     {
-      "name": "ASFCommandWidget_display_name",
+      "name": "MultipleCommandsWidget_display_name",
+      "value": "ASF Shortcut"
+    },
+    {
+      "name": "SingleCommandWidget_desc",
+      "value": "Single Command Widget"
+    },
+    {
+      "name": "SingleCommandWidget_display_name",
       "value": "ASF Shortcut"
     },
     {
