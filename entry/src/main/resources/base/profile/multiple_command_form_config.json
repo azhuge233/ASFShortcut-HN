@@ -1,10 +1,10 @@
 {
   "forms": [
     {
-      "name": "SingleCommandWidget",
-      "displayName": "$string:SingleCommandWidget_display_name",
-      "description": "$string:SingleCommandWidget_desc",
-      "src": "./ets/singlecommandwidget/pages/SingleCommandWidgetCard.ets",
+      "name": "MultipleCommandsWidget",
+      "displayName": "$string:MultipleCommandsWidget_display_name",
+      "description": "$string:MultipleCommandsWidget_desc",
+      "src": "./ets/multiplecommandswidget/pages/MultiplecommandswidgetCard.ets",
       "uiSyntax": "arkts",
       "window": {
         "designWidth": 720,
@@ -14,15 +14,14 @@
       "fontScaleFollowSystem": false,
       "resizable": false,
       "isDynamic": true,
-      "isDefault": true,
+      "isDefault": false,
       "updateEnabled": true,
       "scheduledUpdateTime": "10:30",
       "updateDuration": 1,
-      "defaultDimension": "1*2",
+      "defaultDimension": "2*4",
       "supportDimensions": [
-        "1*2",
-        "2*2",
-        "2*4"
+        "2*4",
+        "4*4"
       ]
     }
   ]
