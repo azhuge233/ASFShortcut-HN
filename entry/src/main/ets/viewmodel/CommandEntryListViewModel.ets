@@ -6,6 +6,7 @@ import { CommandEntryJsonObject } from '../model/JsonObjects';
 import { CommandEntryViewModel } from "./CommandEntryViewModel";
 import { formProvider } from '@kit.FormKit';
 import CommonUtils from '../common/utils/CommonUtils';
+import CommonConstants from '../common/constants/CommonConstants';
 
 @ObservedV2
 export default class CommandEntryListViewModel {
@@ -130,20 +131,32 @@ export default class CommandEntryListViewModel {
         return false;
     }
 
-    private async updateForms(formIDs: string[]): Promise<boolean> {
-        if(formIDs.length === 0) return true;
+    private async updateForms(formIDMap: Map<string, string[]>): Promise<boolean> {
+        const singleFormIDs = formIDMap.get(CommonConstants.FormResult_MapKey_Single) ?? [];
+        const multipleFormIDs = formIDMap.get(CommonConstants.FormResult_MapKey_Multiple) ?? [];
+
+        if(singleFormIDs.length === 0 && multipleFormIDs.length === 0) return true;
 
         try {
-            formIDs.forEach(async formID => {
-                const formData = await this.pm.getFormDataByID(formID);
+            for(const formID of singleFormIDs) {
+                const formData = await this.pm.getFormDataByIDSingle(formID);
 
                 // 如果 formData 不为空，生成新 FormBindingData 更新卡片 UI
                 // 如果 formData 为空，说明该卡片已解绑，生成空 FormBindingData
-                const formInfo = CommonUtils.createFormBindingData(formData ?? formID);
+                const formInfo = CommonUtils.createSingleCommandFormBindingData(formData ?? formID);
                 await formProvider.updateForm(formID, formInfo);
 
-                Logger.debug(this.LOG_TAG, `已更新卡片, formID = ${formID}`);
-            });
+                Logger.debug(this.LOG_TAG, `已更新单指令卡片, formID = ${formID}`);
+            }
+
+            for(const formID of multipleFormIDs) {
+                const formData = await this.pm.getFormDataByIDMultiple(formID);
+
+                const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData ?? formID);
+                await formProvider.updateForm(formID, formInfo);
+
+                Logger.debug(this.LOG_TAG, `已更新多指令卡片, formID = ${formID}`);
+            }
 
             return true;
         } catch (err) {
