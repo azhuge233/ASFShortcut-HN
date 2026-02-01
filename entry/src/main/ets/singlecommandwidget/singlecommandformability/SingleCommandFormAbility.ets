@@ -4,9 +4,9 @@ import { Want } from '@kit.AbilityKit';
 import Logger from '../../common/utils/Logger';
 import { DB } from '../../common/utils/DB';
 import { PM } from '../../common/utils/PM';
-import FormData from '../model/SingleCommandFormData';
 import CommonConstants from '../../common/constants/CommonConstants';
 import CommonUtils from '../../common/utils/CommonUtils';
+import SingleCommandFormData from '../model/SingleCommandFormData';
 
 export default class SingleCommandFormAbility extends FormExtensionAbility {
     private LOG_TAG = '[SingleCommandFormAbility]';
@@ -112,9 +112,8 @@ export default class SingleCommandFormAbility extends FormExtensionAbility {
         else Logger.warn(this.LOG_TAG, `unbindForm() 删除卡片绑定失败: ${formID}`)
     }
 
-    private async getFormDataByID(formID: string): Promise<FormData | null> {
-        const formData = await this.pm.getFormDataByID(formID);
     private async getFormDataByID(formID: string): Promise<SingleCommandFormData | null> {
+        const formData = await this.pm.getFormDataByIDSingle(formID);
 
         Logger.debug(this.LOG_TAG, `getFormDataByID() ${formID} 查询结果: ${JSON.stringify(formData)}`);
 
@@ -128,7 +127,7 @@ export default class SingleCommandFormAbility extends FormExtensionAbility {
     private async handleRestoreAction(formID: string, from: string) {
         Logger.debug(this.LOG_TAG, `handleRestoreAction() 调用方: ${from}`);
 
-        const formData = await this.pm.getFormDataByID(formID);
+        const formData = await this.pm.getFormDataByIDSingle(formID);
 
         if(formData) Logger.debug(this.LOG_TAG, `handleRestoreAction() 查询到 formID = ${formID} 卡片的绑定数据: ${JSON.stringify(formData)}`);
         else {
