@@ -54,11 +54,11 @@ struct ASFCommandWidgetCard {
             LoadingProgress()
                 .height(StyleConstants.SIXTY_PERCENT)
                 .width(StyleConstants.SIXTY_PERCENT)
-                // .color($r("app.color.form_font_color"))
+                .color(Color.White)
 
             Text($r("app.string.Form_Running_Label"))
                 .fontSize(StyleConstants.FORM_RUNNING_LABEL_FONT_SIZE)
-                // .fontColor($r("app.color.form_font_color"))
+                .fontColor(Color.White)
         }
         .width(StyleConstants.SEVENTY_PERCENT)
         .alignItems(HorizontalAlign.Center)
