@@ -5,7 +5,7 @@ let storage = new LocalStorage();
 
 @Entry(storage)
 @Component
-struct ASFCommandWidgetCard {
+struct SingleCommandWidgetCard {
     @LocalStorageProp('formID') private formID: string = '';
     @LocalStorageProp('isInitialized') private isInitialized: boolean = false;
     @LocalStorageProp('isRunning') private isRunning: boolean = false;
@@ -21,9 +21,9 @@ struct ASFCommandWidgetCard {
     private readonly ActionTypeMessage = 'message';
 
     private readonly EntryAbilityName: string = 'EntryAbility';
-    private readonly WidgetEntryAbilityName: string = 'ASFCommandWidgetEntryAbility';
+    private readonly WidgetEntryAbilityName: string = 'SingleCommandWidgetEntryAbility';
 
-    private readonly FormEditPageRoute: string = 'pages/FormEdit';
+    private readonly FormEditPageRoute: string = 'pages/SingleCommandFormEdit';
 
     private sendMessageAction(action: string, data: number | string | null) {
         postCardAction(this, {

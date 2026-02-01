@@ -7,14 +7,14 @@ import Logger from '../common/utils/Logger';
 import { PM } from '../common/utils/PM';
 import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
 import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
-import FormData from '../asfcommandwidget/model/FormData';
+import FormData from '../singlecommandwidget/model/SingleCommandFormData';
 import CommonConstants from '../common/constants/CommonConstants';
 import CommonUtils from '../common/utils/CommonUtils';
 
 @Entry
 @ComponentV2
 struct FormEdit {
-    private LOG_TAG = "[pages/FormEdit]";
+    private LOG_TAG = "[pages/SingleCommandFormEdit]";
 
     @Local listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
 

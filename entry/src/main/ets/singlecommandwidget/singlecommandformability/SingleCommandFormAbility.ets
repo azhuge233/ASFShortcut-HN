@@ -4,12 +4,12 @@ import { Want } from '@kit.AbilityKit';
 import Logger from '../../common/utils/Logger';
 import { DB } from '../../common/utils/DB';
 import { PM } from '../../common/utils/PM';
-import FormData from '../model/FormData';
+import FormData from '../model/SingleCommandFormData';
 import CommonConstants from '../../common/constants/CommonConstants';
 import CommonUtils from '../../common/utils/CommonUtils';
 
-export default class EntryFormAbility extends FormExtensionAbility {
-    private LOG_TAG = '[EntryFormAbility]';
+export default class SingleCommandFormAbility extends FormExtensionAbility {
+    private LOG_TAG = '[SingleCommandFormAbility]';
 
     private db: DB = DB.getInstance();
     private pm: PM = PM.getInstance();

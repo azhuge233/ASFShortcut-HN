@@ -1,4 +1,4 @@
-export default class FormData {
+export default class SingleCommandFormData {
     formID: string = '';
     isInitialized: boolean = false;
     isRunning: boolean = false;

@@ -7,10 +7,10 @@ import Logger from '../../common/utils/Logger';
 import { ASF } from '../../common/utils/ASF';
 import { DB } from '../../common/utils/DB';
 import CommonConstants from '../../common/constants/CommonConstants';
-import FormData from '../model/FormData';
+import FormData from '../model/SingleCommandFormData';
 
-export default class ASFCommandWidgetEntryAbility extends UIAbility {
-    private LOG_TAG = "[ASFCommandWidgetEntryAbility]";
+export default class SingleCommandWidgetEntryAbility extends UIAbility {
+    private LOG_TAG = "[SingleCommandWidgetEntryAbility]";
 
     private db = DB.getInstance();
     private asf = new ASF();

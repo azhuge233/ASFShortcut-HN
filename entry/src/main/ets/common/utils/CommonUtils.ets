@@ -9,7 +9,7 @@ import { formBindingData } from '@kit.FormKit';
 
 import Logger from './Logger';
 import { ExportJson } from '../../model/JsonObjects';
-import FormData from '../../asfcommandwidget/model/FormData';
+import SingleCommandFormData from '../../singlecommandwidget/model/SingleCommandFormData';
 
 class CommonUtils {
     private LOG_TAG = "[CommonUtils]";
@@ -191,7 +191,7 @@ class CommonUtils {
     }
 
     // 根据 data 类型创建 FormBindingData
-    public createFormBindingData(data: string | FormData): formBindingData.FormBindingData {
+    public createFormBindingData(data: string | SingleCommandFormData): formBindingData.FormBindingData {
         if(typeof(data) === "string") return this.createEmptyFormBindingData(data);
         else return formBindingData.createFormBindingData(data);
     }
@@ -208,7 +208,7 @@ class CommonUtils {
 
     // 创建对应 formID 的空 FormData
     private createEmptyFormBindingData(formID: string): formBindingData.FormBindingData {
-        const formData: FormData = new FormData(formID, false);
+        const formData: SingleCommandFormData = new SingleCommandFormData(formID, false);
 
         return formBindingData.createFormBindingData(formData);
     }

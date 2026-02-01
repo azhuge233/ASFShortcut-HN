@@ -25,16 +25,16 @@
       "value": "Widget Event Call"
     },
     {
-      "name": "EntryFormAbility_desc",
-      "value": "ASF Shortcut Widget"
+      "name": "SingleCommandFormAbility_desc",
+      "value": "Single Command Widget"
     },
     {
-      "name": "EntryFormAbility_label",
-      "value": "ASF Shortcut Widget"
+      "name": "SingleCommandFormAbility_label",
+      "value": "Single Command Widget"
     },
     {
       "name": "ASFCommandWidget_desc",
-      "value": "ASF Shortcut Widget."
+      "value": "Single Command Widget."
     },
     {
       "name": "ASFCommandWidget_display_name",

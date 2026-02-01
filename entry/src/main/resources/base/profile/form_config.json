@@ -4,7 +4,7 @@
       "name": "ASFCommandWidget",
       "displayName": "$string:ASFCommandWidget_display_name",
       "description": "$string:ASFCommandWidget_desc",
-      "src": "./ets/asfcommandwidget/pages/ASFCommandWidgetCard.ets",
+      "src": "./ets/singlecommandwidget/pages/SingleCommandWidgetCard.ets",
       "uiSyntax": "arkts",
       "window": {
         "designWidth": 720,

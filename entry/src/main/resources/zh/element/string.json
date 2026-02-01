@@ -25,16 +25,16 @@
       "value": "桌面卡片事件监听"
     },
     {
-      "name": "EntryFormAbility_desc",
-      "value": "ASF 快捷指令卡片"
+      "name": "SingleCommandFormAbility_desc",
+      "value": "单个指令卡片"
     },
     {
-      "name": "EntryFormAbility_label",
-      "value": "ASF 快捷指令卡片"
+      "name": "SingleCommandFormAbility_label",
+      "value": "单个指令卡片"
     },
     {
       "name": "ASFCommandWidget_desc",
-      "value": "ASF 快捷指令卡片"
+      "value": "单个指令卡片"
     },
     {
       "name": "ASFCommandWidget_display_name",

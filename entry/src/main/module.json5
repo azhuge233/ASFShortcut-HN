@@ -39,8 +39,8 @@
         ]
       },
       {
-        "name": 'ASFCommandWidgetEntryAbility',
-        "srcEntry": "./ets/asfcommandwidget/asfcommandwidgetentryability/ASFCommandWidgetEntryAbility.ets",
+        "name": 'SingleCommandWidgetEntryAbility',
+        "srcEntry": "./ets/singlecommandwidget/singlecommandwidgetentryability/SingleCommandWidgetEntryAbility.ets",
         "description": '$string:WidgetEventCallCard_desc',
         "icon": "$media:app_icon_layered",
         "label": "$string:WidgetEventCallCard_label",
@@ -60,13 +60,13 @@
             "name": "ohos.extension.backup",
             "resource": "$profile:backup_config"
           }
-        ],
+        ]
       },
       {
-        "name": "EntryFormAbility",
-        "srcEntry": "./ets/asfcommandwidget/entryformability/EntryFormAbility.ets",
-        "label": "$string:EntryFormAbility_label",
-        "description": "$string:EntryFormAbility_desc",
+        "name": "SingleCommandFormAbility",
+        "srcEntry": "./ets/singlecommandwidget/singlecommandformability/SingleCommandFormAbility.ets",
+        "label": "$string:SingleCommandFormAbility_label",
+        "description": "$string:SingleCommandFormAbility_desc",
         "type": "form",
         "metadata": [
           {
