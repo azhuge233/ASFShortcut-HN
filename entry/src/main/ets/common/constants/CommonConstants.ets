@@ -13,6 +13,9 @@ class CommonConstants {
 
     public readonly FormCall_Run = 'run';
     // public readonly FormCall_Up = 'up';
+
+    public readonly FormResult_MapKey_Single = 'single';
+    public readonly FormResult_MapKey_Multiple = 'multiple';
 }
 
 export default new CommonConstants();
