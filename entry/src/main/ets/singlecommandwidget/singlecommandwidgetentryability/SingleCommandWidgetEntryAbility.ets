@@ -96,7 +96,7 @@ export default class SingleCommandWidgetEntryAbility extends UIAbility {
         const formData = this.getNewFormData();
         formData.isRunning = true;
 
-        const formInfo = CommonUtils.createFormBindingData(formData);
+        const formInfo = CommonUtils.createSingleCommandFormBindingData(formData);
         try {
             await formProvider.updateForm(this.formID, formInfo);
         } catch (err) {
@@ -156,7 +156,7 @@ export default class SingleCommandWidgetEntryAbility extends UIAbility {
 
             formData.runResult = result; // 显示执行结果
             formData.isRunning = false; // 取消卡片正在运行状态
-            const formInfo = CommonUtils.createFormBindingData(formData);
+            const formInfo = CommonUtils.createSingleCommandFormBindingData(formData);
             await formProvider.updateForm(this.formID, formInfo); // 更新
 
             // await formProvider.setFormNextRefreshTime(this.formID, 5);
