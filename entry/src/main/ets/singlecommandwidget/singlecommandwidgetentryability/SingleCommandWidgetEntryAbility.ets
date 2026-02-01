@@ -7,7 +7,7 @@ import Logger from '../../common/utils/Logger';
 import { ASF } from '../../common/utils/ASF';
 import { DB } from '../../common/utils/DB';
 import CommonConstants from '../../common/constants/CommonConstants';
-import FormData from '../model/SingleCommandFormData';
+import SingleCommandFormData from '../model/SingleCommandFormData';
 
 export default class SingleCommandWidgetEntryAbility extends UIAbility {
     private LOG_TAG = "[SingleCommandWidgetEntryAbility]";
@@ -82,8 +82,8 @@ export default class SingleCommandWidgetEntryAbility extends UIAbility {
         }
     }
 
-    private getNewFormData(): FormData {
-        const formData = new FormData(this.formID, true);
+    private getNewFormData(): SingleCommandFormData {
+        const formData = new SingleCommandFormData(this.formID, true);
 
         formData.shortcutID = this.shortcutID;
         formData.nickname = this.nickname;
