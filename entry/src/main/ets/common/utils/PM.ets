@@ -112,7 +112,8 @@ export class PM {
 
         try {
             const formDataMap = (await this.dataPreferences.getAll() ?? {}) as Record<string, string>;
-            const keys = Object.keys(formDataMap);
+            let keys = Object.keys(formDataMap);
+            keys = keys.filter(key => formDataMap[key].indexOf("commandList") === -1);
 
             return keys.map(key => JSON.parse(formDataMap[key]) as SingleCommandFormData);
         } catch (err) {
@@ -216,7 +217,8 @@ export class PM {
 
         try {
             const formDataMap = (await this.dataPreferences.getAll() ?? {}) as Record<string, string>;
-            const keys = Object.keys(formDataMap);
+            let keys = Object.keys(formDataMap);
+            keys = keys.filter(key => formDataMap[key].indexOf("commandList") !== -1);
 
             return keys.map(key => JSON.parse(formDataMap[key]) as MultipleCommandsFormData);
         } catch (err) {
