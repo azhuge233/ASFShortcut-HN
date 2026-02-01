@@ -1,9 +1,9 @@
 {
   "forms": [
     {
-      "name": "ASFCommandWidget",
-      "displayName": "$string:ASFCommandWidget_display_name",
-      "description": "$string:ASFCommandWidget_desc",
+      "name": "SingleCommandWidget",
+      "displayName": "$string:SingleCommandWidget_display_name",
+      "description": "$string:SingleCommandWidget_desc",
       "src": "./ets/singlecommandwidget/pages/SingleCommandWidgetCard.ets",
       "uiSyntax": "arkts",
       "window": {
