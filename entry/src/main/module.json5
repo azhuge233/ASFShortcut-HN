@@ -74,6 +74,19 @@
             "resource": "$profile:single_command_form_config"
           }
         ]
+      },
+      {
+        "name": "MultipleCommandsFormAbility",
+        "srcEntry": "./ets/multiplecommandswidget/multiplecommandsformability/MultipleCommandsFormAbility.ets",
+        "label": "$string:MultipleCommandsFormAbility_label",
+        "description": "$string:MultipleCommandsFormAbility_desc",
+        "type": "form",
+        "metadata": [
+          {
+            "name": "ohos.extension.form",
+            "resource": "$profile:multiple_command_form_config"
+          }
+        ]
       }
     ],
     "requestPermissions": [
