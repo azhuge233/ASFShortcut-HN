@@ -114,6 +114,7 @@ export default class SingleCommandFormAbility extends FormExtensionAbility {
 
     private async getFormDataByID(formID: string): Promise<FormData | null> {
         const formData = await this.pm.getFormDataByID(formID);
+    private async getFormDataByID(formID: string): Promise<SingleCommandFormData | null> {
 
         Logger.debug(this.LOG_TAG, `getFormDataByID() ${formID} 查询结果: ${JSON.stringify(formData)}`);
 
