@@ -33,6 +33,14 @@
       "value": "单指令卡片"
     },
     {
+      "name": "MultipleCommandsFormAbility_desc",
+      "value": "多指令卡片"
+    },
+    {
+      "name": "MultipleCommandsFormAbility_label",
+      "value": "多指令卡片"
+    },
+    {
       "name": "MultipleCommandsWidget_desc",
       "value": "多指令卡片"
     },

@@ -33,6 +33,14 @@
       "value": "Single Command Widget"
     },
     {
+      "name": "MultipleCommandsFormAbility_desc",
+      "value": "Mutiple Commands Widget"
+    },
+    {
+      "name": "MultipleCommandsFormAbility_label",
+      "value": "Mutiple Commands Widget"
+    },
+    {
       "name": "MultipleCommandsWidget_desc",
       "value": "Multiple Commands Widget"
     },
