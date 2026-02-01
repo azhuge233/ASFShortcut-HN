@@ -10,6 +10,7 @@ import { formBindingData } from '@kit.FormKit';
 import Logger from './Logger';
 import { ExportJson } from '../../model/JsonObjects';
 import SingleCommandFormData from '../../singlecommandwidget/model/SingleCommandFormData';
+import MultipleCommandsFormData from '../../multiplecommandswidget/model/MultipleCommandsFormData';
 
 class CommonUtils {
     private LOG_TAG = "[CommonUtils]";
