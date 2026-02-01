@@ -71,7 +71,7 @@
         "metadata": [
           {
             "name": "ohos.extension.form",
-            "resource": "$profile:form_config"
+            "resource": "$profile:single_command_form_config"
           }
         ]
       }
