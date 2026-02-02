@@ -59,6 +59,10 @@
     {
       "name": "form_font_color",
       "value": "#4b70a3"
+    },
+    {
+      "name": "form_command_background",
+      "value": "#202e43"
     }
   ]
 }
