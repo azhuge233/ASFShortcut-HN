@@ -4,7 +4,7 @@
       "name": "MultipleCommandsWidget",
       "displayName": "$string:MultipleCommandsWidget_display_name",
       "description": "$string:MultipleCommandsWidget_desc",
-      "src": "./ets/multiplecommandswidget/pages/MultiplecommandswidgetCard.ets",
+      "src": "./ets/multiplecommandswidget/pages/MultipleCommandsWidgetCard.ets",
       "uiSyntax": "arkts",
       "window": {
         "designWidth": 720,
