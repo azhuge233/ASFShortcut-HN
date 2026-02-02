@@ -5,6 +5,7 @@
     "pages/EditPage",
     "pages/SettingsPage",
     "pages/MorePage",
-    "pages/SingleCommandFormEdit"
+    "pages/SingleCommandFormEdit",
+    "pages/MultipleCommandsFormEdit"
   ]
 }
