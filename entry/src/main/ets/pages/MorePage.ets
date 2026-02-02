@@ -48,11 +48,9 @@ struct MorePage {
             const success = await CommonUtils.saveToFile(jsonString, this.context);
 
             if (success) CommonUtils.alert($r("app.string.More_Export_Success"), this.promptAction);
-            else {
-                CommonUtils.alert($r("app.string.More_Export_Failed"), this.promptAction);
-                Logger.error(this.LOG_TAG, `导出失败`);
-            }
+            else Logger.warn(this.LOG_TAG, `导出取消`);
         } catch (err) {
+            CommonUtils.alert($r("app.string.More_Export_Failed"), this.promptAction);
             Logger.error(this.LOG_TAG, `导出失败, ${err}`)
         }
     }
