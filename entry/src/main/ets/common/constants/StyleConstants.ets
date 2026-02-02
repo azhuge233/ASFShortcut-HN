@@ -90,6 +90,7 @@ class StyleConstants {
     public readonly FORM_RESULT_LABEL_FONT_SIZE = 10;
     public readonly FORM_RUNNING_LABEL_FONT_SIZE = 13;
     public readonly FORM_LIST_ITEM_BORDER_RADIUS = 13;
+    public readonly FORM_LIST_ITEM_HEIGHT = 50;
 }
 
 export default new StyleConstants();

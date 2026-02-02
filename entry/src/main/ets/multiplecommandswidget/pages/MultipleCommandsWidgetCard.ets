@@ -119,7 +119,7 @@ struct SingleCommandWidgetCard {
                                     right: StyleConstants.MARGIN_FIVE
                                 })
                             }
-                            .height(50)
+                            .height(StyleConstants.FORM_LIST_ITEM_HEIGHT)
                             .width(StyleConstants.NINETY_PERCENT)
                             .borderRadius(StyleConstants.FORM_LIST_ITEM_BORDER_RADIUS)
                             .backgroundColor($r("app.color.form_command_background"))
