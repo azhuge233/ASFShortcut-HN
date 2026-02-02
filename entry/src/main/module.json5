@@ -47,6 +47,16 @@
         "startWindowIcon": "$media:startIcon",
         "startWindowBackground": "$color:start_window_background",
         "launchType": "multiton"
+      },
+      {
+        "name": 'MultipleCommandsWidgetEntryAbility',
+        "srcEntry": "./ets/multiplecommandswidget/multiplecommandswidgetentryability/MultipleCommandsWidgetEntryAbility.ets",
+        "description": '$string:WidgetEventCallCard_desc',
+        "icon": "$media:app_icon_layered",
+        "label": "$string:WidgetEventCallCard_label",
+        "startWindowIcon": "$media:startIcon",
+        "startWindowBackground": "$color:start_window_background",
+        "launchType": "multiton"
       }
     ],
     "extensionAbilities": [
