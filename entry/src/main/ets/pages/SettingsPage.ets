@@ -1,3 +1,5 @@
+import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
+
 import Logger from '../common/utils/Logger';
 import { DB } from '../common/utils/DB';
 import CommonConstants from '../common/constants/CommonConstants';
@@ -48,7 +50,7 @@ struct SettingsPage {
     }
 
     build() {
-        NavDestination() {
+        HdsNavDestination() {
             Column() {
                 Text($r("app.string.SettingsPage_Title"))
                     .fontSize(StyleConstants.SETTINGS_PAGE_TITLE_FONT_SIZE)
@@ -99,6 +101,15 @@ struct SettingsPage {
                     })
             }
         }
+        .titleBar({
+            style: {
+                systemMaterialEffect: {
+                    materialType: hdsMaterial.MaterialType.ADAPTIVE,
+                    materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+                }
+            },
+            enableComponentSafeArea: true
+        })
         .width(StyleConstants.FULL_PERCENT)
         .height(StyleConstants.FULL_PERCENT)
         .onReady((context: NavDestinationContext) => {
