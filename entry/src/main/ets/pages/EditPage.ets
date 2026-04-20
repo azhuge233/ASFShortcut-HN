@@ -1,4 +1,5 @@
 import { KeyboardAvoidMode } from '@kit.ArkUI'
+import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
 
 import StyleConstants from '../common/constants/StyleConstants';
 import CommonUtils from '../common/utils/CommonUtils';
@@ -48,7 +49,7 @@ struct EditPage {
     }
 
     build() {
-        NavDestination() {
+        HdsNavDestination() {
             Column({ space: StyleConstants.EDIT_PAGE_BLANK_COL_SPACE }) {
                 Blank()
                     .margin({ top: StyleConstants.MARGIN_TEN, bottom: StyleConstants.MARGIN_TEN })
@@ -134,7 +135,20 @@ struct EditPage {
             .justifyContent(FlexAlign.Center)
             .padding(StyleConstants.PADDING_TWENTY)
         }
-        .title($r("app.string.EditPage_Title"))
+        .titleBar({
+            content: {
+                title: {
+                    mainTitle: $r("app.string.EditPage_Title")
+                }
+            },
+            style: {
+                systemMaterialEffect: {
+                    materialType: hdsMaterial.MaterialType.ADAPTIVE,
+                    materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+                },
+            },
+            enableComponentSafeArea: true
+        })
         .height(StyleConstants.FULL_PERCENT)
         .width(StyleConstants.FULL_PERCENT)
         .onReady((context: NavDestinationContext) => {
