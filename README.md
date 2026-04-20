@@ -4,7 +4,7 @@ A HarmonyOS client for [ArchiSteamFarm](https://github.com/JustArchiNET/ArchiSte
 
 Send custom commands to ASF and view the results directly.
 
-Demo video on Mate 60 Pro: [BV1LfU8BNEYB](https://www.bilibili.com/video/BV1LfU8BNEYB/) (outdated version, does not include sorting).
+Demo video on Mate 60 Pro: [BV1LfU8BNEYB](https://www.bilibili.com/video/BV1LfU8BNEYB/) (outdated version, does not include some features).
 
 _Only tested on Mate 60 Pro._
 
