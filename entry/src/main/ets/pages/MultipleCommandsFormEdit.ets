@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit';
 import { formProvider } from '@kit.FormKit';
+import { HdsNavigation, HdsNavigationTitleMode, ScrollEffectType, hdsMaterial } from '@kit.UIDesignKit';
 
 import StyleConstants from '../common/constants/StyleConstants';
 import { DB } from '../common/utils/DB';
@@ -260,12 +261,30 @@ struct MultipleCommandsFormEdit {
     }
 
     build() {
-        Navigation() {
+        HdsNavigation() {
             if(this.isLoading) this.LoadingContent();
             else this.MainContent();
         }
-        .title($r('app.string.FormEdit_Title'))
-        .titleMode(NavigationTitleMode.Mini)
+        .titleBar({
+            content: {
+                title: {
+                    mainTitle: $r('app.string.FormEdit_Title')
+                }
+            },
+            style: {
+                scrollEffectOpts: {
+                    enableScrollEffect: true,
+                    scrollEffectType: ScrollEffectType.GRADIENT_BLUR,
+                },
+                systemMaterialEffect: {
+                    materialType: hdsMaterial.MaterialType.ADAPTIVE,
+                    materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+                },
+            },
+            enableComponentSafeArea: true
+        })
+        .titleMode(HdsNavigationTitleMode.MINI)
+        .bindToScrollable([this.scrollerForList])
         .hideBackButton(false)
         .height(StyleConstants.FULL_PERCENT)
         .width(StyleConstants.FULL_PERCENT)
