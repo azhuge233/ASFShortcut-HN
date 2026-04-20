@@ -1,6 +1,10 @@
 import http from '@ohos.net.http';
-import { common, Want } from '@kit.AbilityKit';
-import { UIContext, KeyboardAvoidMode } from '@kit.ArkUI'
+import { common } from '@kit.AbilityKit';
+import { KeyboardAvoidMode } from '@kit.ArkUI'
+import { HdsNavigation, HdsNavigationMenuContentOptions, HdsNavigationTitleMode, HdsTabs,
+    HdsTabsController,
+    ScrollEffectType } from '@hms.hds.hdsBaseComponent';
+import { hdsMaterial } from '@kit.UIDesignKit';
 
 import Logger from '../common/utils/Logger';
 import { ASF } from '../common/utils/ASF';
@@ -40,9 +44,49 @@ struct Index {
     private promptAction = this.uiContext.getPromptAction();
 
     private scrollerForList: ListScroller = new ListScroller();
+    private tabController: HdsTabsController = new HdsTabsController();
 
     private db = DB.getInstance();
     private asf = new ASF();
+
+    // HdsNavigation 新版菜单
+    private menus: HdsNavigationMenuContentOptions = {
+        value: [
+            {
+                content: {
+                    label: $r("app.string.Index_Add_Menu_Button_Label"),
+                    icon: $r("sys.symbol.plus"),
+                    action: () => {
+                        this.safeCloseSwipeActions();
+                        this.pageStack.pushPath({
+                            name: "AddCommand",
+                            param: this.listViewModel,
+                            onPop: async (popInfo) => {
+                                CommonUtils.returnFromSubPage(popInfo);
+                            }
+                        });
+                    }
+                }
+            },
+            {
+                content: {
+                    label: $r("app.string.Index_More_Menu_Button_Label"),
+                    icon: $r("sys.symbol.dot_grid_2x2"),
+                    action: () => {
+                        this.safeCloseSwipeActions();
+                        this.pageStack.pushPath({
+                            name: "MorePage",
+                            param: this.listViewModel,
+                            onPop: async (popInfo) => {
+                                await this.checkSettingsAndInit();
+                                CommonUtils.returnFromSubPage(popInfo);
+                            }
+                        });
+                    }
+                }
+            }
+        ]
+    };
 
     pageStack: NavPathStack = new NavPathStack();
 
@@ -572,9 +616,9 @@ struct Index {
 
     build() {
         Stack() {
-            Navigation(this.pageStack) {
+            HdsNavigation(this.pageStack) {
                 Stack({ alignContent: Alignment.Top }) {
-                    Tabs({ barPosition: BarPosition.End }) {
+                    HdsTabs({ controller: this.tabController }) {
                         TabContent() {
                             if(!this.showSetupDialog) this.MainContent();
                         }
@@ -589,44 +633,42 @@ struct Index {
                             1, $r("app.media.worldclock"), $r("app.media.worldclock_fill"), $r("app.string.Index_Tab_Label_Test")
                         ))
                     }
+                    .barPosition(BarPosition.End)
+                    .barOverlap(true)
+                    .barFloatingStyle({
+                        barBottomMargin: StyleConstants.INDEX_TAB_BAR_MARGIN,
+                        systemMaterialEffect:  {
+                            materialType: hdsMaterial.MaterialType.ADAPTIVE,
+                            materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+                        }
+                    })
                     .onChange((index: number) => {
                         this.currentIndex = index;
                     })
                 }
             }
-            .menus([
-                {
-                    value: $r("app.string.Index_Add_Menu_Button_Label"),
-                    icon: $r("app.media.plus"),
-                    action: () => {
-                        this.safeCloseSwipeActions();
-                        this.pageStack.pushPath({
-                            name: "AddCommand",
-                            param: this.listViewModel,
-                            onPop: async (popInfo) => {
-                                CommonUtils.returnFromSubPage(popInfo);
-                            }
-                        });
-                    }
+            .titleBar({
+                content: {
+                    title: {
+                        mainTitle: $r("app.string.Index_Title"),
+                    },
+                    menu: this.menus,
                 },
-                {
-                    value: $r("app.string.Index_More_Menu_Button_Label"),
-                    icon: $r("app.media.dot_grid_2x2"),
-                    action: () => {
-                        this.safeCloseSwipeActions();
-                        this.pageStack.pushPath({
-                            name: "MorePage",
-                            param: this.listViewModel,
-                            onPop: async (popInfo) => {
-                                await this.checkSettingsAndInit();
-                                CommonUtils.returnFromSubPage(popInfo);
-                            }
-                        });
-                    }
-                }
-            ])
-            .title($r("app.string.Index_Title"))
-            .mode(NavigationMode.Auto)
+                style: {
+                    scrollEffectOpts: { // 设置滚动特效
+                        enableScrollEffect: true,
+                        scrollEffectType: ScrollEffectType.GRADIENT_BLUR,
+                    },
+                    systemMaterialEffect: { // 设置沉浸光感
+                        materialType: hdsMaterial.MaterialType.ADAPTIVE,
+                        materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+                    },
+                },
+                //avoidLayoutSafeArea: false,
+                enableComponentSafeArea: true // 启用标题栏占位
+            })
+            .bindToScrollable([this.scrollerForList])
+            .ignoreLayoutSafeArea([LayoutSafeAreaType.SYSTEM], [LayoutSafeAreaEdge.TOP, LayoutSafeAreaEdge.BOTTOM])
             .height(StyleConstants.FULL_PERCENT)
             .width(StyleConstants.FULL_PERCENT)
             .alignSelf(ItemAlign.Center)
