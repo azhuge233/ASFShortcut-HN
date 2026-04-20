@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit';
+import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
 
 import Logger from '../common/utils/Logger';
 import StyleConstants from '../common/constants/StyleConstants';
@@ -198,7 +199,7 @@ struct MorePage {
     }
 
     build() {
-        NavDestination() {
+        HdsNavDestination() {
             Stack({ alignContent: Alignment.Top }) {
                 Column() {
                     Column() {
@@ -262,7 +263,20 @@ struct MorePage {
                 }
             }
         }
-        .title($r("app.string.More_Title"))
+        .titleBar({
+            content: {
+                title: {
+                    mainTitle: $r("app.string.More_Title")
+                }
+            },
+            style: {
+                systemMaterialEffect: {
+                    materialType: hdsMaterial.MaterialType.ADAPTIVE,
+                    materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+                }
+            },
+            enableComponentSafeArea: true
+        })
         .height(StyleConstants.FULL_PERCENT)
         .width(StyleConstants.FULL_PERCENT)
         .onReady((context: NavDestinationContext) => {
