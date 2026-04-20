@@ -1,4 +1,5 @@
 import { KeyboardAvoidMode } from '@kit.ArkUI'
+import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
 
 import Logger from '../common/utils/Logger';
 import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
@@ -55,7 +56,7 @@ struct AddCommand {
     }
 
     build() {
-        NavDestination() {
+        HdsNavDestination() {
             Column({ space: StyleConstants.ADD_COMMAND_COL_SPACE }) {
                 Blank()
                     .margin({ top: StyleConstants.MARGIN_TEN, bottom: StyleConstants.MARGIN_TEN })
@@ -144,7 +145,20 @@ struct AddCommand {
             .justifyContent(FlexAlign.Center)
             .padding(StyleConstants.PADDING_TWENTY)
         }
-        .title($r("app.string.AddCommand_Title"))
+        .titleBar({
+            content: {
+                title: {
+                    mainTitle: $r("app.string.AddCommand_Title")
+                }
+            },
+            style: {
+                systemMaterialEffect: {
+                    materialType: hdsMaterial.MaterialType.ADAPTIVE,
+                    materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+                },
+            },
+            enableComponentSafeArea: true
+        })
         .height(StyleConstants.FULL_PERCENT)
         .width(StyleConstants.FULL_PERCENT)
         .onReady((context: NavDestinationContext) => {
