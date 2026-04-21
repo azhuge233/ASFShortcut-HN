@@ -59,9 +59,6 @@ class StyleConstants {
     public readonly SETTINGS_PAGE_LABEL_FONT_SIZE = 17;
 
     public readonly INDEX_SWIPE_BUTTON_SIZE = 40;
-    public readonly INDEX_TAB_ICON_SIZE = 30;
-    public readonly INDEX_TAB_HEIGHT = 40;
-    public readonly INDEX_TAB_LABEL_FONT_SIZE = 12;
     public readonly INDEX_SETUP_FONT_SIZE = 20;
     public readonly INDEX_NO_ENTRY_TITLE_FONT_SIZE = 18;
     public readonly INDEX_NO_ENTRY_SECOND_TITLE_FONT_SIZE = 14;

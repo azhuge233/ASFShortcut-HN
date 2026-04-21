@@ -1,9 +1,8 @@
 import http from '@ohos.net.http';
 import { common } from '@kit.AbilityKit';
-import { KeyboardAvoidMode } from '@kit.ArkUI'
-import { HdsNavigation, HdsNavigationMenuContentOptions, HdsNavigationTitleMode, HdsTabs,
-    HdsTabsController,
-    ScrollEffectType } from '@hms.hds.hdsBaseComponent';
+import { KeyboardAvoidMode, SymbolGlyphModifier } from '@kit.ArkUI'
+import { HdsNavigation, HdsNavigationMenuContentOptions, HdsTabs,
+    HdsTabsController, ScrollEffectType } from '@hms.hds.hdsBaseComponent';
 import { hdsMaterial } from '@kit.UIDesignKit';
 
 import Logger from '../common/utils/Logger';
@@ -393,24 +392,6 @@ struct Index {
         })
     }
 
-    // 构建底部导航栏标签
-    @Builder
-    TabBuilder(index: number, normalIcon: Resource, selectedIcon: Resource, text: Resource) {
-        Column() {
-            Image(this.currentIndex === index ? selectedIcon : normalIcon)
-                .width(StyleConstants.INDEX_TAB_ICON_SIZE)
-                .height(StyleConstants.INDEX_TAB_ICON_SIZE)
-                .opacity(this.currentIndex === index ? 1 : 0.6)
-
-            Text(text)
-                .fontSize(StyleConstants.INDEX_TAB_LABEL_FONT_SIZE)
-                .fontColor(this.currentIndex === index ? $r("app.color.index_tab_label_selected") : $r("app.color.index_tab_label_unselected"))
-        }
-        .width(StyleConstants.FULL_PERCENT)
-        .height(StyleConstants.INDEX_TAB_HEIGHT)
-        .justifyContent(FlexAlign.Center)
-    }
-
     // 主页
     @Builder
     MainContent() {
@@ -622,16 +603,18 @@ struct Index {
                         TabContent() {
                             if(!this.showSetupDialog) this.MainContent();
                         }
-                        .tabBar(this.TabBuilder(
-                            0, $r("app.media.doc_plaintext"), $r("app.media.doc_plaintext_fill"), $r("app.string.Index_Tab_Label_Home")
-                        ))
+                        .tabBar(new BottomTabBarStyle({
+                            normal: new SymbolGlyphModifier($r("sys.symbol.doc_plaintext_fill")),
+                            selected: new SymbolGlyphModifier($r("sys.symbol.doc_plaintext_fill"))
+                        }, $r("app.string.Index_Tab_Label_Home")))
 
                         TabContent() {
                             if(!this.showSetupDialog) this.LiveTestContent();
                         }
-                        .tabBar(this.TabBuilder(
-                            1, $r("app.media.worldclock"), $r("app.media.worldclock_fill"), $r("app.string.Index_Tab_Label_Test")
-                        ))
+                        .tabBar(new BottomTabBarStyle({
+                            normal: new SymbolGlyphModifier($r("sys.symbol.worldclock_fill")),
+                            selected: new SymbolGlyphModifier($r("sys.symbol.worldclock_fill"))
+                        }, $r("app.string.Index_Tab_Label_Test")))
                     }
                     .barPosition(BarPosition.End)
                     .barOverlap(true)
@@ -641,9 +624,6 @@ struct Index {
                             materialType: hdsMaterial.MaterialType.ADAPTIVE,
                             materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
                         }
-                    })
-                    .onChange((index: number) => {
-                        this.currentIndex = index;
                     })
                 }
             }
