@@ -63,7 +63,7 @@ class StyleConstants {
     public readonly INDEX_NO_ENTRY_TITLE_FONT_SIZE = 18;
     public readonly INDEX_NO_ENTRY_SECOND_TITLE_FONT_SIZE = 14;
     public readonly INDEX_LAYOUT_WEIGHT = 1;
-    public readonly INDEX_TAB_BAR_MARGIN = 28;
+    public readonly INDEX_TAB_BAR_MARGIN = 35;
 
     public readonly EDIT_PAGE_BLANK_COL_SPACE = 20;
     public readonly EDIT_PAGE_OPTION_COL_SPACE = 15;
