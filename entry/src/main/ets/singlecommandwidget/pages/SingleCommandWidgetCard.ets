@@ -84,10 +84,10 @@ struct SingleCommandWidgetCard {
                     .layoutWeight(1)
                     .height(StyleConstants.NINETY_PERCENT)
                     .width(StyleConstants.FULL_PERCENT)
-                    .margin({
-                        top: StyleConstants.MARGIN_TEN,
-                        bottom: StyleConstants.MARGIN_FIVE,
-                        right: StyleConstants.MARGIN_TEN
+                    .padding({
+                        top: StyleConstants.PADDING_TEN,
+                        bottom: StyleConstants.PADDING_FIVE,
+                        right: StyleConstants.PADDING_EIGHT
                     })
 
                     Text($r("app.string.Form_Run_Complete_Label"))
