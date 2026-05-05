@@ -59,8 +59,6 @@ struct SingleCommandWidgetCard {
         Column() {
             if (this.runResult !== '') {
                 Column() {
-                    Blank()
-
                     List() {
                         ForEach(this.runResult.split(/\r?\n|\r|\n/g), (line: string) => {
                             ListItem() {
@@ -69,7 +67,7 @@ struct SingleCommandWidgetCard {
                                     .fontColor($r("app.color.form_font_color"))
                                     .textAlign(TextAlign.Start)
                             }
-                            .margin({
+                            .padding({
                                 left: StyleConstants.MARGIN_FIVE,
                                 right: StyleConstants.MARGIN_FIVE
                             })
@@ -78,11 +76,11 @@ struct SingleCommandWidgetCard {
                     .layoutWeight(1)
                     .height(StyleConstants.NINETY_PERCENT)
                     .width(StyleConstants.FULL_PERCENT)
-                    .margin({
-                        top: StyleConstants.MARGIN_TEN,
-                        bottom: StyleConstants.MARGIN_FIVE,
-                        left: StyleConstants.MARGIN_THIRTY,
-                        right: StyleConstants.MARGIN_TEN
+                    .padding({
+                        top: StyleConstants.PADDING_TEN,
+                        bottom: StyleConstants.PADDING_FIVE,
+                        left: StyleConstants.PADDING_TEN,
+                        right: StyleConstants.PADDING_TEN
                     })
 
                     Text($r("app.string.Form_Run_Complete_Label"))
@@ -114,9 +112,9 @@ struct SingleCommandWidgetCard {
                                         .maxLines(1)
                                         .textOverflow({ overflow: TextOverflow.Ellipsis })
                                 }
-                                .margin({
-                                    left: StyleConstants.MARGIN_FIVE,
-                                    right: StyleConstants.MARGIN_FIVE
+                                .padding({
+                                    left: StyleConstants.PADDING_FIVE,
+                                    right: StyleConstants.PADDING_FIVE
                                 })
                             }
                             .height(StyleConstants.FORM_LIST_ITEM_HEIGHT)
@@ -149,6 +147,12 @@ struct SingleCommandWidgetCard {
                     .alignListItem(ListItemAlign.Center)
                     .height(StyleConstants.FULL_PERCENT)
                     .width(StyleConstants.FULL_PERCENT)
+                    .padding({
+                        top: StyleConstants.PADDING_FIVE,
+                        bottom: StyleConstants.PADDING_FIVE,
+                        left: StyleConstants.PADDING_FIVE,
+                        right: StyleConstants.PADDING_FIVE
+                    })
                 }
                 .height(StyleConstants.FULL_PERCENT)
                 .width(StyleConstants.FULL_PERCENT)
