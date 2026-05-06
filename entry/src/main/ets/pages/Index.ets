@@ -94,10 +94,10 @@ struct Index {
     }
 
     async onPageShow() {
-        if(this.pageStack.size() === 0) await this.checkSettingsAndInit();
+        if (this.pageStack.size() === 0) await this.checkSettingsAndInit();
         await this.listViewModel.loadCommandEntries();
 
-        if(AppStorage.has(CommonConstants.AppStorage_KEY_ShortcutPath)) {
+        if (AppStorage.has(CommonConstants.AppStorage_KEY_ShortcutPath)) {
             Logger.debug(this.LOG_TAG, `检测到长按快捷方式页面`);
 
             const path: string | undefined = AppStorage.get(CommonConstants.AppStorage_KEY_ShortcutPath);
@@ -116,14 +116,14 @@ struct Index {
     private async goToSpecifyPage(path: string): Promise<void> {
         // 应用未初始化，不跳转
         const isComplete = await this.db.areSettingsComplete();
-        if(!isComplete) {
+        if (!isComplete) {
             CommonUtils.alert($r("app.string.App_Shortcut_Add_Shortcut_Not_Init_Alert"), this.promptAction);
             Logger.debug(this.LOG_TAG, `应用未完成初始化，停止跳转`);
             return;
         }
 
         // 如果应用内已经进入其他页面，返回到主页面
-        if(this.pageStack.size() > 0) this.pageStack.clear();
+        if (this.pageStack.size() > 0) this.pageStack.clear();
 
         try {
             Logger.debug(this.LOG_TAG, `跳转至页面 ${path}`);
@@ -160,7 +160,8 @@ struct Index {
             const resp = await this.asf.sendTest(address, password, command);
             this.isProcessing = false;
 
-            this.handleResponse(this.context.resourceManager.getStringSync($r("app.string.LiveTest_Result_Title").id), resp);
+            this.handleResponse(this.context.resourceManager.getStringSync($r("app.string.LiveTest_Result_Title").id),
+                resp);
         } catch (err) {
             Logger.error(this.LOG_TAG, `<sendTestCommand> 错误, ${(err as Error).message}`);
             CommonUtils.alert(`错误: ${(err as Error).message}`, this.promptAction);
@@ -183,7 +184,7 @@ struct Index {
     // 回调方法 onPop 执行完毕时手动 resolve Promise
     // 避免对话框同时弹出
     private inputPopup(type: string): Promise<string> {
-        if(type == "Account") return new Promise((resolve) => {
+        if (type == "Account") return new Promise((resolve) => {
             this.pageStack.pushPath({
                 name: "AccInputDialog",
                 onPop: (popInfo) => {
@@ -191,8 +192,7 @@ struct Index {
                     resolve(popInfo.result as string);
                 }
             });
-        });
-        else if(type == "ID") return new Promise((resolve) => {
+        }); else if (type == "ID") return new Promise((resolve) => {
             this.pageStack.pushPath({
                 name: "IDInputDialog",
                 onPop: (popInfo) => {
@@ -200,8 +200,9 @@ struct Index {
                     resolve(popInfo.result as string);
                 }
             });
+        }); else return new Promise((resolve) => {
+            resolve("");
         });
-        else return new Promise((resolve) => { resolve(""); });
     }
 
     // 安全关闭左滑菜单
@@ -233,8 +234,7 @@ struct Index {
     // 并初始化 ASF 的服务器地址和密码
     private async checkSettingsAndInit(): Promise<void> {
         const isComplete = await this.db.areSettingsComplete();
-        if (!isComplete) this.showSetupDialog = true;
-        else {
+        if (!isComplete) this.showSetupDialog = true; else {
             await this.loadSettings();
             this.initASF();
             // Logger.info(this.LOG_TAG, `应用初始化完成, address: ${this.currentAddress}, password: ${this.currentASFPassword}`);
@@ -324,7 +324,8 @@ struct Index {
                 .height(StyleConstants.FULL_PERCENT)
                 .backgroundColor($r("app.color.transparent"))
                 .blur(StyleConstants.BLUE_LEVEL)
-                .onClick(() => {})
+                .onClick(() => {
+                })
 
             Column() {
                 Progress({ value: 0, total: 100, type: ProgressType.Ring })
@@ -362,7 +363,8 @@ struct Index {
                 .height(StyleConstants.FULL_PERCENT)
                 .backgroundColor($r("app.color.transparent"))
                 .blur(StyleConstants.BLUE_LEVEL)
-                .onClick(() => {})
+                .onClick(() => {
+                })
 
             Column() {
                 Text($r("app.string.Index_Setup_Alert_Label"))
@@ -372,7 +374,7 @@ struct Index {
                     .margin(StyleConstants.MARGIN_FIVE)
                     .onClick(() => {
                         this.pageStack.pushPath({
-                            name: "SettingsPage",
+                            name: "ASFSettingsPage",
                             onPop: async (popInfo) => {
                                 await this.checkSettingsAndInit();
                                 CommonUtils.returnFromSubPage(popInfo);
@@ -384,9 +386,11 @@ struct Index {
             .width(StyleConstants.FULL_PERCENT)
             .height(StyleConstants.FULL_PERCENT)
             .justifyContent(FlexAlign.Center)
-            .onClick(() => {})
+            .onClick(() => {
+            })
         }
-        .onClick(() => {})
+        .onClick(() => {
+        })
         .onAppear(() => {
             Logger.debug(this.LOG_TAG, "Setup stack loaded!");
         })
@@ -417,11 +421,11 @@ struct Index {
                                 item: item,
                                 onAccountInput: () => this.inputPopup("Account"),
                                 onIDInput: () => this.inputPopup("ID"),
-                                onSendCommand: (command: string) => this.sendCommand(item.nickname ,command),
+                                onSendCommand: (command: string) => this.sendCommand(item.nickname, command),
                                 onRunningStateChange: (isRunning: boolean) => {
-                                    if(isRunning) this.runningCommandIDs.add(item.id);
-                                    else this.runningCommandIDs.delete(item.id);
-                                    Logger.debug(this.LOG_TAG, `正在运行的指令：${Array.from(this.runningCommandIDs).join(', ')}`);
+                                    if (isRunning) this.runningCommandIDs.add(item.id); else this.runningCommandIDs.delete(item.id);
+                                    Logger.debug(this.LOG_TAG,
+                                        `正在运行的指令：${Array.from(this.runningCommandIDs).join(', ')}`);
                                 }
                             })
                         }
@@ -601,7 +605,7 @@ struct Index {
                 Stack({ alignContent: Alignment.Top }) {
                     HdsTabs({ controller: this.tabController }) {
                         TabContent() {
-                            if(!this.showSetupDialog) this.MainContent();
+                            if (!this.showSetupDialog) this.MainContent();
                         }
                         .tabBar(new BottomTabBarStyle({
                             normal: new SymbolGlyphModifier($r("sys.symbol.doc_plaintext_fill")),
@@ -609,18 +613,19 @@ struct Index {
                         }, $r("app.string.Index_Tab_Label_Home")))
 
                         TabContent() {
-                            if(!this.showSetupDialog) this.LiveTestContent();
+                            if (!this.showSetupDialog) this.LiveTestContent();
                         }
                         .tabBar(new BottomTabBarStyle({
                             normal: new SymbolGlyphModifier($r("sys.symbol.worldclock_fill")),
                             selected: new SymbolGlyphModifier($r("sys.symbol.worldclock_fill"))
                         }, $r("app.string.Index_Tab_Label_Test")))
                     }
+                    .backgroundColor($r("sys.color.background_primary"))
                     .barPosition(BarPosition.End)
                     .barOverlap(true)
                     .barFloatingStyle({
                         barBottomMargin: StyleConstants.INDEX_TAB_BAR_MARGIN,
-                        systemMaterialEffect:  {
+                        systemMaterialEffect: {
                             materialType: hdsMaterial.MaterialType.ADAPTIVE,
                             materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
                         }
@@ -635,11 +640,13 @@ struct Index {
                     menu: this.menus,
                 },
                 style: {
-                    scrollEffectOpts: { // 设置滚动特效
+                    scrollEffectOpts: {
+                        // 设置滚动特效
                         enableScrollEffect: true,
                         scrollEffectType: ScrollEffectType.GRADIENT_BLUR,
                     },
-                    systemMaterialEffect: { // 设置沉浸光感
+                    systemMaterialEffect: {
+                        // 设置沉浸光感
                         materialType: hdsMaterial.MaterialType.ADAPTIVE,
                         materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
                     },
@@ -652,6 +659,10 @@ struct Index {
             .height(StyleConstants.FULL_PERCENT)
             .width(StyleConstants.FULL_PERCENT)
             .alignSelf(ItemAlign.Center)
+            .withTheme({
+                enableThemeColorMode: true
+            })
+            .backgroundColor($r("sys.color.background_primary"))
             .onAppear(() => {
                 Logger.debug(this.LOG_TAG, "Loaded!");
             })

@@ -3,7 +3,7 @@
     "pages/Index",
     "pages/AddCommand",
     "pages/EditPage",
-    "pages/SettingsPage",
+    "pages/ASFSettingsPage",
     "pages/MorePage",
     "pages/SingleCommandFormEdit",
     "pages/MultipleCommandsFormEdit"

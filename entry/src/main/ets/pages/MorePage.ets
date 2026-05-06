@@ -208,7 +208,7 @@ struct MorePage {
                             menuIcon: $r("app.media.gearshape"),
                             doJob: () => {
                                 this.pathStack?.pushPath({
-                                    name: "SettingsPage",
+                                    name: "ASFSettingsPage",
                                     onPop: (popInfo) => {
                                         CommonUtils.returnFromSubPage(popInfo);
                                     }

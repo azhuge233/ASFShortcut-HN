@@ -9,11 +9,11 @@
       }
     },
     {
-      "name": "SettingsPage",
-      "pageSourceFile": "src/main/ets/pages/SettingsPage.ets",
-      "buildFunction": "SettingsPageBuilder",
+      "name": "ASFSettingsPage",
+      "pageSourceFile": "src/main/ets/pages/ASFSettingsPage.ets",
+      "buildFunction": "ASFSettingsPageBuilder",
       "data": {
-        "description" : "Settings page"
+        "description" : "ASF Settings page"
       }
     },
     {

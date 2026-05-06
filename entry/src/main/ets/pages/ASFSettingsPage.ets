@@ -7,14 +7,14 @@ import StyleConstants from '../common/constants/StyleConstants';
 import CommonUtils from '../common/utils/CommonUtils';
 
 @Builder
-export function SettingsPageBuilder() {
-    SettingsPage();
+export function ASFSettingsPageBuilder() {
+    ASFSettingsPage();
 }
 
 @Entry
 @ComponentV2
-struct SettingsPage {
-    private LOG_TAG = "[pages/SettingsPage]";
+struct ASFSettingsPage {
+    private LOG_TAG = "[pages/ASFSettingsPage]";
 
     @Local address: string = '';
     @Local asfPassword: string = '';
