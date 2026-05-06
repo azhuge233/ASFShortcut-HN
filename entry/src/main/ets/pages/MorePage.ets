@@ -248,75 +248,59 @@ struct MorePage {
         })
     }
 
+    @Builder
+    EntryGroup(entries: Array<[Resource, Resource, () => void | Promise<void>]>) {
+        Column() {
+            ForEach(entries, (item: [Resource, Resource, () => void | Promise<void>]) => {
+                MoreMenuItem(
+                    {
+                        menuText: item[0],
+                        menuIcon: item[1],
+                        doJob: item[2]
+                    }
+                )
+            })
+        }
+        .width(StyleConstants.FULL_PERCENT)
+    }
+
+    @Builder
+    EntryDivider() {
+        Divider()
+            .lineCap(LineCapStyle.Round)
+            .strokeWidth(StyleConstants.MORE_MENU_DIVIDER_STOKE_WIDTH)
+            .width(StyleConstants.NINETY_PERCENT)
+    }
+
+    @Builder
+    VersionFooter() {
+        Text(`${this.versionName} (${this.versionCode})`)
+            .width(StyleConstants.FULL_PERCENT)
+            .fontColor(Color.Grey)
+            .fontSize(StyleConstants.MORE_MENU_VERSION_FONT_SIZE)
+            .alignSelf(ItemAlign.End)
+            .textAlign(TextAlign.Center)
+    }
+
     build() {
         HdsNavDestination() {
             Stack({ alignContent: Alignment.Top }) {
                 Column() {
                     Column() {
-                        Column() {
-                            ForEach(this.settingsEntries, (item: [Resource, Resource, () => void | Promise<void>]) => {
-                                MoreMenuItem(
-                                    {
-                                        menuText: item[0],
-                                        menuIcon: item[1],
-                                        doJob: item[2]
-                                    }
-                                )
-                            })
-                        }
-                        .width(StyleConstants.FULL_PERCENT)
+                        this.EntryGroup(this.settingsEntries);
 
-                        Divider()
-                            .lineCap(LineCapStyle.Round)
-                            .strokeWidth(StyleConstants.MORE_MENU_DIVIDER_STOKE_WIDTH)
-                            .width(StyleConstants.NINETY_PERCENT)
+                        this.EntryDivider();
 
-                        Column() {
-                            ForEach(this.functionEntries, (item: [Resource, Resource, () => void | Promise<void>]) => {
-                                MoreMenuItem(
-                                    {
-                                        menuText: item[0],
-                                        menuIcon: item[1],
-                                        doJob: item[2]
-                                    }
-                                )
-                            })
-                        }
-                        .width(StyleConstants.FULL_PERCENT)
+                        this.EntryGroup(this.functionEntries);
 
-                        Divider()
-                            .lineCap(LineCapStyle.Round)
-                            .strokeWidth(StyleConstants.MORE_MENU_DIVIDER_STOKE_WIDTH)
-                            .width(StyleConstants.NINETY_PERCENT)
+                        this.EntryDivider();
 
-                        Column() {
-                            ForEach(this.otherEntries, (item: [Resource, Resource, () => void | Promise<void>]) => {
-                                MoreMenuItem(
-                                    {
-                                        menuText: item[0],
-                                        menuIcon: item[1],
-                                        doJob: item[2]
-                                    }
-                                )
-                            })
-                        }
-                        .width(StyleConstants.FULL_PERCENT)
-
-
-                        // MoreMenuItem({
-                        //     menuText: $r("app.string.More_Help_Label"),
-                        //     menuIcon: $r("app.media.info_circle")
-                        // })
+                        this.EntryGroup(this.otherEntries);
                     }
                     .height(StyleConstants.FULL_PERCENT)
                     .width(StyleConstants.FULL_PERCENT)
 
-                    Text(`${this.versionName} (${this.versionCode})`)
-                        .width(StyleConstants.FULL_PERCENT)
-                        .fontColor(Color.Grey)
-                        .fontSize(StyleConstants.MORE_MENU_VERSION_FONT_SIZE)
-                        .alignSelf(ItemAlign.End)
-                        .textAlign(TextAlign.Center)
+                    this.VersionFooter();
                 }
                 .height(StyleConstants.FULL_PERCENT)
                 .width(StyleConstants.FULL_PERCENT)
