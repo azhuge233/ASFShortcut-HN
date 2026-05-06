@@ -47,6 +47,10 @@ class StyleConstants {
     public readonly PROGRESS_TEXT_FONT_SIZE = 17;
     public readonly BLUE_LEVEL = 10;
 
+    public readonly BORDER_WIDTH = 0.5;
+
+    public readonly RADIO_SIZE = 35;
+
     public readonly COMMAND_TILE_COL_SPACE = 12;
     public readonly COMMAND_TILE_ROW_SPACE = 8;
     public readonly COMMAND_TILE_NAME_FONT_SIZE = 16;
@@ -80,6 +84,7 @@ class StyleConstants {
     public readonly MORE_MENU_ITEM_ICON_SIZE = 28;
     public readonly MORE_MENU_ITEM_FONT_SIZE = 17;
     public readonly MORE_MENU_VERSION_FONT_SIZE = 13;
+    public readonly MORE_MENU_DIVIDER_STOKE_WIDTH = 2;
 
     public readonly LIVE_TEST_LABEL_FONT_SIZE = 17;
     public readonly LIVE_TEST_INPUT_BORDER_WIDTH = 1;
