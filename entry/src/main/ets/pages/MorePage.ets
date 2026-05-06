@@ -38,6 +38,42 @@ struct MorePage {
     private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
     private newCommandViewModel: CommandEntryViewModel = new CommandEntryViewModel();
 
+    private settingsEntries: Array<[Resource, Resource, () => void | Promise<void>]> = [
+      [
+        $r("app.string.More_Settings_Label"), $r("app.media.gearshape"),
+          () => {
+            this.pathStack?.pushPath(
+              {
+                  name: "ASFSettingsPage",
+                  onPop: (popInfo) => {
+                      CommonUtils.returnFromSubPage(popInfo);
+                  }
+              }
+          );}
+      ],
+      [
+          $r("app.string.Color_Mode_Settings_Title"), $r("app.media.brush"),
+          () => {
+            this.pathStack?.pushPath(
+              {
+                  name: "ColorModeSettingsPage",
+                  onPop: (popInfo) => {
+                      CommonUtils.returnFromSubPage(popInfo);
+                  }
+              }
+            )}
+      ]
+    ];
+
+    private functionEntries: Array<[Resource, Resource, () => void | Promise<void>]> = [
+      [ $r("app.string.More_Export_Label"), $r("app.media.arrow_up_circle"), async () => { await this.export(); } ],
+      [ $r("app.string.More_Import_Label"), $r("app.media.arrow_down_circle"), async () => { await this.importConfirm(); } ]
+    ];
+
+    private otherEntries: Array<[Resource, Resource, () => void | Promise<void>]> = [
+      [ $r("app.string.More_Clear_Label"), $r("app.media.clean"), () => { this.clear(); } ]
+    ];
+
     aboutToAppear(): void {
         try {
             let bundleInfo = bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT);
@@ -217,42 +253,55 @@ struct MorePage {
             Stack({ alignContent: Alignment.Top }) {
                 Column() {
                     Column() {
-                        MoreMenuItem({
-                            menuText: $r("app.string.More_Settings_Label"),
-                            menuIcon: $r("app.media.gearshape"),
-                            doJob: () => {
-                                this.pathStack?.pushPath({
-                                    name: "ASFSettingsPage",
-                                    onPop: (popInfo) => {
-                                        CommonUtils.returnFromSubPage(popInfo);
+                        Column() {
+                            ForEach(this.settingsEntries, (item: [Resource, Resource, () => void | Promise<void>]) => {
+                                MoreMenuItem(
+                                    {
+                                        menuText: item[0],
+                                        menuIcon: item[1],
+                                        doJob: item[2]
                                     }
-                                });
-                            }
-                        })
+                                )
+                            })
+                        }
+                        .width(StyleConstants.FULL_PERCENT)
 
-                        MoreMenuItem({
-                            menuText: $r("app.string.More_Export_Label"),
-                            menuIcon: $r("app.media.arrow_up_circle"),
-                            doJob: async () => {
-                                await this.export();
-                            }
-                        })
+                        Divider()
+                            .lineCap(LineCapStyle.Round)
+                            .strokeWidth(StyleConstants.MORE_MENU_DIVIDER_STOKE_WIDTH)
+                            .width(StyleConstants.NINETY_PERCENT)
 
-                        MoreMenuItem({
-                            menuText: $r("app.string.More_Import_Label"),
-                            menuIcon: $r("app.media.arrow_down_circle"),
-                            doJob: async () => {
-                                await this.importConfirm();
-                            }
-                        })
+                        Column() {
+                            ForEach(this.functionEntries, (item: [Resource, Resource, () => void | Promise<void>]) => {
+                                MoreMenuItem(
+                                    {
+                                        menuText: item[0],
+                                        menuIcon: item[1],
+                                        doJob: item[2]
+                                    }
+                                )
+                            })
+                        }
+                        .width(StyleConstants.FULL_PERCENT)
 
-                        MoreMenuItem({
-                            menuText: $r("app.string.More_Clear_Label"),
-                            menuIcon: $r("app.media.clean"),
-                            doJob: () => {
-                                this.clear();
-                            }
-                        })
+                        Divider()
+                            .lineCap(LineCapStyle.Round)
+                            .strokeWidth(StyleConstants.MORE_MENU_DIVIDER_STOKE_WIDTH)
+                            .width(StyleConstants.NINETY_PERCENT)
+
+                        Column() {
+                            ForEach(this.otherEntries, (item: [Resource, Resource, () => void | Promise<void>]) => {
+                                MoreMenuItem(
+                                    {
+                                        menuText: item[0],
+                                        menuIcon: item[1],
+                                        doJob: item[2]
+                                    }
+                                )
+                            })
+                        }
+                        .width(StyleConstants.FULL_PERCENT)
+
 
                         // MoreMenuItem({
                         //     menuText: $r("app.string.More_Help_Label"),

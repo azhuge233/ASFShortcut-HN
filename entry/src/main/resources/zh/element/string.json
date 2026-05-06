@@ -447,6 +447,22 @@
     {
       "name": "Form_Run_Failed_Message",
       "value": "ASF 指令执行失败，请重试"
+    },
+    {
+      "name": "Color_Mode_System_Label",
+      "value": "跟随系统"
+    },
+    {
+      "name": "Color_Mode_Light_Label",
+      "value": "浅色模式"
+    },
+    {
+      "name": "Color_Mode_Dark_Label",
+      "value": "深色模式"
+    },
+    {
+      "name": "Color_Mode_Settings_Title",
+      "value": "颜色模式"
     }
   ]
 }

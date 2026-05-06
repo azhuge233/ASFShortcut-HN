@@ -447,6 +447,22 @@
     {
       "name": "Form_Run_Failed_Message",
       "value": "ASF command run failed, please try again"
+    },
+    {
+      "name": "Color_Mode_System_Label",
+      "value": "System"
+    },
+    {
+      "name": "Color_Mode_Light_Label",
+      "value": "Light"
+    },
+    {
+      "name": "Color_Mode_Dark_Label",
+      "value": "Dark"
+    },
+    {
+      "name": "Color_Mode_Settings_Title",
+      "value": "Color Mode"
     }
   ]
 }

@@ -6,6 +6,7 @@
     "pages/ASFSettingsPage",
     "pages/MorePage",
     "pages/SingleCommandFormEdit",
-    "pages/MultipleCommandsFormEdit"
+    "pages/MultipleCommandsFormEdit",
+    "pages/ColorModeSettingsPage"
   ]
 }

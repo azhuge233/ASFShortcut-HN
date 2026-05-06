@@ -1,10 +1,12 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
-import { window } from '@kit.ArkUI';
+import { AppStorageV2, window } from '@kit.ArkUI';
 
+import Logger from '../common/utils/Logger';
 import { DB } from '../common/utils/DB';
 import CommonConstants from '../common/constants/CommonConstants';
 import { PM } from '../common/utils/PM';
-import Logger from '../common/utils/Logger';
+import { AppSettingsManager } from '../common/utils/AppSettingsManager';
+import { AppSettings } from '../model/AppSettings';
 
 export default class EntryAbility extends UIAbility {
     private LOG_TAG = "[EntryAbility]";
@@ -12,14 +14,12 @@ export default class EntryAbility extends UIAbility {
     private targetPage: string = 'pages/Index'; // 指定页面，默认为 Index
     private currentWindowStage: window.WindowStage | null = null;
 
+    private db = DB.getInstance();
+    private pm = PM.getInstance();
+    private aSM = AppSettingsManager.getInstance();
+
     onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
         Logger.debug(this.LOG_TAG, 'onCreate()');
-
-        try {
-            this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `设置颜色主题失败, ${JSON.stringify(err)}`);
-        }
 
         this.init(); // 持久化存储初始化
 
@@ -47,12 +47,15 @@ export default class EntryAbility extends UIAbility {
         Logger.debug(this.LOG_TAG, 'onDestroy()');
     }
 
-    onWindowStageCreate(windowStage: window.WindowStage): void {
+    async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
         // Main window is created, set main page for this ability
         Logger.debug(this.LOG_TAG, 'onWindowStageCreate()');
 
         // 设置当前窗口为传入窗口
         if (this.currentWindowStage === null) this.currentWindowStage = windowStage;
+
+        // 从首选项加载并设置颜色模式
+        await this.setColorMode();
 
         // 加载页面
         this.loadContent();
@@ -75,8 +78,9 @@ export default class EntryAbility extends UIAbility {
 
     private init() {
         const appContext = this.context.getApplicationContext();
-        DB.getInstance().init(appContext);
-        PM.getInstance().init(appContext);
+        this.aSM.init(appContext);
+        this.db.init(appContext);
+        this.pm.init(appContext);
     }
 
     private loadContent(): void {
@@ -105,5 +109,24 @@ export default class EntryAbility extends UIAbility {
     private handleShortcutWant(want: Want): void {
         Logger.debug(this.LOG_TAG, `长按快捷方式转入`);
         if(want?.parameters?.shortCutKey) AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_ShortcutPath, want?.parameters?.shortCutKey as string);
+    }
+
+    private async setColorMode(): Promise<void> {
+        try {
+            let appSettings = await this.aSM.get();
+
+            if(!appSettings) {
+                appSettings = new AppSettings(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET)
+                await this.aSM.set(appSettings);
+            }
+
+            this.context.getApplicationContext().setColorMode(appSettings.colorMode);
+
+            AppStorageV2.connect(AppSettings, CommonConstants.AppStorage_KEY_AppSettings, () => appSettings);
+
+            Logger.debug(this.LOG_TAG, `setColorMode() 窗口颜色设置: ${appSettings.colorMode}`)
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `setColorMode() 设置窗口颜色模式失败, ${err}`);
+        }
     }
 }

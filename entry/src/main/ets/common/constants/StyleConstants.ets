@@ -47,10 +47,6 @@ class StyleConstants {
     public readonly PROGRESS_TEXT_FONT_SIZE = 17;
     public readonly BLUE_LEVEL = 10;
 
-    public readonly BORDER_WIDTH = 0.5;
-
-    public readonly RADIO_SIZE = 35;
-
     public readonly COMMAND_TILE_COL_SPACE = 12;
     public readonly COMMAND_TILE_ROW_SPACE = 8;
     public readonly COMMAND_TILE_NAME_FONT_SIZE = 16;
@@ -94,6 +90,9 @@ class StyleConstants {
     public readonly FORM_RUNNING_LABEL_FONT_SIZE = 13;
     public readonly FORM_LIST_ITEM_BORDER_RADIUS = 13;
     public readonly FORM_LIST_ITEM_HEIGHT = 50;
+
+    public readonly COLOR_MODE_PAGE_BORDER_WIDTH = 0.5;
+    public readonly COLOR_MODE_PAGE_RADIO_SIZE = 35;
 }
 
 export default new StyleConstants();
