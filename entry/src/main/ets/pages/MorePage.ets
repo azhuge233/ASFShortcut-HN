@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit';
 import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
+import bundleManager from '@ohos.bundle.bundleManager';
 
 import Logger from '../common/utils/Logger';
 import StyleConstants from '../common/constants/StyleConstants';
@@ -23,6 +24,9 @@ struct MorePage {
 
     @Local private isProcessing: boolean = false;
 
+    @Local versionName: string = '';
+    @Local versionCode: string = '';
+
     private uiContext = this.getUIContext();
     private context = this.uiContext.getHostContext() as common.UIAbilityContext;
     private promptAction = this.uiContext.getPromptAction();
@@ -33,6 +37,16 @@ struct MorePage {
 
     private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
     private newCommandViewModel: CommandEntryViewModel = new CommandEntryViewModel();
+
+    aboutToAppear(): void {
+        try {
+            let bundleInfo = bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT);
+            this.versionName = bundleInfo.versionName;
+            this.versionCode = bundleInfo.versionCode.toString();
+        } catch (error) {
+            Logger.error(this.LOG_TAG, `同步获取失败: ${error.message}`);
+        }
+    }
 
     async export(): Promise<void> {
         try {
@@ -248,7 +262,7 @@ struct MorePage {
                     .height(StyleConstants.FULL_PERCENT)
                     .width(StyleConstants.FULL_PERCENT)
 
-                    Text($r("app.string.app_version"))
+                    Text(`${this.versionName} (${this.versionCode})`)
                         .width(StyleConstants.FULL_PERCENT)
                         .fontColor(Color.Grey)
                         .fontSize(StyleConstants.MORE_MENU_VERSION_FONT_SIZE)
