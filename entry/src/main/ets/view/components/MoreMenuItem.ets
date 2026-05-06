@@ -22,11 +22,11 @@ export struct MoreMenuItem {
                 .height(StyleConstants.FIVE_PERCENT)
                 .width(StyleConstants.EIGHTY_PERCENT)
         }
-        .margin({
-            top: StyleConstants.TWO_PERCENT,
-            left: StyleConstants.ONE_PERCENT,
-            right: StyleConstants.THREE_PERCENT,
-            bottom: StyleConstants.TWO_PERCENT
+        .padding({
+            top: StyleConstants.PADDING_FIVE,
+            left: StyleConstants.PADDING_FIVE,
+            right: StyleConstants.PADDING_FIVE,
+            bottom: StyleConstants.PADDING_FIVE
         })
         .onClick(() => {
             this.doJob();
