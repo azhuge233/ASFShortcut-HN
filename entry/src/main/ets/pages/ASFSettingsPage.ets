@@ -65,7 +65,6 @@ struct ASFSettingsPage {
                 TextInput({ text: this.address, placeholder: $r("app.string.SettingsPage_Address_Input_Placeholder") })
                     .width(StyleConstants.NINETY_PERCENT)
                     .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
-                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
                     .padding(StyleConstants.PADDING_TEN)
                     .onChange((value: string) => {
                         this.address = value;
@@ -81,7 +80,6 @@ struct ASFSettingsPage {
                     .type(InputType.Password)
                     .width(StyleConstants.NINETY_PERCENT)
                     .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
-                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
                     .padding(StyleConstants.PADDING_TEN)
                     .onChange((value: string) => {
                         this.asfPassword = value;

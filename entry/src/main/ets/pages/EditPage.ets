@@ -66,7 +66,6 @@ struct EditPage {
                     .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
                     .padding(StyleConstants.PADDING_TEN)
                     .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
-                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
 
                 // 命令输入
                 Text($r("app.string.EditPage_Command_Label"))
@@ -80,7 +79,6 @@ struct EditPage {
                     .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
                     .padding(StyleConstants.PADDING_TEN)
                     .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
-                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
 
                 // 选项区域 - 使用 Toggle 组件
                 Column({ space: StyleConstants.EDIT_PAGE_OPTION_COL_SPACE }) {
@@ -118,7 +116,6 @@ struct EditPage {
                 .padding(StyleConstants.PADDING_FIFTEEN)
                 .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
                 .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
-                .width(StyleConstants.NINETY_PERCENT)
 
                 // 按钮
                 Button($r("app.string.EditPage_Save_Button_Label"))

@@ -38,7 +38,7 @@ class StyleConstants {
     public readonly DIALOG_CONTENT_FONT_SIZE = 18;
 
     public readonly INPUT_BORDER_WIDTH = 1;
-    public readonly INPUT_BORDER_RADIUS = 8;
+    public readonly INPUT_BORDER_RADIUS = 20;
 
     public readonly LOADING_WIDTH = 128;
 
