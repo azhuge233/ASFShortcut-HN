@@ -2,7 +2,8 @@ import StyleConstants from "../../common/constants/StyleConstants";
 
 @ComponentV2
 export struct MoreMenuItem {
-    @Param menuText: Resource | string = "";
+    @Param menuTitleText: Resource | string = "";
+    @Param menuDescText: Resource | string | null = null;
     @Param menuIcon: Resource | string = "";
 
     @Param doJob: () => void | Promise<void> = () => {};
@@ -14,13 +15,26 @@ export struct MoreMenuItem {
                 .height(StyleConstants.MORE_MENU_ITEM_ICON_SIZE)
                 .margin(StyleConstants.MARGIN_TEN)
 
-            Text(this.menuText)
-                .fontSize(StyleConstants.MORE_MENU_ITEM_FONT_SIZE)
-                .fontWeight(FontWeight.Medium)
-                .align(Alignment.Center)
-                .textAlign(TextAlign.Start)
-                .height(StyleConstants.FIVE_PERCENT)
-                .width(StyleConstants.EIGHTY_PERCENT)
+            Column() {
+                Text(this.menuTitleText)
+                    .fontSize(StyleConstants.MORE_MENU_ITEM_FONT_SIZE)
+                    .fontWeight(FontWeight.Medium)
+                    .align(Alignment.Center)
+                    .textAlign(TextAlign.Start)
+                    // .height(StyleConstants.FIVE_PERCENT)
+                    .width(StyleConstants.EIGHTY_PERCENT)
+
+                if (this.menuDescText) {
+                    Text(this.menuDescText)
+                        .fontColor($r("sys.color.font_tertiary"))
+                        .fontSize(StyleConstants.MORE_MENU_ITEM_DESC_FONT_SIZE)
+                        .fontWeight(FontWeight.Normal)
+                        .align(Alignment.Center)
+                        .textAlign(TextAlign.Start)
+                        // .height(StyleConstants.FIVE_PERCENT)
+                        .width(StyleConstants.EIGHTY_PERCENT)
+                }
+            }
         }
         .padding({
             top: StyleConstants.PADDING_FIVE,

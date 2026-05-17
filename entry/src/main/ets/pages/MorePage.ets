@@ -38,9 +38,9 @@ struct MorePage {
     private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
     private newCommandViewModel: CommandEntryViewModel = new CommandEntryViewModel();
 
-    private settingsEntries: Array<[Resource, Resource, () => void | Promise<void>]> = [
+    private settingsEntries: Array<[Resource, Resource, Resource | null, () => void | Promise<void>]> = [
       [
-        $r("app.string.More_Settings_Label"), $r("app.media.gearshape"),
+        $r("app.string.More_Settings_Label"), $r("app.media.gearshape"), $r("app.string.ASF_Settings_Desc"),
           () => {
             this.pathStack?.pushPath(
               {
@@ -52,7 +52,7 @@ struct MorePage {
           );}
       ],
       [
-          $r("app.string.Color_Mode_Settings_Title"), $r("app.media.brush"),
+          $r("app.string.Color_Mode_Settings_Title"), $r("app.media.brush"), $r("app.string.Color_Mode_Desc"),
           () => {
             this.pathStack?.pushPath(
               {
@@ -65,13 +65,13 @@ struct MorePage {
       ]
     ];
 
-    private functionEntries: Array<[Resource, Resource, () => void | Promise<void>]> = [
-      [ $r("app.string.More_Export_Label"), $r("app.media.arrow_up_circle"), async () => { await this.export(); } ],
-      [ $r("app.string.More_Import_Label"), $r("app.media.arrow_down_circle"), async () => { await this.importConfirm(); } ]
+    private functionEntries: Array<[Resource, Resource, Resource | null, () => void | Promise<void>]> = [
+      [ $r("app.string.More_Export_Label"), $r("app.media.arrow_up_circle"), $r("app.string.Export_Desc"), async () => { await this.export(); } ],
+      [ $r("app.string.More_Import_Label"), $r("app.media.arrow_down_circle"), $r("app.string.Import_Desc"), async () => { await this.importConfirm(); } ]
     ];
 
-    private otherEntries: Array<[Resource, Resource, () => void | Promise<void>]> = [
-      [ $r("app.string.More_Clear_Label"), $r("app.media.clean"), () => { this.clear(); } ]
+    private otherEntries: Array<[Resource, Resource, Resource | null, () => void | Promise<void>]> = [
+      [ $r("app.string.More_Clear_Label"), $r("app.media.clean"), null, () => { this.clear(); } ]
     ];
 
     aboutToAppear(): void {
@@ -249,14 +249,15 @@ struct MorePage {
     }
 
     @Builder
-    EntryGroup(entries: Array<[Resource, Resource, () => void | Promise<void>]>) {
+    EntryGroup(entries: Array<[Resource, Resource, Resource | null, () => void | Promise<void>]>) {
         Column() {
-            ForEach(entries, (item: [Resource, Resource, () => void | Promise<void>]) => {
+            ForEach(entries, (item: [Resource, Resource, Resource | null, () => void | Promise<void>]) => {
                 MoreMenuItem(
                     {
-                        menuText: item[0],
+                        menuTitleText: item[0],
                         menuIcon: item[1],
-                        doJob: item[2]
+                        menuDescText: item[2],
+                        doJob: item[3]
                     }
                 )
             })

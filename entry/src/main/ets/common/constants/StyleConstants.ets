@@ -79,6 +79,7 @@ class StyleConstants {
 
     public readonly MORE_MENU_ITEM_ICON_SIZE = 28;
     public readonly MORE_MENU_ITEM_FONT_SIZE = 17;
+    public readonly MORE_MENU_ITEM_DESC_FONT_SIZE = 12;
     public readonly MORE_MENU_VERSION_FONT_SIZE = 13;
     public readonly MORE_MENU_DIVIDER_STOKE_WIDTH = 2;
 
