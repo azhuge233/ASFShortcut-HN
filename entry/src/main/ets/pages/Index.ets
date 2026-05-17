@@ -475,8 +475,8 @@ struct Index {
                     Text($r("app.string.LiveTest_Notice_Title"))
                         .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE)
                         .fontWeight(FontWeight.Bold)
-                        .fontColor(Color.Red)
-                        .margin({ bottom: StyleConstants.MARGIN_TEN })
+                        .fontColor($r("sys.color.font_emphasize"))
+                        .margin({ bottom: StyleConstants.MARGIN_FIVE })
 
                     Text($r("app.string.LiveTest_Notice_Content"))
                         .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE - 2)
@@ -508,7 +508,6 @@ struct Index {
                             width: StyleConstants.INPUT_BORDER_WIDTH,
                             color: Color.Gray
                         })
-                        .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
                         .padding(StyleConstants.PADDING_TEN)
                         .onChange((value: string) => {
                             this.testAddress = value;
@@ -540,7 +539,6 @@ struct Index {
                         width: StyleConstants.INPUT_BORDER_WIDTH,
                         color: Color.Gray
                     })
-                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
                     .padding(StyleConstants.PADDING_TEN)
                     .onChange((value: string) => {
                         this.testPassword = value;
@@ -565,7 +563,6 @@ struct Index {
                         width: StyleConstants.INPUT_BORDER_WIDTH,
                         color: Color.Gray
                     })
-                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
                     .padding(StyleConstants.PADDING_TEN)
                     .onChange((value: string) => {
                         this.testCommand = value;
