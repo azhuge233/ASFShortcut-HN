@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:/Users/azhuge233/.ohos/config/default_ASFShortcut_v4qo7GLKo0QMFW_5nJIR7RACDbB_35kEm396Zkxyjek=.cer",
+          "certpath": "C:\\Users\\azhuge233\\.ohos\\config\\default_ASFShortcut_JMLze1eATGYr51OL-vlNX2OsdslDueSzk3mt3PBDMRg=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B3D028F035D526EEE0CA112D2345AA75123E639D26AFA19EDA5F83E508E27F2925E3F5854F299DA",
-          "profile": "C:/Users/azhuge233/.ohos/config/default_ASFShortcut_v4qo7GLKo0QMFW_5nJIR7RACDbB_35kEm396Zkxyjek=.p7b",
+          "keyPassword": "0000001B2C53B03F3304C5AD8935F5D2DA992749CA8D7156FD3C4AAD5F1313D1E3EF82AC4F5FF0A7201A0F",
+          "profile": "C:\\Users\\azhuge233\\.ohos\\config\\default_ASFShortcut_JMLze1eATGYr51OL-vlNX2OsdslDueSzk3mt3PBDMRg=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:/Users/azhuge233/.ohos/config/default_ASFShortcut_v4qo7GLKo0QMFW_5nJIR7RACDbB_35kEm396Zkxyjek=.p12",
-          "storePassword": "0000001BFCA181BD1B52ABA7DBCF76977B2A87E4412BE6747B95F39BABE8E02CDE1040B11063FE67FD6BAE"
+          "storeFile": "C:\\Users\\azhuge233\\.ohos\\config\\default_ASFShortcut_JMLze1eATGYr51OL-vlNX2OsdslDueSzk3mt3PBDMRg=.p12",
+          "storePassword": "0000001B62F890AF039B38962A29EB6676A650E9D4B5C55750DC6476DD9F61A48D9460E1DF94E68180B494"
         }
       }
     ],
