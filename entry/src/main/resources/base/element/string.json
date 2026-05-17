@@ -463,6 +463,22 @@
     {
       "name": "Color_Mode_Settings_Title",
       "value": "Color Mode"
+    },
+    {
+      "name": "ASF_Settings_Desc",
+      "value": "Change ASF address and password"
+    },
+    {
+      "name": "Color_Mode_Desc",
+      "value": "Set app color mode"
+    },
+    {
+      "name": "Import_Desc",
+      "value": "Restore ASF settings and commands from JSON file"
+    },
+    {
+      "name": "Export_Desc",
+      "value": "Export ASF settings and commands to JSON file"
     }
   ]
 }
