@@ -271,8 +271,28 @@ struct Index {
             .type(ButtonType.Circle)
             .width(StyleConstants.INDEX_SWIPE_BUTTON_SIZE)
             .height(StyleConstants.INDEX_SWIPE_BUTTON_SIZE)
-            .onClick(() => {
-                this.listViewModel.deleteCommandEntry(entry.toCommandEntry());
+            .onClick(async () => {
+                try {
+                    const result = await this.promptAction.showDialog({
+                        title: $r("app.string.Index_Deletion_Confirm_Title"),
+                        message: $r("app.string.Index_Deletion_Confirm_Message", entry.nickname),
+                        buttons: [
+                            {
+                                text: $r("app.string.Index_Deletion_Confirm"),
+                                color: $r("sys.color.warning")
+                            },
+                            {
+                                text: $r("app.string.Index_Deletion_Cancel"),
+                                color: $r("sys.color.font_primary")
+                            }
+                        ]
+                    });
+
+                    if(result.index === 0) this.listViewModel.deleteCommandEntry(entry.toCommandEntry());
+                    else Logger.warn(this.LOG_TAG, `取消删除`);
+                } catch (err) {
+                    Logger.error(this.LOG_TAG, `删除确认框弹出失败`);
+                }
             })
         }
         .margin({
