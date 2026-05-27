@@ -479,6 +479,22 @@
     {
       "name": "Export_Desc",
       "value": "将 ASF 设置和指令导出为 JSON 文件"
+    },
+    {
+      "name": "Index_Deletion_Confirm_Title",
+      "value": "删除"
+    },
+    {
+      "name": "Index_Deletion_Confirm_Message",
+      "value": "删除 %s 指令?"
+    },
+    {
+      "name": "Index_Deletion_Confirm",
+      "value": "删除"
+    },
+    {
+      "name": "Index_Deletion_Cancel",
+      "value": "取消"
     }
   ]
 }

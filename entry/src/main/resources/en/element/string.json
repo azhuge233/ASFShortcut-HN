@@ -479,6 +479,22 @@
     {
       "name": "Export_Desc",
       "value": "Export ASF settings and commands to JSON file"
+    },
+    {
+      "name": "Index_Deletion_Confirm_Title",
+      "value": "Delete"
+    },
+    {
+      "name": "Index_Deletion_Confirm_Message",
+      "value": "Delete command %s?"
+    },
+    {
+      "name": "Index_Deletion_Confirm",
+      "value": "Delete"
+    },
+    {
+      "name": "Index_Deletion_Cancel",
+      "value": "Cancel"
     }
   ]
 }
