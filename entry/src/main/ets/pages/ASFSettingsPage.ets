@@ -51,52 +51,70 @@ struct ASFSettingsPage {
 
     build() {
         HdsNavDestination() {
-            Column() {
-                Text($r("app.string.SettingsPage_Title"))
-                    .fontSize(StyleConstants.SETTINGS_PAGE_TITLE_FONT_SIZE)
-                    .fontWeight(FontWeight.Bold)
-                    .margin({ top: StyleConstants.MARGIN_FORTY, bottom: StyleConstants.MARGIN_FORTY })
+            Scroll() {
+                Column() {
+                    Text($r("app.string.SettingsPage_Title"))
+                        .fontSize(StyleConstants.SETTINGS_PAGE_TITLE_FONT_SIZE)
+                        .fontWeight(FontWeight.Bold)
+                        .margin({ top: StyleConstants.MARGIN_FORTY, bottom: StyleConstants.MARGIN_FORTY })
 
-                Text($r("app.string.SettingsPage_Address_Label"))
-                    .fontSize(StyleConstants.SETTINGS_PAGE_LABEL_FONT_SIZE)
-                    .alignSelf(ItemAlign.Start)
-                    .margin({ bottom: StyleConstants.MARGIN_TEN })
+                    Text($r("app.string.SettingsPage_Address_Label"))
+                        .fontSize(StyleConstants.SETTINGS_PAGE_LABEL_FONT_SIZE)
+                        .alignSelf(ItemAlign.Start)
+                        .margin({ bottom: StyleConstants.MARGIN_TEN })
 
-                TextInput({ text: this.address, placeholder: $r("app.string.SettingsPage_Address_Input_Placeholder") })
-                    .width(StyleConstants.NINETY_PERCENT)
-                    .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
-                    .padding(StyleConstants.PADDING_TEN)
-                    .onChange((value: string) => {
-                        this.address = value;
-                    })
-                    .margin({ bottom: StyleConstants.MARGIN_THIRTY })
+                    TextInput(
+                        { text: this.address, placeholder: $r("app.string.SettingsPage_Address_Input_Placeholder") }
+                    )
+                        .width(StyleConstants.NINETY_PERCENT)
+                        .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
+                        .padding(StyleConstants.PADDING_TEN)
+                        .onChange(
+                            (value: string) => {
+                                this.address = value;
+                            }
+                        )
+                        .margin({ bottom: StyleConstants.MARGIN_THIRTY })
 
-                Text($r("app.string.SettingsPage_Password_Label"))
-                    .fontSize(StyleConstants.SETTINGS_PAGE_LABEL_FONT_SIZE)
-                    .alignSelf(ItemAlign.Start)
-                    .margin({ bottom: StyleConstants.MARGIN_TEN })
+                    Text($r("app.string.SettingsPage_Password_Label"))
+                        .fontSize(StyleConstants.SETTINGS_PAGE_LABEL_FONT_SIZE)
+                        .alignSelf(ItemAlign.Start)
+                        .margin({ bottom: StyleConstants.MARGIN_TEN })
 
-                TextInput({ text: this.asfPassword, placeholder: $r("app.string.SettingsPage_Password_Input_Placeholder") })
-                    .type(InputType.Password)
-                    .width(StyleConstants.NINETY_PERCENT)
-                    .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
-                    .padding(StyleConstants.PADDING_TEN)
-                    .onChange((value: string) => {
-                        this.asfPassword = value;
-                    })
-                    .margin({ bottom: StyleConstants.MARGIN_FIFTY })
+                    TextInput(
+                        {
+                            text: this.asfPassword,
+                            placeholder: $r("app.string.SettingsPage_Password_Input_Placeholder")
+                        }
+                    )
+                        .type(InputType.Password)
+                        .width(StyleConstants.NINETY_PERCENT)
+                        .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
+                        .padding(StyleConstants.PADDING_TEN)
+                        .onChange(
+                            (value: string) => {
+                                this.asfPassword = value;
+                            }
+                        )
+                        .margin({ bottom: StyleConstants.MARGIN_FIFTY })
 
-                Button(this.isSaving ? $r("app.string.SettingsPage_Save_Button_Saving") : $r("app.string.SettingsPage_Save_Button_Label"), { type: ButtonType.Capsule })
-                    .width(StyleConstants.EIGHTY_PERCENT)
-                    .fontColor(Color.White)
-                    .enabled(!this.isSaving && this.address.trim() !== '' && this.asfPassword.trim() !== '')
-                    .onClick(async () => {
-                        const saveSuccess = await this.saveSettings();
-                        if (saveSuccess) {
-                            CommonUtils.alert($r("app.string.SettingsPage_Save_Success"), this.promptAction);
-                            this.pathStack?.pop("Submit pressed");
-                        } else CommonUtils.alert($r("app.string.SettingsPage_Save_Failed"), this.promptAction);
-                    })
+                    Button(
+                        this.isSaving ? $r("app.string.SettingsPage_Save_Button_Saving") :
+                            $r("app.string.SettingsPage_Save_Button_Label"), { type: ButtonType.Capsule }
+                    )
+                        .width(StyleConstants.EIGHTY_PERCENT)
+                        .fontColor(Color.White)
+                        .enabled(!this.isSaving && this.address.trim() !== '' && this.asfPassword.trim() !== '')
+                        .onClick(
+                            async () => {
+                                const saveSuccess = await this.saveSettings();
+                                if (saveSuccess) {
+                                    CommonUtils.alert($r("app.string.SettingsPage_Save_Success"), this.promptAction);
+                                    this.pathStack?.pop("Submit pressed");
+                                } else CommonUtils.alert($r("app.string.SettingsPage_Save_Failed"), this.promptAction);
+                            }
+                        )
+                }
             }
         }
         .titleBar({

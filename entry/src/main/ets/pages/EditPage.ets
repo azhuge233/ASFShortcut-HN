@@ -1,4 +1,3 @@
-import { KeyboardAvoidMode } from '@kit.ArkUI'
 import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
 
 import StyleConstants from '../common/constants/StyleConstants';
@@ -46,87 +45,115 @@ struct EditPage {
 
     build() {
         HdsNavDestination() {
-            Column({ space: StyleConstants.EDIT_PAGE_BLANK_COL_SPACE }) {
-                Blank()
-                    .margin({ top: StyleConstants.MARGIN_TEN, bottom: StyleConstants.MARGIN_TEN })
+            Scroll() {
+                Column({ space: StyleConstants.EDIT_PAGE_BLANK_COL_SPACE }) {
+                    Blank()
+                        .margin({ top: StyleConstants.MARGIN_TEN, bottom: StyleConstants.MARGIN_TEN })
 
-                // 名称输入
-                Text($r("app.string.EditPage_Name_Label"))
-                    .fontSize(StyleConstants.EDIT_PAGE_LABEL_FONT_SIZE)
-                    .alignSelf(ItemAlign.Start)
-                    .margin({ left: StyleConstants.MARGIN_TWENTY })
-                TextInput({ placeholder: $r("app.string.EditPage_Name_Input_Placeholder"), text: this.updatingCommandEntry.nickname })
-                    .onChange((value: string) => {
-                        this.updatingCommandEntry.nickname = value;
-                    })
-                    .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
-                    .padding(StyleConstants.PADDING_TEN)
-                    .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
-
-                // 命令输入
-                Text($r("app.string.EditPage_Command_Label"))
-                    .fontSize(StyleConstants.EDIT_PAGE_LABEL_FONT_SIZE)
-                    .alignSelf(ItemAlign.Start)
-                    .margin({ left: StyleConstants.MARGIN_TWENTY, top: StyleConstants.MARGIN_TWENTY })
-                TextInput({ placeholder: $r("app.string.EditPage_Command_Input_Placeholder"), text: this.updatingCommandEntry.command })
-                    .onChange((value: string) => {
-                        this.updatingCommandEntry.command = value;
-                    })
-                    .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
-                    .padding(StyleConstants.PADDING_TEN)
-                    .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
-
-                // 选项区域 - 使用 Toggle 组件
-                Column({ space: StyleConstants.EDIT_PAGE_OPTION_COL_SPACE }) {
-                    Text($r("app.string.EditPage_Options_Label"))
+                    // 名称输入
+                    Text($r("app.string.EditPage_Name_Label"))
                         .fontSize(StyleConstants.EDIT_PAGE_LABEL_FONT_SIZE)
                         .alignSelf(ItemAlign.Start)
-                        .margin({ bottom: StyleConstants.MARGIN_TEN })
+                        .margin({ left: StyleConstants.MARGIN_TWENTY })
+                    TextInput(
+                        {
+                            placeholder: $r("app.string.EditPage_Name_Input_Placeholder"),
+                            text: this.updatingCommandEntry.nickname
+                        }
+                    )
+                        .onChange(
+                            (value: string) => {
+                                this.updatingCommandEntry.nickname = value;
+                            }
+                        )
+                        .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
+                        .padding(StyleConstants.PADDING_TEN)
+                        .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
 
-                    // 需要输入ASF账户的选项
-                    Row({ space: StyleConstants.EDIT_PAGE_ROW_SPACE }) {
-                        Toggle({ type: ToggleType.Checkbox, isOn: this.updatingCommandEntry.accountRequired })
-                            .onChange((value: boolean) => {
-                                this.updatingCommandEntry.accountRequired = value;
-                            })
-                        Text($r("app.string.EditPage_Needs_ASF_Account_Input_Label"))
-                            .fontSize(StyleConstants.EDIT_PAGE_CHECK_LABEL_FONT_SIZE)
-                    }
-                    .justifyContent(FlexAlign.Start)
-                    .width(StyleConstants.FULL_PERCENT)
+                    // 命令输入
+                    Text($r("app.string.EditPage_Command_Label"))
+                        .fontSize(StyleConstants.EDIT_PAGE_LABEL_FONT_SIZE)
+                        .alignSelf(ItemAlign.Start)
+                        .margin({ left: StyleConstants.MARGIN_TWENTY, top: StyleConstants.MARGIN_TWENTY })
+                    TextInput(
+                        {
+                            placeholder: $r("app.string.EditPage_Command_Input_Placeholder"),
+                            text: this.updatingCommandEntry.command
+                        }
+                    )
+                        .onChange(
+                            (value: string) => {
+                                this.updatingCommandEntry.command = value;
+                            }
+                        )
+                        .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
+                        .padding(StyleConstants.PADDING_TEN)
+                        .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
 
-                    // 需要输入 ASF App ID 的选项
-                    Row({ space: StyleConstants.EDIT_PAGE_ROW_SPACE }) {
-                        Toggle({ type: ToggleType.Checkbox, isOn: this.updatingCommandEntry.idRequired })
-                            .onChange((value: boolean) => {
-                                this.updatingCommandEntry.idRequired = value;
-                            })
-                        Text($r("app.string.EditPage_Needs_ASF_ID_Input_Label"))
-                            .fontSize(StyleConstants.EDIT_PAGE_CHECK_LABEL_FONT_SIZE)
+                    // 选项区域 - 使用 Toggle 组件
+                    Column({ space: StyleConstants.EDIT_PAGE_OPTION_COL_SPACE }) {
+                        Text($r("app.string.EditPage_Options_Label"))
+                            .fontSize(StyleConstants.EDIT_PAGE_LABEL_FONT_SIZE)
+                            .alignSelf(ItemAlign.Start)
+                            .margin({ bottom: StyleConstants.MARGIN_TEN })
+
+                        // 需要输入ASF账户的选项
+                        Row({ space: StyleConstants.EDIT_PAGE_ROW_SPACE }) {
+                            Toggle({ type: ToggleType.Checkbox, isOn: this.updatingCommandEntry.accountRequired })
+                                .onChange(
+                                    (value: boolean) => {
+                                        this.updatingCommandEntry.accountRequired = value;
+                                    }
+                                )
+                            Text($r("app.string.EditPage_Needs_ASF_Account_Input_Label"))
+                                .fontSize(StyleConstants.EDIT_PAGE_CHECK_LABEL_FONT_SIZE)
+                        }
+                        .justifyContent(FlexAlign.Start)
+                        .width(StyleConstants.FULL_PERCENT)
+
+                        // 需要输入 ASF App ID 的选项
+                        Row({ space: StyleConstants.EDIT_PAGE_ROW_SPACE }) {
+                            Toggle({ type: ToggleType.Checkbox, isOn: this.updatingCommandEntry.idRequired })
+                                .onChange(
+                                    (value: boolean) => {
+                                        this.updatingCommandEntry.idRequired = value;
+                                    }
+                                )
+                            Text($r("app.string.EditPage_Needs_ASF_ID_Input_Label"))
+                                .fontSize(StyleConstants.EDIT_PAGE_CHECK_LABEL_FONT_SIZE)
+                        }
+                        .justifyContent(FlexAlign.Start)
+                        .width(StyleConstants.FULL_PERCENT)
                     }
-                    .justifyContent(FlexAlign.Start)
-                    .width(StyleConstants.FULL_PERCENT)
+                    .alignSelf(ItemAlign.Start)
+                    .margin(
+                        {
+                            left: StyleConstants.MARGIN_TWENTY,
+                            top: StyleConstants.MARGIN_TWENTY,
+                            right: StyleConstants.MARGIN_TWENTY
+                        }
+                    )
+                    .padding(StyleConstants.PADDING_FIFTEEN)
+                    .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
+                    .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
+
+                    // 按钮
+                    Button($r("app.string.EditPage_Save_Button_Label"))
+                        .width(StyleConstants.SEVENTY_PERCENT)
+                        .margin({ top: StyleConstants.MARGIN_FORTY })
+                        .onClick(
+                            () => {
+                                this.saveCommand();
+                            }
+                        )
+
+                    // 占位空间
+                    Blank()
                 }
-                .alignSelf(ItemAlign.Start)
-                .margin({ left: StyleConstants.MARGIN_TWENTY, top: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
-                .padding(StyleConstants.PADDING_FIFTEEN)
-                .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
-                .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
-
-                // 按钮
-                Button($r("app.string.EditPage_Save_Button_Label"))
-                    .width(StyleConstants.SEVENTY_PERCENT)
-                    .margin({ top: StyleConstants.MARGIN_FORTY })
-                    .onClick(() => {
-                        this.saveCommand();
-                    })
-
-                // 占位空间
-                Blank()
+                .justifyContent(FlexAlign.Center)
+                .padding(StyleConstants.PADDING_TWENTY)
             }
             .height(StyleConstants.FULL_PERCENT)
-            .justifyContent(FlexAlign.Center)
-            .padding(StyleConstants.PADDING_TWENTY)
         }
         .titleBar({
             content: {

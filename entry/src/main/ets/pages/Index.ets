@@ -1,6 +1,6 @@
 import http from '@ohos.net.http';
 import { common } from '@kit.AbilityKit';
-import { KeyboardAvoidMode, SymbolGlyphModifier } from '@kit.ArkUI'
+import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { HdsNavigation, HdsNavigationMenuContentOptions, HdsTabs,
     HdsTabsController, ScrollEffectType } from '@hms.hds.hdsBaseComponent';
 import { hdsMaterial } from '@kit.UIDesignKit';
@@ -490,7 +490,6 @@ struct Index {
                     .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE)
                     .alignSelf(ItemAlign.Start)
                     .margin({
-                        left: StyleConstants.FIVE_PERCENT,
                         bottom: StyleConstants.MARGIN_TEN
                     })
 
@@ -521,7 +520,6 @@ struct Index {
                     .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE)
                     .alignSelf(ItemAlign.Start)
                     .margin({
-                        left: StyleConstants.FIVE_PERCENT,
                         bottom: StyleConstants.MARGIN_TEN
                     })
 
@@ -546,7 +544,6 @@ struct Index {
                     .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE)
                     .alignSelf(ItemAlign.Start)
                     .margin({
-                        left: StyleConstants.FIVE_PERCENT,
                         bottom: StyleConstants.MARGIN_TEN
                     })
 
@@ -579,17 +576,11 @@ struct Index {
                         await this.sendTestCommand(this.testAddress, this.testPassword, this.testCommand);
                     })
                     .margin({ bottom: StyleConstants.MARGIN_TWENTY })
+
+                Blank()
+                    .layoutWeight(1)
             }
-            .width(StyleConstants.FULL_PERCENT)
-            .height(StyleConstants.FULL_PERCENT)
-            .justifyContent(FlexAlign.Start)
-            .padding({
-                top: StyleConstants.MARGIN_THIRTY,
-                bottom: StyleConstants.MARGIN_THIRTY
-            })
         }
-        .scrollable(ScrollDirection.Vertical)
-        .scrollBar(BarState.Auto)
     }
 
     build() {
