@@ -656,9 +656,6 @@ struct Index {
             .height(StyleConstants.FULL_PERCENT)
             .width(StyleConstants.FULL_PERCENT)
             .alignSelf(ItemAlign.Center)
-            .withTheme({
-                enableThemeColorMode: true
-            })
             .backgroundColor($r("sys.color.background_primary"))
             .onAppear(() => {
                 Logger.debug(this.LOG_TAG, "Loaded!");

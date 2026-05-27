@@ -103,9 +103,6 @@ struct ColorModeSettingsPage {
         })
         .height(StyleConstants.FULL_PERCENT)
         .width(StyleConstants.FULL_PERCENT)
-        .withTheme({
-            enableThemeColorMode: true
-        })
         .backgroundColor($r("sys.color.background_primary"))
         .onReady((context: NavDestinationContext) => {
             this.pathStack = context.pathStack;
