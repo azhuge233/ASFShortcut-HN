@@ -89,10 +89,6 @@ struct Index {
 
     pageStack: NavPathStack = new NavPathStack();
 
-    aboutToAppear(): void {
-        this.uiContext.setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET);
-    }
-
     async onPageShow() {
         if (this.pageStack.size() === 0) await this.checkSettingsAndInit();
         await this.listViewModel.loadCommandEntries();

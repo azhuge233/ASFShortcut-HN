@@ -26,10 +26,6 @@ struct AddCommand {
 
     pathStack: NavPathStack | undefined = undefined;
 
-    aboutToAppear(): void {
-        this.uiContext.setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET);
-    }
-
     clearInput() {
         this.newCommandViewModel.nickname = '';
         this.newCommandViewModel.command = '';

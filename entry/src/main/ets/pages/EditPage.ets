@@ -26,10 +26,6 @@ struct EditPage {
 
     pathStack: NavPathStack | undefined = undefined;
 
-    aboutToAppear(): void {
-        this.uiContext.setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET);
-    }
-
     async saveCommand() {
         if (!this.updatingCommandEntry.nickname.trim() || !this.updatingCommandEntry.command.trim()) {
             CommonUtils.alert($r("app.string.EditPage_Invalid_Input"), this.promptAction);
