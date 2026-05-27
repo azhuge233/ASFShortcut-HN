@@ -168,11 +168,11 @@ struct MorePage {
                 buttons: [
                     {
                         text: $r("app.string.More_Confirm_Button_Confirm"),
-                        color: $r("app.color.more_confirm_button_color")
+                        color: $r("sys.color.font_primary")
                     },
                     {
                         text: $r("app.string.More_Confirm_Button_Cancel"),
-                        color: $r("app.color.more_confirm_button_color")
+                        color: $r("sys.color.font_primary")
                     }
                 ]
             });
@@ -192,11 +192,11 @@ struct MorePage {
                 buttons: [
                     {
                         text: $r("app.string.More_Confirm_Button_Confirm"),
-                        color: $r("app.color.more_confirm_button_color")
+                        color: $r("sys.color.font_primary")
                     },
                     {
                         text: $r("app.string.More_Confirm_Button_Cancel"),
-                        color: $r("app.color.more_confirm_button_color")
+                        color: $r("sys.color.font_primary")
                     }
                 ]
             });
