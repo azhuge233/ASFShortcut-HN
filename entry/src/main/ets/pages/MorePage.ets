@@ -71,7 +71,7 @@ struct MorePage {
     ];
 
     private otherEntries: Array<[Resource, Resource, Resource | null, () => void | Promise<void>]> = [
-      [ $r("app.string.More_Clear_Label"), $r("app.media.clean"), null, () => { this.clear(); } ]
+      [ $r("app.string.More_Clear_Label"), $r("app.media.clean"), null, async () => { await this.clear(); } ]
     ];
 
     aboutToAppear(): void {
@@ -161,28 +161,32 @@ struct MorePage {
     }
 
     async importConfirm() {
-        this.promptAction.showDialog({
-            title: $r("app.string.More_Import_Confirm_Title"),
-            message: $r("app.string.More_Import_Confirm_Content"),
-            buttons: [
-                {
-                    text: $r("app.string.More_Confirm_Button_Confirm"),
-                    color: $r("app.color.more_confirm_button_color")
-                },
-                {
-                    text: $r("app.string.More_Confirm_Button_Cancel"),
-                    color: $r("app.color.more_confirm_button_color")
-                }
-            ]
-        }).then(async (result) => {
-            if(result.index == 0) await this.import();
-            else Logger.debug(this.LOG_TAG, "导入已取消");
-        });
+        try {
+            const result = await this.promptAction.showDialog({
+                title: $r("app.string.More_Import_Confirm_Title"),
+                message: $r("app.string.More_Import_Confirm_Content"),
+                buttons: [
+                    {
+                        text: $r("app.string.More_Confirm_Button_Confirm"),
+                        color: $r("app.color.more_confirm_button_color")
+                    },
+                    {
+                        text: $r("app.string.More_Confirm_Button_Cancel"),
+                        color: $r("app.color.more_confirm_button_color")
+                    }
+                ]
+            });
+
+            if(result.index === 0) await this.import();
+            else Logger.warn(this.LOG_TAG, "导入已取消");
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `删除确认框弹出失败`);
+        }
     }
 
-    clear() {
+    async clear() {
         try {
-            this.promptAction.showDialog({
+            const result = await this.promptAction.showDialog({
                 title: $r("app.string.More_Clear_Confirm_Title"),
                 message: $r("app.string.More_Clear_Confirm_Content"),
                 buttons: [
@@ -195,15 +199,15 @@ struct MorePage {
                         color: $r("app.color.more_confirm_button_color")
                     }
                 ]
-            }).then(async (result) => {
-                if (result.index == 0) {
-                    const success = await this.listViewModel.clearCommandEntry();
-                    if (success) {
-                        CommonUtils.alert($r("app.string.More_Clear_Success"), this.promptAction);
-                        this.pathStack?.pop("Clear press");
-                    } else CommonUtils.alert($r("app.string.More_Clear_Failed_Try_Again"), this.promptAction);
-                } else Logger.debug(this.LOG_TAG, "清除已取消");
             });
+
+            if (result.index === 0) {
+                const success = await this.listViewModel.clearCommandEntry();
+                if (success) {
+                    CommonUtils.alert($r("app.string.More_Clear_Success"), this.promptAction);
+                    this.pathStack?.pop("Clear press");
+                } else CommonUtils.alert($r("app.string.More_Clear_Failed_Try_Again"), this.promptAction);
+            } else Logger.warn(this.LOG_TAG, "清除已取消");
         } catch (err) {
             Logger.error(this.LOG_TAG, `清除失败, ${err}`);
             CommonUtils.alert($r("app.string.More_Clear_Failed"), this.promptAction);
