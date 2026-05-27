@@ -22,22 +22,12 @@ class CommonUtils {
     }
 
     // 按照 API 版本显示 Toast 提醒
-    public alert(message: string | Resource, newerPromptAction: PromptAction) {
-        if(deviceInfo.sdkApiVersion <= 17) {
-            try {
-                promptAction.showToast({
-                    message: message
-                });
-            } catch (err) {
-                Logger.error(this.LOG_TAG, `alert() API <= 17 错误, ${err}`);
-            }
-        } else {
-            newerPromptAction.openToast({
-                message: message
-            }).catch((err: BusinessError) => {
-                Logger.error(this.LOG_TAG, `alert() API > 17 错误, ${err}`);
-            });
-        }
+    public alert(message: string | Resource, promptAction: PromptAction) {
+        promptAction.openToast({
+            message: message
+        }).catch((err: BusinessError) => {
+            Logger.error(this.LOG_TAG, `toast 提示错误, ${err}`);
+        });
     }
 
     // 从 NavDestination 由 pop() 返回时
