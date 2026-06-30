@@ -180,6 +180,11 @@ struct MorePage {
             if(result.index === 0) await this.import();
             else Logger.warn(this.LOG_TAG, "导入已取消");
         } catch (err) {
+            if (err && (err.code === 100006 || err.message?.toLowerCase().includes('cancel'))) {
+                Logger.warn(this.LOG_TAG, "用户取消对话框");
+                return;
+            }
+
             Logger.error(this.LOG_TAG, `删除确认框弹出失败`);
         }
     }
@@ -209,6 +214,11 @@ struct MorePage {
                 } else CommonUtils.alert($r("app.string.More_Clear_Failed_Try_Again"), this.promptAction);
             } else Logger.warn(this.LOG_TAG, "清除已取消");
         } catch (err) {
+            if (err && (err.code === 100006 || err.message?.toLowerCase().includes('cancel'))) {
+                Logger.warn(this.LOG_TAG, "用户取消对话框");
+                return;
+            }
+
             Logger.error(this.LOG_TAG, `清除失败, ${err}`);
             CommonUtils.alert($r("app.string.More_Clear_Failed"), this.promptAction);
         }
