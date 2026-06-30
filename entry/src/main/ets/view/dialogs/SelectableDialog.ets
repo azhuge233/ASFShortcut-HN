@@ -1,3 +1,5 @@
+import { hdsMaterial, HdsNavDestination, ScrollEffectType } from "@kit.UIDesignKit";
+
 import StyleConstants from "../../common/constants/StyleConstants";
 
 @Builder
@@ -13,7 +15,7 @@ export struct SelectableDialog {
     @Local message: string = "";
 
     build() {
-        NavDestination() {
+        HdsNavDestination() {
             Column() {
                 Text($r("app.string.Selectable_Dialog_Label", this.commandNickname))
                     .fontWeight(FontWeight.Bold)
@@ -52,6 +54,21 @@ export struct SelectableDialog {
             .padding(StyleConstants.PADDING_TWENTY)
             .width(StyleConstants.FULL_PERCENT)
         }
+        .titleBar({
+            style: {
+                scrollEffectOpts: {
+                    // 设置滚动特效
+                    enableScrollEffect: true,
+                    scrollEffectType: ScrollEffectType.GRADIENT_BLUR,
+                },
+                systemMaterialEffect: {
+                    // 设置沉浸光感
+                    materialType: hdsMaterial.MaterialType.ADAPTIVE,
+                    materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+                },
+            },
+            enableComponentSafeArea: true // 启用标题栏占位
+        })
         .mode(NavDestinationMode.DIALOG)
         .backgroundColor($r("app.color.dialog_background_color"))
         .onBackPressed(() => {
