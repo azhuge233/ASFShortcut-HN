@@ -37,6 +37,14 @@
       "value": "多指令卡片"
     },
     {
+      "name": "MultipleCommandsEditEntryAbility_desc",
+      "value": "多指令卡片编辑能力"
+    },
+    {
+      "name": "MultipleCommandsEditEntryAbility_label",
+      "value": "ASF 快捷指令"
+    },
+    {
       "name": "SingleCommandEditEntryAbility_desc",
       "value": "单指令卡片编辑能力"
     },

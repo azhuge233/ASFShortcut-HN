@@ -37,6 +37,14 @@
       "value": "Mutiple Commands Widget"
     },
     {
+      "name": "MultipleCommandsEditEntryAbility_desc",
+      "value": "Mutiple Commands Widget"
+    },
+    {
+      "name": "MultipleCommandsEditEntryAbility_label",
+      "value": "ASF Shortcut"
+    },
+    {
       "name": "SingleCommandEditEntryAbility_desc",
       "value": "Single Command Widget"
     },
