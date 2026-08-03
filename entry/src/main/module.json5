@@ -57,6 +57,17 @@
         "startWindowIcon": "$media:startIcon",
         "startWindowBackground": "$color:start_window_background",
         "launchType": "multiton"
+      },
+      {
+        "name": 'SingleCommandEditEntryAbility',
+        "srcEntry": "./ets/singlecommandwidget/singlecommandeditentryability/singlecommandeditentryability.ets",
+        "description": '$string:SingleCommandEditEntryAbility_desc',
+        "icon": "$media:app_icon_layered",
+        "label": "$string:SingleCommandEditEntryAbility_label",
+        "startWindowIcon": "$media:startIcon",
+        "startWindowBackground": "$color:start_window_background",
+        "launchType": "multiton"
+      },
       }
     ],
     "extensionAbilities": [
