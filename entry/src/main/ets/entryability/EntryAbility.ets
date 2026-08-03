@@ -23,8 +23,8 @@ export default class EntryAbility extends UIAbility {
 
         this.init(); // 持久化存储初始化
 
-        if(want?.parameters?.params) this.handleFormWant(want);
-        else if (want?.parameters?.isFromShortcut) this.handleShortcutWant(want);
+        if(want.parameters?.params) this.handleFormWant(want);
+        else if (want.parameters?.isFromShortcut) this.handleShortcutWant(want);
         else Logger.debug(this.LOG_TAG, `onCreate() 应用图标转入`);
 
         Logger.debug(this.LOG_TAG, `onCreate() targetPage: ${this.targetPage}`);
@@ -33,11 +33,11 @@ export default class EntryAbility extends UIAbility {
     onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
         Logger.debug(this.LOG_TAG, 'onNewWant()');
 
-        if(want?.parameters?.params) {
+        if(want.parameters?.params) {
             this.handleFormWant(want);
             // 手动进入目标页面
             this.loadContent();
-        } else if(want?.parameters?.isFromShortcut) this.handleShortcutWant(want);
+        } else if(want.parameters?.isFromShortcut) this.handleShortcutWant(want);
         else Logger.debug(this.LOG_TAG, `onNewWant() 应用图标转入`);
 
         Logger.debug(this.LOG_TAG, `onNewWant() targetPage: ${this.targetPage}`);
