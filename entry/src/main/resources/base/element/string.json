@@ -511,6 +511,10 @@
     {
       "name": "Index_Deletion_Cancel",
       "value": "Cancel"
+    },
+    {
+      "name": "Index_Deletion_Failed",
+      "value": "Delete failed. Please try again."
     }
   ]
 }

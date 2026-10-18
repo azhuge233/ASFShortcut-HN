@@ -71,7 +71,7 @@
       },
       {
         "name": 'MultipleCommandsEditEntryAbility',
-        "srcEntry": "./ets/multiplecommandswidget/multiplecommandseditentryability/multplecommandseditentryability.ets",
+        "srcEntry": "./ets/multiplecommandswidget/multiplecommandseditentryability/multiplecommandseditentryability.ets",
         "description": '$string:MultipleCommandsEditEntryAbility_desc',
         "icon": "$media:app_icon_layered",
         "label": "$string:MultipleCommandsEditEntryAbility_label",

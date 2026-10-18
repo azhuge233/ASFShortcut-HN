@@ -511,6 +511,10 @@
     {
       "name": "Index_Deletion_Cancel",
       "value": "取消"
+    },
+    {
+      "name": "Index_Deletion_Failed",
+      "value": "删除失败，请重试"
     }
   ]
 }

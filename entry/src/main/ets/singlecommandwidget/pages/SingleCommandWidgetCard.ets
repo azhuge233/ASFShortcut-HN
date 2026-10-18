@@ -79,7 +79,7 @@ struct SingleCommandWidgetCard {
                                     .fontColor($r("app.color.form_font_color"))
                                     .textAlign(TextAlign.Start)
                             }
-                        })
+                        }, (line: string, index: number) => index.toString())
                     }
                     .layoutWeight(1)
                     .height(StyleConstants.NINETY_PERCENT)
@@ -107,13 +107,13 @@ struct SingleCommandWidgetCard {
                 }
             } else {
                 Column() {
-                    Text(this.nickname)
+                    Text(this.nickname ?? '')
                         .fontWeight(FontWeight.Medium)
                         .fontColor(Color.White)
                         .maxLines(1)
                         .textOverflow({ overflow: TextOverflow.Clip })
 
-                    Text(this.command)
+                    Text(this.command ?? '')
                         .fontColor(Color.Gray)
                         .maxLines(1)
                         .textOverflow({ overflow: TextOverflow.Ellipsis })

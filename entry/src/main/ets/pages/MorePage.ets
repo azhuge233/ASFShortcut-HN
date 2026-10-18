@@ -10,7 +10,7 @@ import { MoreMenuItem } from '../view/components/MoreMenuItem';
 import CommonUtils from '../common/utils/CommonUtils';
 import { ExportJson, SettingsJsonObject } from '../model/JsonObjects';
 import CommonConstants from '../common/constants/CommonConstants';
-import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
+import CommandEntry from '../model/CommandEntry';
 
 @Builder
 export function MorePageBuilder() {
@@ -36,7 +36,6 @@ struct MorePage {
     private db = DB.getInstance();
 
     private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
-    private newCommandViewModel: CommandEntryViewModel = new CommandEntryViewModel();
 
     private settingsEntries: Array<[Resource, Resource, Resource | null, () => void | Promise<void>]> = [
       [
@@ -123,38 +122,38 @@ struct MorePage {
 
                 const exportJson = await CommonUtils.parseData(jsonString);
 
-                // 清空表
-                await this.db.clearTableSettings();
-                await this.listViewModel.clearCommandEntry();
-
-                // 恢复ASF设置
-                const success1 = await this.db.saveSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address, exportJson.Settings.Address);
-                const success2 = await this.db.saveSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password, exportJson.Settings.Password);
-
-                if(!success1 || !success2) throw new Error("恢复ASF设置失败");
-
+                // 先构造条目，再由 DB 事务整体替换；失败时回滚，保留原数据
+                const entries: Array<CommandEntry> = [];
                 let commandOrder = 0;
 
-                // 恢复ASF指令
-                for(let commandEntryJsonObject of exportJson.CommandEntryList) {
-                    this.newCommandViewModel.nickname = commandEntryJsonObject.Nickname;
-                    this.newCommandViewModel.command = commandEntryJsonObject.Command;
-                    this.newCommandViewModel.orderIndex = commandEntryJsonObject.OrderIndex == -1 ? commandOrder : commandEntryJsonObject.OrderIndex;
-                    this.newCommandViewModel.accountInputRequired = commandEntryJsonObject.AIR;
-                    this.newCommandViewModel.idInputRequired = commandEntryJsonObject.IIR;
-
-                    await this.listViewModel.addCommandEntry(this.newCommandViewModel.toCommandEntry());
-
+                for (const commandEntryJsonObject of exportJson.CommandEntryList) {
+                    const orderIndex = commandEntryJsonObject.OrderIndex == -1 ? commandOrder : commandEntryJsonObject.OrderIndex;
+                    entries.push(new CommandEntry(
+                        0,
+                        commandEntryJsonObject.Nickname,
+                        commandEntryJsonObject.Command,
+                        orderIndex,
+                        commandEntryJsonObject.AIR,
+                        commandEntryJsonObject.IIR
+                    ));
                     commandOrder++;
                 }
+
+                const success = await this.listViewModel.importData(
+                    exportJson.Settings.Address,
+                    exportJson.Settings.Password,
+                    entries
+                );
+
+                if (!success) throw new Error("导入数据失败");
 
                 CommonUtils.alert($r("app.string.More_Import_Success"), this.promptAction);
 
                 this.pathStack?.pop("OK");
             } else Logger.warn(this.LOG_TAG, "未选择文件");
         } catch (err) {
-            Logger.error(this.LOG_TAG, `导入失败, 代码: ${err.code}, 错误信息: ${err.message}`);
-            CommonUtils.alert(err.message, this.promptAction);
+            Logger.error(this.LOG_TAG, `导入失败, ${err}`);
+            CommonUtils.alert(`导入失败: ${err}`, this.promptAction);
         } finally {
             this.isProcessing = false;
         }
@@ -274,7 +273,7 @@ struct MorePage {
                         doJob: item[3]
                     }
                 )
-            })
+            }, (item: [Resource, Resource, Resource | null, () => void | Promise<void>], index: number) => index.toString())
         }
         .width(StyleConstants.FULL_PERCENT)
     }

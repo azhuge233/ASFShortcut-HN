@@ -11,9 +11,7 @@ export class DB {
 
     private static instance: DB | null = null;
 
-    private isInitialized: boolean = false; // 初始化标志
     private initPromise: Promise<void> | null = null;
-    private resolveInit: (() => void) | null = null;
 
     private rdbStore: relationalStore.RdbStore | undefined;
 
@@ -63,18 +61,16 @@ export class DB {
         if (this.initPromise) return;
 
         this.initPromise = new Promise((resolve) => {
-            this.resolveInit = resolve;
-
             // 异步初始化数据库
             relationalStore.getRdbStore(context, this.STORE_CONFIG).then((store) => {
                 store.executeSync(this.SQL_CREATE_TABLE_HostInfo);
                 store.executeSync(this.SQL_CREATE_TABLE_CommandEntires);
 
                 this.rdbStore = store;
-                this.isInitialized = true;
                 resolve(); // 解析Promise表示初始化完成
             }).catch((err: BusinessError) => {
                 Logger.error(this.LOG_TAG, `数据库初始化失败, ${err}`);
+                this.initPromise = null; // 允许下次重试
                 resolve(); // 即使失败也要resolve，避免永久阻塞
             });
         });
@@ -92,27 +88,31 @@ export class DB {
             const predicates = new relationalStore.RdbPredicates(this.TN_HostInfo);
             predicates.equalTo(this.KEY_HostInfo_KEY, key);
 
-            const resultSet = await this.rdbStore.query(predicates, [this.KEY_ID]);
-            const exists = resultSet.rowCount > 0;
-            resultSet.close();
+            let resultSet: relationalStore.ResultSet | null = null;
+            try {
+                resultSet = await this.rdbStore.query(predicates, [this.KEY_ID]);
+                const exists = resultSet.rowCount > 0;
 
-            if (exists) {
-                const valueBucket: relationalStore.ValuesBucket = {
-                    'VALUE': value
-                };
-                await this.rdbStore.update(valueBucket, predicates);
-            } else {
-                const valueBucket: relationalStore.ValuesBucket = {
-                    'KEY': key,
-                    'VALUE': value
-                };
-                await this.rdbStore.insert(this.TN_HostInfo, valueBucket);
+                if (exists) {
+                    const valueBucket: relationalStore.ValuesBucket = {
+                        'VALUE': value
+                    };
+                    await this.rdbStore.update(valueBucket, predicates);
+                } else {
+                    const valueBucket: relationalStore.ValuesBucket = {
+                        'KEY': key,
+                        'VALUE': value
+                    };
+                    await this.rdbStore.insert(this.TN_HostInfo, valueBucket);
+                }
+            } finally {
+                this.closeResultSet(resultSet, 'saveSetting()');
             }
 
-            Logger.info(this.LOG_TAG, `设置已保存: ${key} = ${value}`);
+            Logger.info(this.LOG_TAG, `设置已保存: ${key}`);
             return true;
         } catch (err) {
-            Logger.error(this.LOG_TAG, `无法保存设置 ${key} = ${value}: ${err}`);
+            Logger.error(this.LOG_TAG, `无法保存设置 ${key}: ${this.errorText(err)}`);
             return false;
         }
     }
@@ -125,22 +125,24 @@ export class DB {
             return defaultValue;
         }
 
+        let resultSet: relationalStore.ResultSet | null = null;
         try {
             const predicates = new relationalStore.RdbPredicates(this.TN_HostInfo);
             predicates.equalTo(this.KEY_HostInfo_KEY, key);
 
-            const resultSet = await this.rdbStore.query(predicates, [this.KEY_HostInfo_VALUE]);
+            resultSet = await this.rdbStore.query(predicates, [this.KEY_HostInfo_VALUE]);
             let value = defaultValue;
 
             if (resultSet.rowCount > 0 && resultSet.goToFirstRow()) {
                 value = resultSet.getString(resultSet.getColumnIndex(this.KEY_HostInfo_VALUE));
             }
 
-            resultSet.close();
             return value;
         } catch (err) {
-            Logger.error(this.LOG_TAG, `无法获取 ${key} 设置信息, ${err}`);
+            Logger.error(this.LOG_TAG, `无法获取 ${key} 设置信息, ${this.errorText(err)}`);
             return defaultValue;
+        } finally {
+            this.closeResultSet(resultSet, 'getSetting()');
         }
     }
 
@@ -151,36 +153,6 @@ export class DB {
         return address.trim() !== '' && password.trim() !== '';
     }
 
-    // debug 方法
-    async getAllSettings(): Promise<Map<string, string>> {
-        await this.waitForReady();
-
-        const settings = new Map<string, string>();
-
-        if (!this.rdbStore) {
-            Logger.error(this.LOG_TAG, "数据库实例不存在");
-            return settings;
-        }
-
-        try {
-            const predicates = new relationalStore.RdbPredicates(this.TN_HostInfo);
-            const resultSet = await this.rdbStore.query(predicates, [this.KEY_HostInfo_KEY, this.KEY_HostInfo_VALUE]);
-
-            if (resultSet.rowCount > 0) {
-                while (resultSet.goToNextRow()) {
-                    const key = resultSet.getString(resultSet.getColumnIndex(this.KEY_HostInfo_KEY));
-                    const value = resultSet.getString(resultSet.getColumnIndex(this.KEY_HostInfo_VALUE));
-                    settings.set(key, value);
-                }
-            }
-
-            resultSet.close();
-            return settings;
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `无法获取全部设置信息, ${err}`);
-            return settings;
-        }
-    }
 
     private async clearTable(tableName: string) {
         await this.waitForReady();
@@ -193,18 +165,63 @@ export class DB {
             await this.rdbStore.executeSql(sql);
             Logger.info(this.LOG_TAG, `成功清除表内数据, 表名称: ${tableName}`);
         } catch (err) {
-            Logger.error(this.LOG_TAG, `清除表: ${tableName} 数据失败, code: ${err.code}, message: ${err.message}`);
+            Logger.error(this.LOG_TAG, `清除表: ${tableName} 数据失败, ${this.errorText(err)}`);
             throw new Error(`清除表: ${tableName} 数据失败`);
         }
     }
 
-    // debug 方法
-    async clearTableSettings() {
-        await this.clearTable(this.TN_HostInfo);
-    }
-
     async clearTableCommandEntries() {
         await this.clearTable(this.TN_CommandEntries);
+    }
+
+    async importData(address: string, password: string, entries: Array<CommandEntry>): Promise<boolean> {
+        await this.waitForReady();
+
+        if (!this.rdbStore) {
+            Logger.error(this.LOG_TAG, "数据库实例不存在，无法导入");
+            return false;
+        }
+
+        try {
+            this.rdbStore.beginTransaction();
+            await this.rdbStore.executeSql(`${this.SQL_DELETE_TABLE_Prefix}${this.TN_HostInfo}`);
+            await this.rdbStore.executeSql(`${this.SQL_DELETE_TABLE_Prefix}${this.TN_CommandEntries}`);
+
+            const addressBucket: relationalStore.ValuesBucket = {
+                'KEY': CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address,
+                'VALUE': address
+            };
+            const passwordBucket: relationalStore.ValuesBucket = {
+                'KEY': CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password,
+                'VALUE': password
+            };
+            await this.rdbStore.insert(this.TN_HostInfo, addressBucket);
+            await this.rdbStore.insert(this.TN_HostInfo, passwordBucket);
+
+            for (const entry of entries) {
+                const valueBucket: relationalStore.ValuesBucket = {
+                    'NICKNAME': entry.nickname,
+                    'COMMAND': entry.command,
+                    'ORDERINDEX': entry.orderIndex,
+                    'AIR': entry.accountInputRequired,
+                    'IIR': entry.idInputRequired
+                };
+                await this.rdbStore.insert(this.TN_CommandEntries, valueBucket);
+            }
+
+            this.rdbStore.commit();
+            return true;
+        } catch (err) {
+            if (this.rdbStore) {
+                try {
+                    this.rdbStore.rollBack();
+                } catch (rollbackErr) {
+                    Logger.error(this.LOG_TAG, `导入失败后回滚异常, ${this.errorText(rollbackErr)}`);
+                }
+            }
+            Logger.error(this.LOG_TAG, `导入数据失败, ${this.errorText(err)}`);
+            return false;
+        }
     }
 
     async getCommandByID(queryID: number): Promise<CommandEntry | null> {
@@ -215,8 +232,9 @@ export class DB {
         const predicates = new relationalStore.RdbPredicates(this.TN_CommandEntries);
         predicates.equalTo(this.KEY_ID, queryID);
 
+        let queryResult: relationalStore.ResultSet | null = null;
         try {
-            const queryResult = await this.rdbStore.query(predicates, [
+            queryResult = await this.rdbStore.query(predicates, [
                 this.KEY_ID,
                 this.KEY_CommandEntries_Nickname,
                 this.KEY_CommandEntries_Command,
@@ -245,20 +263,23 @@ export class DB {
             Logger.debug(this.LOG_TAG, `没有查询到 ID = ${queryID} 的结果`)
             return null;
         } catch (err) {
-            Logger.error(this.LOG_TAG, `getCommandByID 执行失败, ${err}`);
+            Logger.error(this.LOG_TAG, `getCommandByID 执行失败, ${this.errorText(err)}`);
             return null;
+        } finally {
+            this.closeResultSet(queryResult, 'getCommandByID()');
         }
     }
 
-    async getCommandList() {
+    async getCommandList(): Promise<Array<CommandEntry>> {
         await this.waitForReady();
 
         if (!this.rdbStore) throw new Error("数据库实例不存在");
 
         const predicates = new relationalStore.RdbPredicates(this.TN_CommandEntries);
 
+        let queryResult: relationalStore.ResultSet | null = null;
         try {
-            const queryResult = await this.rdbStore.query(predicates, [
+            queryResult = await this.rdbStore.query(predicates, [
                 this.KEY_ID,
                 this.KEY_CommandEntries_Nickname,
                 this.KEY_CommandEntries_Command,
@@ -267,7 +288,7 @@ export class DB {
                 this.KEY_CommandEntries_IdInputRequired
             ]);
 
-            if(queryResult === undefined) throw new Error("查询为空");
+            if(!queryResult) throw new Error("查询为空");
 
             Logger.debug(this.LOG_TAG, `查询结果，行数: ${queryResult.rowCount}, 列数: ${queryResult.columnCount}`)
 
@@ -294,7 +315,9 @@ export class DB {
 
             return commandEntries;
         } catch (err) {
-            throw new Error(`获取快捷指令列表失败, ${err}`);
+            throw new Error(`获取快捷指令列表失败, ${this.errorText(err)}`);
+        } finally {
+            this.closeResultSet(queryResult, 'getCommandList()');
         }
     }
 
@@ -325,7 +348,7 @@ export class DB {
 
             return result;
         } catch (err) {
-            throw new Error(err);
+            throw err as Error;
         }
     }
 
@@ -359,7 +382,7 @@ export class DB {
 
             return result;
         } catch (err) {
-            throw new Error(err);
+            throw err as Error;
         }
     }
 
@@ -380,7 +403,7 @@ export class DB {
 
             return result;
         } catch (err) {
-            throw new Error(err);
+            throw err as Error;
         }
     }
 
@@ -417,9 +440,30 @@ export class DB {
             return true;
         } catch (err) {
             // 回滚事务
-            this.rdbStore.rollBack();
-            Logger.error(this.LOG_TAG, `批量更新排序索引失败，已回滚: ${err}`);
+            if (this.rdbStore) {
+                try {
+                    this.rdbStore.rollBack();
+                } catch (rollbackErr) {
+                    Logger.error(this.LOG_TAG, `批量更新排序索引回滚失败, ${this.errorText(rollbackErr)}`);
+                }
+            }
+            Logger.error(this.LOG_TAG, `批量更新排序索引失败，已回滚: ${this.errorText(err)}`);
             return false;
+        }
+    }
+
+    private errorText(err: Object): string {
+        const e = err as BusinessError;
+        if (e && e.message) return `${e.code}: ${e.message}`;
+        return `${err}`;
+    }
+
+    private closeResultSet(resultSet: relationalStore.ResultSet | null, caller: string) {
+        if (!resultSet) return;
+        try {
+            resultSet.close();
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `${caller} 关闭查询结果集失败, ${this.errorText(err)}`);
         }
     }
 

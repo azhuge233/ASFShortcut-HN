@@ -173,9 +173,11 @@ struct EditPage {
         .width(StyleConstants.FULL_PERCENT)
         .onReady((context: NavDestinationContext) => {
             this.pathStack = context.pathStack;
-            const param = this.pathStack.getParamByIndex(0) as Array<object>;
+            const param = context.pathInfo.param as Array<object>;
             this.listViewModel = param[0] as CommandEntryListViewModel;
-            this.updatingCommandEntry = param[1] as CommandEntryViewModel;
+            const sourceEntry = param[1] as CommandEntryViewModel;
+            this.updatingCommandEntry = new CommandEntryViewModel();
+            this.updatingCommandEntry.updateCommand(sourceEntry.toCommandEntry());
         })
         .onBackPressed(() => {
             this.pathStack?.pop("Back pressed");

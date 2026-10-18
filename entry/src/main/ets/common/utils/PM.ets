@@ -1,5 +1,5 @@
 import preferences from '@ohos.data.preferences';
-import { deviceInfo } from '@kit.BasicServicesKit';
+import { deviceInfo, BusinessError } from '@kit.BasicServicesKit';
 
 import Logger from './Logger';
 import CommandEntry from '../../model/CommandEntry';
@@ -11,9 +11,7 @@ export class PM {
 
     private static instance: PM | null = null;
 
-    private isInitialized: boolean = false; // 初始化标志
     private initPromise: Promise<void> | null = null;
-    private resolveInit: (() => void) | null = null;
 
     private dataPreferences: preferences.Preferences | null = null;
 
@@ -32,8 +30,6 @@ export class PM {
         if(this.initPromise) return;
 
         this.initPromise = new Promise((resolve) => {
-            this.resolveInit = resolve;
-
             let options: preferences.Options = {
                 name: this.PREFERENCES_NAME,
                 storageType: this.isGSKVSupported ? preferences.StorageType.GSKV : preferences.StorageType.XML
@@ -42,10 +38,10 @@ export class PM {
             // 异步初始化
             preferences.getPreferences(context, options).then((preference) => {
                 this.dataPreferences = preference;
-                this.isInitialized = true;
                 resolve(); // 解析Promise表示初始化完成
             }).catch((err: BusinessError) => {
                 Logger.error(this.LOG_TAG, `首选项初始化失败, ${err}`);
+                this.initPromise = null; // 允许下次重试
                 resolve(); // 即使失败也要resolve，避免永久阻塞
             });
         });
@@ -112,10 +108,21 @@ export class PM {
 
         try {
             const formDataMap = (await this.dataPreferences.getAll() ?? {}) as Record<string, string>;
-            let keys = Object.keys(formDataMap);
-            keys = keys.filter(key => formDataMap[key].indexOf("commandList") === -1);
+            const keys = Object.keys(formDataMap);
+            const result: Array<SingleCommandFormData> = [];
 
-            return keys.map(key => JSON.parse(formDataMap[key]) as SingleCommandFormData);
+            for (const key of keys) {
+                try {
+                    const parsed = JSON.parse(formDataMap[key]) as Record<string, Object>;
+                    if (!Array.isArray(parsed['commandList'])) {
+                        result.push(JSON.parse(formDataMap[key]) as SingleCommandFormData);
+                    }
+                } catch (err) {
+                    Logger.warn(this.LOG_TAG, `跳过无法解析的卡片绑定: ${key}, ${err}`);
+                }
+            }
+
+            return result;
         } catch (err) {
             Logger.error(this.LOG_TAG, `getAllCardBindingsSingle() 获取所有绑定失败, ${err}`);
             return [];
@@ -162,12 +169,12 @@ export class PM {
             let removedFormIDs: string[] = [];
 
             // 删除所有绑定该指令的卡片，统计受影响的 formID
-            formDataArr.forEach(async formData => {
-                if(formData.shortcutID === shortcutID) {
+            for (const formData of formDataArr) {
+                if (formData.shortcutID === shortcutID) {
                     removedFormIDs.push(formData.formID);
                     await this.unbind(formData.formID);
                 }
-            });
+            }
 
             return removedFormIDs;
         } catch (err) {
@@ -217,10 +224,21 @@ export class PM {
 
         try {
             const formDataMap = (await this.dataPreferences.getAll() ?? {}) as Record<string, string>;
-            let keys = Object.keys(formDataMap);
-            keys = keys.filter(key => formDataMap[key].indexOf("commandList") !== -1);
+            const keys = Object.keys(formDataMap);
+            const result: Array<MultipleCommandsFormData> = [];
 
-            return keys.map(key => JSON.parse(formDataMap[key]) as MultipleCommandsFormData);
+            for (const key of keys) {
+                try {
+                    const parsed = JSON.parse(formDataMap[key]) as Record<string, Object>;
+                    if (Array.isArray(parsed['commandList'])) {
+                        result.push(JSON.parse(formDataMap[key]) as MultipleCommandsFormData);
+                    }
+                } catch (err) {
+                    Logger.warn(this.LOG_TAG, `跳过无法解析的卡片绑定: ${key}, ${err}`);
+                }
+            }
+
+            return result;
         } catch (err) {
             Logger.error(this.LOG_TAG, `getAllCardBindingsMultiple() 获取所有绑定失败, ${err}`);
             return [];

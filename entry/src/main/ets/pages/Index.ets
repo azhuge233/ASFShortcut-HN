@@ -233,7 +233,6 @@ struct Index {
         if (!isComplete) this.showSetupDialog = true; else {
             await this.loadSettings();
             this.initASF();
-            // Logger.info(this.LOG_TAG, `应用初始化完成, address: ${this.currentAddress}, password: ${this.currentASFPassword}`);
         }
     }
 
@@ -288,8 +287,10 @@ struct Index {
                         ]
                     });
 
-                    if(result.index === 0) this.listViewModel.deleteCommandEntry(entry.toCommandEntry());
-                    else Logger.warn(this.LOG_TAG, `取消删除`);
+                    if (result.index === 0) {
+                        const success = await this.listViewModel.deleteCommandEntry(entry.toCommandEntry());
+                        if (!success) CommonUtils.alert($r("app.string.Index_Deletion_Failed"), this.promptAction);
+                    } else Logger.warn(this.LOG_TAG, `取消删除`);
                 } catch (err) {
                     Logger.error(this.LOG_TAG, `删除确认框弹出失败`);
                 }
@@ -440,6 +441,7 @@ struct Index {
                                 onSendCommand: (command: string) => this.sendCommand(item.nickname, command),
                                 onRunningStateChange: (isRunning: boolean) => {
                                     if (isRunning) this.runningCommandIDs.add(item.id); else this.runningCommandIDs.delete(item.id);
+                                    this.runningCommandIDs = new Set(this.runningCommandIDs);
                                     Logger.debug(this.LOG_TAG,
                                         `正在运行的指令：${Array.from(this.runningCommandIDs).join(', ')}`);
                                 }
@@ -460,10 +462,18 @@ struct Index {
                             right: StyleConstants.ONE_PERCENT,
                             bottom: StyleConstants.TWO_PERCENT
                         })
-                    })
+                    }, (item: CommandEntryViewModel) => item.id.toString())
                         .onMove((from: number, to: number) => {
-                            const success = this.listViewModel.reorderEntries(from, to);
-                            return success;
+                            this.listViewModel.reorderEntries(from, to).then((success) => {
+                                if (!success) {
+                                    Logger.warn(this.LOG_TAG, `拖拽排序失败，重新加载列表`);
+                                    this.listViewModel.loadCommandEntries();
+                                }
+                            }).catch((err: Error) => {
+                                Logger.error(this.LOG_TAG, `拖拽排序异常: ${err}`);
+                                this.listViewModel.loadCommandEntries();
+                            });
+                            return true;
                         }, {
                             onLongPress: () => {
                                 CommonUtils.vibrate(CommonConstants.Vibrate_Effect_ID_SOFT);

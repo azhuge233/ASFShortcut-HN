@@ -18,6 +18,17 @@ export default class EntryAbility extends UIAbility {
     private pm = PM.getInstance();
     private aSM = AppSettingsManager.getInstance();
 
+    private static readonly VALID_TARGET_PAGES: Set<string> = new Set([
+        'pages/Index',
+        'pages/AddCommand',
+        'pages/EditPage',
+        'pages/ASFSettingsPage',
+        'pages/MorePage',
+        'pages/ColorModeSettingsPage',
+        'pages/SingleCommandFormEdit',
+        'pages/MultipleCommandsFormEdit'
+    ]);
+
     onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
         Logger.debug(this.LOG_TAG, 'onCreate()');
 
@@ -92,7 +103,7 @@ export default class EntryAbility extends UIAbility {
                     Logger.error(this.LOG_TAG, `loadContent() 设置软键盘避让失败`);
                 }
 
-                if (err.code) {
+                if (err && err.code) {
                     Logger.error(this.LOG_TAG, `loadContent() 加载 ${this.targetPage} 失败 ${JSON.stringify(err)}`,);
                     return;
                 }
@@ -104,17 +115,44 @@ export default class EntryAbility extends UIAbility {
     private handleFormWant(want: Want): void {
         Logger.debug(this.LOG_TAG, `桌面卡片转入`);
 
-        const params: Record<string, Object> = JSON.parse(want?.parameters?.params as string);
+        try {
+            const rawParams = want?.parameters?.params;
+            if (typeof rawParams !== 'string') {
+                Logger.warn(this.LOG_TAG, `handleFormWant() 参数为空`);
+                this.targetPage = 'pages/Index';
+                return;
+            }
 
-        this.targetPage = params.targetPage as string; // 目标页面
-        const formID = params.formID as string; // formID
+            const params = JSON.parse(rawParams) as Record<string, Object>;
+            const targetPage = params['targetPage'];
 
-        if(formID && formID.trim() !== '') AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_FormID, formID);
+            if (typeof targetPage === 'string' && EntryAbility.VALID_TARGET_PAGES.has(targetPage)) {
+                this.targetPage = targetPage;
+            } else {
+                Logger.warn(this.LOG_TAG, `handleFormWant() 非法目标页面，使用默认页面`);
+                this.targetPage = 'pages/Index';
+            }
+
+            const formID = params['formID'];
+            if (typeof formID === 'string' && formID.trim() !== '') {
+                AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_FormID, formID);
+            } else {
+                Logger.warn(this.LOG_TAG, `handleFormWant() formID 为空`);
+            }
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `handleFormWant() 解析失败, ${err}`);
+            this.targetPage = 'pages/Index';
+        }
     }
 
     private handleShortcutWant(want: Want): void {
         Logger.debug(this.LOG_TAG, `长按快捷方式转入`);
-        if(want?.parameters?.shortCutKey) AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_ShortcutPath, want?.parameters?.shortCutKey as string);
+        const shortCutKey = want?.parameters?.shortCutKey;
+        if (typeof shortCutKey === 'string' && shortCutKey.trim() !== '') {
+            AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_ShortcutPath, shortCutKey);
+        } else {
+            Logger.warn(this.LOG_TAG, `handleShortcutWant() 快捷方式参数为空`);
+        }
     }
 
     private async setColorMode(): Promise<void> {

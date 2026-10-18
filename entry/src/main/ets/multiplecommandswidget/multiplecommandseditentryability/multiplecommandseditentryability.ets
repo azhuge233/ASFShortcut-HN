@@ -86,7 +86,7 @@ export default class MultipleCommandsEditEntryAbility extends UIAbility {
                     Logger.error(this.LOG_TAG, `loadContent() 设置软键盘避让失败`);
                 }
 
-                if (err.code) {
+                if (err && err.code) {
                     Logger.error(this.LOG_TAG, `loadContent() 加载 ${this.targetPage} 失败 ${JSON.stringify(err)}`,);
                     return;
                 }
@@ -96,11 +96,12 @@ export default class MultipleCommandsEditEntryAbility extends UIAbility {
     }
 
     private handleFormWant(want: Want): void {
-        const formID: string = want.parameters?.formId as string;
+        const rawFormID = want.parameters?.formId;
+        const formID: string = typeof rawFormID === 'string' ? rawFormID : '';
 
         Logger.debug(this.LOG_TAG, `编辑多设备卡片，卡片 ID = ${formID}`);
 
-        if(formID && formID.trim() !== '') AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_FormID, formID);
+        if(formID.trim() !== '') AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_FormID, formID);
         else {
             Logger.warn(this.LOG_TAG, 'handleFormWant() 卡片 ID 无效');
             CommonUtils.closeApplication(this.LOG_TAG, this.context);

@@ -10,10 +10,8 @@ class CommonConstants {
     public readonly AppStorage_KEY_AppSettings = "AppSettings";
 
     public readonly FormMessage_Restore = 'restore';
-    //public readonly FormMessage_Update = 'update';
 
     public readonly FormCall_Run = 'run';
-    // public readonly FormCall_Up = 'up';
 
     public readonly FormResult_MapKey_Single = 'single';
     public readonly FormResult_MapKey_Multiple = 'multiple';

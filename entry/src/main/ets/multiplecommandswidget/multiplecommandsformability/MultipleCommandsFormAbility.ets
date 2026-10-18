@@ -21,6 +21,10 @@ export default class MultipleCommandsFormAbility extends FormExtensionAbility {
 
         Logger.debug(this.LOG_TAG, `onAddForm() formID: ${formID}`);
 
+        if (!formID || formID.trim() === '') {
+            Logger.warn(this.LOG_TAG, `onAddForm() formID 为空`);
+        }
+
         return CommonUtils.createMultipleCommandFormBindingData(formID);
     }
 
@@ -69,9 +73,15 @@ export default class MultipleCommandsFormAbility extends FormExtensionAbility {
         this.init();
 
         // 卡片传参
-        const messageObj: Record<string, Object> = JSON.parse(message);
+        let messageObj: Record<string, Object>;
+        try {
+            messageObj = JSON.parse(message) as Record<string, Object>;
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `onFormEvent() 消息解析失败, ${err}`);
+            return;
+        }
         // action 参数
-        const action = messageObj.formAction as string;
+        const action = messageObj['formAction'] as string;
 
         Logger.debug(this.LOG_TAG, `onFormEvent() 接收指令 ${action}`);
 

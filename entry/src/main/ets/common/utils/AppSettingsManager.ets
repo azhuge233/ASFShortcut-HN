@@ -5,7 +5,6 @@ import { ConfigurationConstant } from '@kit.AbilityKit';
 import Logger from '../utils/Logger';
 import { AppSettings } from '../../model/AppSettings';
 
-@ObservedV2
 export class AppSettingsManager {
     private LOG_TAG = "[AppSettingsManager]";
 
@@ -44,7 +43,7 @@ export class AppSettingsManager {
         if(!this.checkReady()) return false;
 
         try {
-            await this.dataPreferences?.put(this.STORE_KEY, appSettings);
+            await this.dataPreferences?.put(this.STORE_KEY, appSettings.colorMode);
             if(!this.isGSKVSupported) await this.dataPreferences?.flush();
             return true;
         } catch (err) {
@@ -57,12 +56,22 @@ export class AppSettingsManager {
         if(!this.checkReady()) return null;
 
         try {
-            const storeObj = await this.dataPreferences!.get(this.STORE_KEY, '') as Record<string, Object>;
+            const stored = await this.dataPreferences!.get(this.STORE_KEY, ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET) as Object;
+            let mode: ConfigurationConstant.ColorMode | null = null;
 
-            if(storeObj && typeof storeObj === 'object') {
-                return new AppSettings(
-                  storeObj.colorMode as ConfigurationConstant.ColorMode
-                );
+            if (typeof stored === 'number') {
+                mode = stored as ConfigurationConstant.ColorMode;
+            } else if (stored && typeof stored === 'object') {
+                const legacy = stored as Record<string, Object>;
+                if (typeof legacy['colorMode'] === 'number') {
+                    mode = legacy['colorMode'] as ConfigurationConstant.ColorMode;
+                }
+            }
+
+            if (mode !== null && (mode === ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET ||
+                mode === ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT ||
+                mode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK)) {
+                return new AppSettings(mode);
             }
 
             return null;

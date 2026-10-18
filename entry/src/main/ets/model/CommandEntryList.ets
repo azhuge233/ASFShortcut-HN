@@ -113,11 +113,27 @@ export default class CommandEntryList {
         }
     }
 
+    async importData(address: string, password: string, entries: Array<CommandEntry>): Promise<boolean> {
+        const success = await this.db.importData(address, password, entries);
+        if (!success) return false;
+
+        const bindingsCleared = await this.pm.clearAllBindings();
+        if (!bindingsCleared) {
+            Logger.warn(this.LOG_TAG, '导入成功，但卡片绑定清空失败');
+        }
+
+        return true;
+    }
+
     async updateEntriesOrder(reorderedEntries: Array<Array<number>>): Promise<boolean> {
         try {
-            await this.db.batchUpdateOrderIndices(reorderedEntries);
-            Logger.debug(this.LOG_TAG, `顺序更新成功，共更新 ${reorderedEntries.length} 个命令。`);
-            return true;
+            const success = await this.db.batchUpdateOrderIndices(reorderedEntries);
+            if (success) {
+                Logger.debug(this.LOG_TAG, `顺序更新成功，共更新 ${reorderedEntries.length} 个命令。`);
+            } else {
+                Logger.warn(this.LOG_TAG, `顺序更新失败，共 ${reorderedEntries.length} 个命令。`);
+            }
+            return success;
         } catch (err) {
             Logger.error(this.LOG_TAG, `更新命令顺序失败: ${err}`);
             return false;

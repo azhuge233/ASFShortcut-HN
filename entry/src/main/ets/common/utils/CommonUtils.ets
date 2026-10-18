@@ -15,12 +15,6 @@ import MultipleCommandsFormData from '../../multiplecommandswidget/model/Multipl
 class CommonUtils {
     private LOG_TAG = "[CommonUtils]";
 
-    // Debug
-    // 等待 time 秒
-    public async sleep(time: number): Promise<void> {
-        await new Promise<void>(resolve => setTimeout(resolve, time));
-    }
-
     // 按照 API 版本显示 Toast 提醒
     public alert(message: string | Resource, promptAction: PromptAction) {
         promptAction.openToast({
@@ -94,20 +88,28 @@ class CommonUtils {
 
             if (uris.length > 0) {
                 let savePath: string = uris[0];
+                let jsonFile: fs.File | null = null;
 
-                let jsonFile = fs.openSync(savePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
-
-                let writeLen = fs.writeSync(jsonFile.fd, json);
-                Logger.debug(this.LOG_TAG, `配置文件已保存, 路径: ${jsonFile.path}, 写入长度: ${writeLen}`);
-
-                fs.closeSync(jsonFile);
-                return true;
+                try {
+                    jsonFile = fs.openSync(savePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
+                    let writeLen = fs.writeSync(jsonFile.fd, json);
+                    Logger.debug(this.LOG_TAG, `配置文件已保存, 路径: ${jsonFile.path}, 写入长度: ${writeLen}`);
+                    return true;
+                } finally {
+                    if (jsonFile) {
+                        try {
+                            fs.closeSync(jsonFile);
+                        } catch (closeErr) {
+                            Logger.error(this.LOG_TAG, `关闭导出文件失败, ${closeErr}`);
+                        }
+                    }
+                }
             }
 
             Logger.warn(this.LOG_TAG, "没有选取保存路径");
             return false;
         } catch (err) {
-            Logger.error(this.LOG_TAG, `保存失败, 代码: ${err.code},  ${err.message}`);
+            Logger.error(this.LOG_TAG, `保存失败, ${err}`);
             throw new Error("备份导出失败");
         }
     }
@@ -129,8 +131,9 @@ class CommonUtils {
     // 导入功能
     // 读取备份文件
     public async readFile(uri: string): Promise<string | undefined> {
+        let file: fs.File | null = null;
         try {
-            let file = fs.openSync(uri, fs.OpenMode.READ_ONLY);
+            file = fs.openSync(uri, fs.OpenMode.READ_ONLY);
 
             let fileStat = fs.statSync(file.fd);
             let fileSize = fileStat.size;
@@ -147,13 +150,19 @@ class CommonUtils {
 
             let jsonString = buffer.from(arrayBuffer, 0, readLen).toString();
 
-            fs.closeSync(file);
-
             Logger.debug(this.LOG_TAG, `读取成功, 内容长度: ${jsonString.length}`);
             return jsonString;
         } catch (err) {
             Logger.error(this.LOG_TAG, `文件读取失败, ${err}`);
             return undefined;
+        } finally {
+            if (file) {
+                try {
+                    fs.closeSync(file);
+                } catch (closeErr) {
+                    Logger.error(this.LOG_TAG, `关闭导入文件失败, ${closeErr}`);
+                }
+            }
         }
     }
 
@@ -168,8 +177,8 @@ class CommonUtils {
                 return exportJson;
             } else throw new Error("解析失败，指令列表非数组");
         } catch (err) {
-            Logger.error(this.LOG_TAG, `数据解析失败, 代码: ${err.code}, 错误信息: ${err.message}`);
-            throw new Error(err);
+            Logger.error(this.LOG_TAG, `数据解析失败, ${err}`);
+            throw new Error(`数据解析失败: ${err}`);
         }
     }
 

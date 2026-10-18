@@ -23,6 +23,10 @@ export default class SingleCommandFormAbility extends FormExtensionAbility {
 
         Logger.debug(this.LOG_TAG, `onAddForm() formID: ${formID}`);
 
+        if (!formID || formID.trim() === '') {
+            Logger.warn(this.LOG_TAG, `onAddForm() formID 为空`);
+        }
+
         return CommonUtils.createSingleCommandFormBindingData(formID);
     }
 
@@ -73,9 +77,15 @@ export default class SingleCommandFormAbility extends FormExtensionAbility {
         this.init();
 
         // 卡片传参
-        const messageObj: Record<string, Object> = JSON.parse(message);
+        let messageObj: Record<string, Object>;
+        try {
+            messageObj = JSON.parse(message) as Record<string, Object>;
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `onFormEvent() 消息解析失败, ${err}`);
+            return;
+        }
         // action 参数
-        const action = messageObj.formAction as string;
+        const action = messageObj['formAction'] as string;
 
         Logger.debug(this.LOG_TAG, `onFormEvent() 接收指令 ${action}`);
 
@@ -138,34 +148,4 @@ export default class SingleCommandFormAbility extends FormExtensionAbility {
         await this.onUpdateForm(formID);
     }
 
-    // 从数据库查询对应 ID 是否存在条目
-    // 如果存在则将数据库的条目信息同步到卡片绑定数据
-    // 不存在则解绑卡片
-    // private async handleUpdateAction(formID: string, shortcutID: number) {
-    //     const commandEntry = await this.db.getCommandByID(shortcutID);
-    //
-    //     if(commandEntry && commandEntry.accountInputRequired === 0 && commandEntry.idInputRequired === 0) {
-    //         Logger.debug(this.LOG_TAG, `handleUpdateAction() 查询到指令 shortcutID = ${shortcutID} 的 DB 条目`);
-    //
-    //         const formData = new FormData(formID, true);
-    //
-    //         formData.shortcutID = commandEntry.id;
-    //         formData.nickname = commandEntry.nickname;
-    //         formData.command = commandEntry.command;
-    //
-    //         const success = await this.pm.bind(formID, formData);
-    //
-    //         if(success) Logger.debug(this.LOG_TAG, `handleUpdateAction() 已更新 formID = ${formID} 的卡片`);
-    //         else Logger.warn(this.LOG_TAG, `handleUpdateAction() formID = ${formID} 的卡片更新失败`);
-    //
-    //         Logger.debug(this.LOG_TAG, `handleUpdateAction() 已更新 formID = ${formID} 的卡片`);
-    //     } else {
-    //         if(!commandEntry) Logger.warn(this.LOG_TAG, `handleUpdateAction() 指令 shortcutID = ${shortcutID} 的条目为空`);
-    //         else Logger.warn(this.LOG_TAG, `handleUpdateAction() 指令 shortcutID = ${shortcutID} 的条目已更改为包含自定义输入`);
-    //
-    //         await this.unbindForm(formID);
-    //     }
-    //
-    //     await this.onUpdateForm(formID);
-    // }
 }

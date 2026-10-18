@@ -75,6 +75,23 @@ export default class CommandEntryListViewModel {
         return false;
     }
 
+    async importData(address: string, password: string, entries: Array<CommandEntry>): Promise<boolean> {
+        // 导入会清空全部绑定；先收集受影响 formID，成功后用空绑定重置卡片 UI
+        const allSingleBindings = await this.pm.getAllCardBindingsSingle();
+        const allMultipleBindings = await this.pm.getAllCardBindingsMultiple();
+
+        const allFormIDMap: Map<string, string[]> = new Map<string, string[]>();
+        allFormIDMap.set(CommonConstants.FormResult_MapKey_Single, allSingleBindings.map(binding => binding.formID));
+        allFormIDMap.set(CommonConstants.FormResult_MapKey_Multiple, allMultipleBindings.map(binding => binding.formID));
+
+        const success = await this.dataModel.importData(address, password, entries);
+        if (success) {
+            await this.loadCommandEntries();
+            await this.updateForms(allFormIDMap);
+        }
+        return success;
+    }
+
     async toCommandEntryJsonObjectList(): Promise<Array<CommandEntryJsonObject>> {
         await this.loadCommandEntries();
         return this.commandEntries.map(entry => entry.toCommandEntryJsonObject());
@@ -137,8 +154,10 @@ export default class CommandEntryListViewModel {
 
         if(singleFormIDs.length === 0 && multipleFormIDs.length === 0) return true;
 
-        try {
-            for(const formID of singleFormIDs) {
+        let allSuccess = true;
+
+        for(const formID of singleFormIDs) {
+            try {
                 const formData = await this.pm.getFormDataByIDSingle(formID);
 
                 // 如果 formData 不为空，生成新 FormBindingData 更新卡片 UI
@@ -147,21 +166,26 @@ export default class CommandEntryListViewModel {
                 await formProvider.updateForm(formID, formInfo);
 
                 Logger.debug(this.LOG_TAG, `已更新单指令卡片, formID = ${formID}`);
+            } catch (err) {
+                allSuccess = false;
+                Logger.error(this.LOG_TAG, `更新单指令卡片失败, formID = ${formID}, ${err}`);
             }
+        }
 
-            for(const formID of multipleFormIDs) {
+        for(const formID of multipleFormIDs) {
+            try {
                 const formData = await this.pm.getFormDataByIDMultiple(formID);
 
                 const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData ?? formID);
                 await formProvider.updateForm(formID, formInfo);
 
                 Logger.debug(this.LOG_TAG, `已更新多指令卡片, formID = ${formID}`);
+            } catch (err) {
+                allSuccess = false;
+                Logger.error(this.LOG_TAG, `更新多指令卡片失败, formID = ${formID}, ${err}`);
             }
-
-            return true;
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `updateForms() 错误, ${err}`);
-            return false;
         }
+
+        return allSuccess;
     }
 }

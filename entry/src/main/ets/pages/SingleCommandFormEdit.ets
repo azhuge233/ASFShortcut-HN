@@ -63,14 +63,6 @@ struct SingleCommandFormEdit {
             }
         }
 
-        // if(AppStorage.has(CommonConstants.AppStorage_KEY_FormDimensions)) {
-        //     const formDimensionsParam: number | undefined = AppStorage.get(CommonConstants.AppStorage_KEY_FormDimensions);
-        //     if(formDimensionsParam) {
-        //         this.formDimensions = formDimensionsParam as number;
-        //         Logger.debug(this.LOG_TAG, `传入 formDimensions: ${formDimensionsParam}`);
-        //         AppStorage.delete(CommonConstants.AppStorage_KEY_FormDimensions);
-        //     }
-        // }
     }
 
     private handleCheckboxChange(itemId: number, isChecked: boolean): void {
@@ -253,7 +245,7 @@ struct SingleCommandFormEdit {
                                 bottom: StyleConstants.FIVE_PERCENT
                             })
                         }
-                    })
+                    }, (item: CommandEntryViewModel) => item.id.toString())
                 }
                 .lanes(2)
                 .alignListItem(ListItemAlign.Center)

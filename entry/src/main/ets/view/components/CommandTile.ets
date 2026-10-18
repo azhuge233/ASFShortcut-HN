@@ -18,12 +18,6 @@ export struct CommandListItem {
 
     @Local isRunning: boolean = false;
 
-    // debug
-    // 模拟长时间执行
-    private async sleep(time: number) {
-        await new Promise<void>(resolve => setTimeout(resolve, time));
-    }
-
     // 设置条目运行状态
     // 设置本地运行状态参数，控制加载覆盖层的显示
     // 再向回调函数传出运行状态，供主页面控制本条目的启用/禁用

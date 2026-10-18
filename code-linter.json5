@@ -28,5 +28,24 @@
     "@security/no-unsafe-dsa-key": "error",
     "@security/no-unsafe-dh-key": "error",
     "@security/no-unsafe-3des": "error"
-  }
+  },
+  "overrides": [
+    {
+      // 这些文件的 await 目标均为 async/Promise，CodeLinter 类型推断误报；只关闭本规则，保留其余检查
+      "files": [
+        "entry/src/main/ets/common/utils/ASF.ets",
+        "entry/src/main/ets/common/utils/DB.ets",
+        "entry/src/main/ets/common/utils/PM.ets",
+        "entry/src/main/ets/model/CommandEntryList.ets",
+        "entry/src/main/ets/multiplecommandswidget/multiplecommandsformability/MultipleCommandsFormAbility.ets",
+        "entry/src/main/ets/multiplecommandswidget/multiplecommandswidgetentryability/MultipleCommandsWidgetEntryAbility.ets",
+        "entry/src/main/ets/singlecommandwidget/singlecommandformability/SingleCommandFormAbility.ets",
+        "entry/src/main/ets/singlecommandwidget/singlecommandwidgetentryability/SingleCommandWidgetEntryAbility.ets",
+        "entry/src/main/ets/view/components/CommandTile.ets"
+      ],
+      "rules": {
+        "@typescript-eslint/await-thenable": "off"
+      }
+    }
+  ]
 }

@@ -6,6 +6,7 @@ import CommonUtils from '../../common/utils/CommonUtils';
 import Logger from '../../common/utils/Logger';
 import { ASF } from '../../common/utils/ASF';
 import { DB } from '../../common/utils/DB';
+import { PM } from '../../common/utils/PM';
 import CommonConstants from '../../common/constants/CommonConstants';
 import MultipleCommandsFormData from '../model/MultipleCommandsFormData';
 import WidgetCommand from '../model/WidgetCommand';
@@ -14,6 +15,7 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
     private LOG_TAG = "[MultipleCommandsWidgetEntryAbility]";
 
     private db = DB.getInstance();
+    private pm = PM.getInstance();
     private asf = new ASF();
 
     private formID: string = '';
@@ -28,7 +30,13 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
 
         // 直接通过 want 获取 call 事件参数
         if (want.parameters && want.parameters.params) {
-            const params: Record<string, Object> = JSON.parse(want.parameters.params as string);
+            let params: Record<string, Object>;
+            try {
+                params = JSON.parse(want.parameters.params as string) as Record<string, Object>;
+            } catch (err) {
+                Logger.error(this.LOG_TAG, `onCreate() 参数解析失败, ${err}`);
+                return;
+            }
 
             const method = params['method'] as string;
 
@@ -47,6 +55,7 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
 
     private async init() {
         this.db.init(this.context.getApplicationContext());
+        this.pm.init(this.context.getApplicationContext());
 
         const asfAddr = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address);
         const asfPwd = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password);
@@ -62,7 +71,21 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
             this.formID = params['formID'] as string;
             this.shortcutID = params['shortcutID'] as number;
             this.command = params['command'] as string;
-            this.commandList = params['commandList'] as Array<WidgetCommand>;
+
+            const rawCommandList = params['commandList'];
+            if (Array.isArray(rawCommandList)) {
+                this.commandList = rawCommandList as Array<WidgetCommand>;
+            } else if (typeof rawCommandList === 'string') {
+                try {
+                    const parsed = JSON.parse(rawCommandList) as Array<WidgetCommand>;
+                    this.commandList = Array.isArray(parsed) ? parsed : [];
+                } catch (err) {
+                    Logger.warn(this.LOG_TAG, `handleRunMethod() commandList 解析失败, ${err}`);
+                    this.commandList = [];
+                }
+            } else {
+                this.commandList = [];
+            }
 
             Logger.debug(this.LOG_TAG, `handleRunMethod() 从 call 事件获得参数: ${this.formID}, ${this.shortcutID}, ${this.command}, ${this.commandList}`);
 
@@ -82,16 +105,17 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
         }
     }
 
-    private getNewFormData(): MultipleCommandsFormData {
+    private async getNewFormData(): Promise<MultipleCommandsFormData> {
         const formData = new MultipleCommandsFormData(this.formID, true);
 
-        formData.commandList = this.commandList;
+        const bound = await this.pm.getFormDataByIDMultiple(this.formID);
+        formData.commandList = bound ? bound.commandList : this.commandList;
 
         return formData;
     }
 
     private async sendFormRunning() {
-        const formData = this.getNewFormData();
+        const formData = await this.getNewFormData();
         formData.isRunning = true;
 
         const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData);
@@ -122,7 +146,16 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
             return this.handleResponse(response);
         } catch (err) {
             Logger.error(this.LOG_TAG, `runCommand() 指令 ${this.command} 执行错误`);
+            return this.getRunFailedMessage();
+        }
+    }
+
+    private getRunFailedMessage(): string {
+        try {
             return this.context.resourceManager.getStringSync($r("app.string.Form_Run_Failed_Message").id);
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `getStringSync() 失败, ${err}`);
+            return '执行失败';
         }
     }
 
@@ -134,11 +167,11 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
             let toastMessage: string = '';
 
             if (resp.responseCode == 200) {
-                Logger.debug(this.LOG_TAG, `${result["Result"]}`);
-                toastMessage = result["Result"];
+                const resultText = result['Result'];
+                toastMessage = typeof resultText === 'string' ? resultText : '';
             } else {
-                Logger.debug(this.LOG_TAG, `${result["Message"]}`);
-                toastMessage = result["Message"];
+                const messageText = result['Message'];
+                toastMessage = typeof messageText === 'string' ? messageText : '';
             }
 
             return toastMessage;
@@ -150,7 +183,7 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
 
     private async showResult(result: string): Promise<void> {
         try {
-            const formData = this.getNewFormData();
+            const formData = await this.getNewFormData();
 
             formData.runResult = result; // 显示执行结果
             formData.isRunning = false; // 取消卡片正在运行状态
@@ -160,7 +193,7 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
             // await formProvider.setFormNextRefreshTime(this.formID, 5);
             Logger.debug(this.LOG_TAG, `showResult() 已显示执行结果`);
         } catch (err) {
-            Logger.error(this.LOG_TAG, `showResult() 错误, ${err as BusinessError}`);
+            Logger.error(this.LOG_TAG, `showResult() 错误, ${err}`);
         }
     }
 }

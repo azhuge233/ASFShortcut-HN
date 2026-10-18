@@ -14,7 +14,6 @@ class StyleConstants {
     public readonly THIRTEEN_PERCENT = '13%';
     public readonly TEN_PERCENT = '10%';
     public readonly FIVE_PERCENT = '5%';
-    public readonly FOUR_PERCENT = '4%';
     public readonly THREE_PERCENT = '3%';
     public readonly TWO_PERCENT = '2%';
     public readonly ONE_PERCENT = '1%';
@@ -84,7 +83,6 @@ class StyleConstants {
     public readonly MORE_MENU_DIVIDER_STOKE_WIDTH = 2;
 
     public readonly LIVE_TEST_LABEL_FONT_SIZE = 17;
-    public readonly LIVE_TEST_INPUT_BORDER_WIDTH = 1;
 
     public readonly FORM_RESULT_CONTENT_FONT_SIZE = 15;
     public readonly FORM_RESULT_LABEL_FONT_SIZE = 10;

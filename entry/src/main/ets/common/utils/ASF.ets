@@ -17,13 +17,13 @@ export class ASF {
     // 设置全局服务器地址
     setAddress(address: string) {
         this.address = this.getFinalAddress(address);
-        Logger.debug(this.LOG_TAG, `当前ASF地址: ${this.address}`);
+        Logger.debug(this.LOG_TAG, 'ASF 地址已设置');
     }
 
     // 设置全局 ASF 密码
     setASFPassword(asfPassword: string) {
         this.asfPassword = asfPassword;
-        Logger.debug(this.LOG_TAG, `当前ASF密码: ${this.asfPassword}`);
+        Logger.debug(this.LOG_TAG, 'ASF 密码已设置');
     }
 
     // 发送正常指令
@@ -55,16 +55,15 @@ export class ASF {
 
     // 发送请求
     private async sendRequest(address: string, password: string, command: string) {
-        Logger.debug(this.LOG_TAG, `sendRequest() ASF 服务器地址：${address}`);
-        Logger.debug(this.LOG_TAG, `sendRequest() ASF 密码：${password}`);
-        Logger.debug(this.LOG_TAG, `sendRequest() ASF 指令：${command}`);
+        Logger.debug(this.LOG_TAG, 'sendRequest() 准备发送请求');
+        Logger.debug(this.LOG_TAG, `sendRequest() 指令长度：${command.length}`);
 
         const httpRequest = http.createHttp();
 
         // 设置指令参数和 ASF 密码请求头
         const requestOptions: http.HttpRequestOptions = {
             method: http.RequestMethod.POST,
-            extraData: `{"Command":"${command}"}`,
+            extraData: JSON.stringify({ Command: command }),
             expectDataType: http.HttpDataType.STRING,
             usingCache: false,
             header: {

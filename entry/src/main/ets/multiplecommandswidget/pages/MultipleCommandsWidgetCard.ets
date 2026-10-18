@@ -6,7 +6,7 @@ let storage = new LocalStorage();
 
 @Entry(storage)
 @Component
-struct SingleCommandWidgetCard {
+struct MultipleCommandsWidgetCard {
     @LocalStorageProp('formID') private formID: string = '';
     @LocalStorageProp('isInitialized') private isInitialized: boolean = false;
     @LocalStorageProp('isRunning') private isRunning: boolean = false;
@@ -71,7 +71,7 @@ struct SingleCommandWidgetCard {
                                 left: StyleConstants.MARGIN_FIVE,
                                 right: StyleConstants.MARGIN_FIVE
                             })
-                        })
+                        }, (line: string, index: number) => index.toString())
                     }
                     .layoutWeight(1)
                     .height(StyleConstants.NINETY_PERCENT)
@@ -98,7 +98,7 @@ struct SingleCommandWidgetCard {
             } else {
                 Column() {
                     List() {
-                        ForEach(this.commandList, (item: WidgetCommand) => {
+                        ForEach(this.commandList ?? [], (item: WidgetCommand) => {
                             ListItem() {
                                 Column() {
                                     Text(item.nickname)
@@ -140,7 +140,7 @@ struct SingleCommandWidgetCard {
                                     });
                                 }
                             })
-                        })
+                        }, (item: WidgetCommand) => item.id.toString())
                     }
                     .lanes(2)
                     .layoutWeight(1)

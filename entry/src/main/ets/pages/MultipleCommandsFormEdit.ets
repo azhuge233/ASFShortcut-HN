@@ -244,7 +244,7 @@ struct MultipleCommandsFormEdit {
                                 bottom: StyleConstants.FIVE_PERCENT
                             })
                         }
-                    })
+                    }, (item: CommandEntryViewModel) => item.id.toString())
                 }
                 .lanes(2)
                 .alignListItem(ListItemAlign.Center)

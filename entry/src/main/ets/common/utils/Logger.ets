@@ -11,19 +11,19 @@ class Logger {
     }
 
     debug(...args: string[]) {
-        hilog.debug(this.domain, this.prefix, this.format, args);
+        hilog.debug(this.domain, this.prefix, this.format, args[0] ?? '', args[1] ?? '');
     }
 
     info(...args: string[]) {
-        hilog.info(this.domain, this.prefix, this.format, args);
+        hilog.info(this.domain, this.prefix, this.format, args[0] ?? '', args[1] ?? '');
     }
 
     warn(...args: string[]) {
-        hilog.warn(this.domain, this.prefix, this.format, args);
+        hilog.warn(this.domain, this.prefix, this.format, args[0] ?? '', args[1] ?? '');
     }
 
     error(...args: string[]) {
-        hilog.error(this.domain, this.prefix, this.format, args);
+        hilog.error(this.domain, this.prefix, this.format, args[0] ?? '', args[1] ?? '');
     }
 }
 
