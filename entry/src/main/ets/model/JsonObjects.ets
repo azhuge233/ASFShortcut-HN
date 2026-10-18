@@ -1,4 +1,4 @@
-export class ExportJson {
+export class ExportJsonObject {
     Settings: SettingsJsonObject = new SettingsJsonObject("", "");
     CommandEntryList: Array<CommandEntryJsonObject> = [];
 

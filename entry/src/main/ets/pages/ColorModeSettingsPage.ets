@@ -34,7 +34,7 @@ export function ColorModeSettingsPageBuilder() {
 struct ColorModeSettingsPage {
     private LOG_TAG = "[pages/ColorModeSettingsPage]";
 
-    @Local appSettings: AppSettings = AppStorageV2.connect(AppSettings, CommonConstants.AppStorage_KEY_AppSettings,
+    @Local appSettings: AppSettings = AppStorageV2.connect(AppSettings, CommonConstants.APP_STORAGE_KEY_APP_SETTINGS,
         () => new AppSettings(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET))!;
 
     pathStack: NavPathStack | undefined = undefined;

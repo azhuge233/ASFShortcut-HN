@@ -60,7 +60,7 @@
       },
       {
         "name": 'SingleCommandEditEntryAbility',
-        "srcEntry": "./ets/singlecommandwidget/singlecommandeditentryability/singlecommandeditentryability.ets",
+        "srcEntry": "./ets/singlecommandwidget/singlecommandeditentryability/SingleCommandEditEntryAbility.ets",
         "description": '$string:SingleCommandEditEntryAbility_desc',
         "icon": "$media:app_icon_layered",
         "label": "$string:SingleCommandEditEntryAbility_label",
@@ -71,7 +71,7 @@
       },
       {
         "name": 'MultipleCommandsEditEntryAbility',
-        "srcEntry": "./ets/multiplecommandswidget/multiplecommandseditentryability/multiplecommandseditentryability.ets",
+        "srcEntry": "./ets/multiplecommandswidget/multiplecommandseditentryability/MultipleCommandsEditEntryAbility.ets",
         "description": '$string:MultipleCommandsEditEntryAbility_desc',
         "icon": "$media:app_icon_layered",
         "label": "$string:MultipleCommandsEditEntryAbility_label",

@@ -15,18 +15,14 @@ struct MultipleCommandsWidgetCard {
 
     @LocalStorageProp('runResult') private runResult: string = '';
 
-    private readonly ActionTypeRouter = 'router';
-    private readonly ActionTypeCall = 'call';
-    private readonly ActionTypeMessage = 'message';
+    private readonly ENTRY_ABILITY_NAME: string = 'EntryAbility';
+    private readonly WIDGET_ENTRY_ABILITY_NAME: string = 'MultipleCommandsWidgetEntryAbility';
 
-    private readonly EntryAbilityName: string = 'EntryAbility';
-    private readonly WidgetEntryAbilityName: string = 'MultipleCommandsWidgetEntryAbility';
-
-    private readonly FormEditPageRoute: string = 'pages/MultipleCommandsFormEdit';
+    private readonly FORM_EDIT_PAGE_ROUTE: string = 'pages/MultipleCommandsFormEdit';
 
     private sendMessageAction(action: string, data: number | string | null) {
         postCardAction(this, {
-            action: this.ActionTypeMessage,
+            action: CommonConstants.FORM_ACTION_MESSAGE,
             params: {
                 formAction: action,
                 data: data
@@ -35,7 +31,7 @@ struct MultipleCommandsWidgetCard {
     }
 
     aboutToAppear(): void {
-        this.sendMessageAction(CommonConstants.FormMessage_Restore, 'aboutToAppear()');
+        this.sendMessageAction(CommonConstants.FORM_MESSAGE_RESTORE, 'aboutToAppear()');
     }
 
     @Builder
@@ -128,10 +124,10 @@ struct MultipleCommandsWidgetCard {
                             .onClick(() => {
                                 if (this.isInitialized) {
                                     postCardAction(this, {
-                                        action: this.ActionTypeCall,
-                                        abilityName: this.WidgetEntryAbilityName,
+                                        action: CommonConstants.FORM_ACTION_CALL,
+                                        abilityName: this.WIDGET_ENTRY_ABILITY_NAME,
                                         params: {
-                                            method: CommonConstants.FormCall_Run,
+                                            method: CommonConstants.FORM_CALL_RUN,
                                             formID: this.formID,
                                             shortcutID: item.id,
                                             command: item.command,
@@ -175,14 +171,14 @@ struct MultipleCommandsWidgetCard {
         .height(StyleConstants.FULL_PERCENT)
         .width(StyleConstants.FULL_PERCENT)
         .onAppear(() => {
-            this.sendMessageAction(CommonConstants.FormMessage_Restore, 'Init() Component');
+            this.sendMessageAction(CommonConstants.FORM_MESSAGE_RESTORE, 'Init() Component');
         })
         .onClick(() => {
             postCardAction(this, {
-                action: this.ActionTypeRouter,
-                abilityName: this.EntryAbilityName,
+                action: CommonConstants.FORM_ACTION_ROUTER,
+                abilityName: this.ENTRY_ABILITY_NAME,
                 params: {
-                    targetPage: this.FormEditPageRoute,
+                    targetPage: this.FORM_EDIT_PAGE_ROUTE,
                     formID: this.formID
                 }
             });
@@ -198,7 +194,7 @@ struct MultipleCommandsWidgetCard {
         .width(StyleConstants.FULL_PERCENT)
         .onClick(() => {
             // 如果正在显示执行结果，恢复卡片显示
-            if(this.isRunning) this.sendMessageAction(CommonConstants.FormMessage_Restore, 'RunningContent() Component');
+            if(this.isRunning) this.sendMessageAction(CommonConstants.FORM_MESSAGE_RESTORE, 'RunningContent() Component');
         })
     }
 
@@ -211,7 +207,7 @@ struct MultipleCommandsWidgetCard {
         .width(StyleConstants.FULL_PERCENT)
         .onClick(() => {
             if(!this.isRunning && this.runResult !== '') {
-                this.sendMessageAction(CommonConstants.FormMessage_Restore, 'MainContent() Component');
+                this.sendMessageAction(CommonConstants.FORM_MESSAGE_RESTORE, 'MainContent() Component');
             }
         })
     }

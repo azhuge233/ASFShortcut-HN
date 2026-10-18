@@ -91,7 +91,7 @@ export default class SingleCommandFormAbility extends FormExtensionAbility {
 
         // 根据 action 执行：从数据库更新（同步数据库更改）卡片信息（该方法暂时关闭） 或者 从首选项更新卡片信息
         // if(action === CommonConstants.FormMessage_Update) await this.handleUpdateAction(formId, messageObj.data as number); else
-        if(action === CommonConstants.FormMessage_Restore) await this.handleRestoreAction(formId, messageObj.data as string);
+        if(action === CommonConstants.FORM_MESSAGE_RESTORE) await this.handleRestoreAction(formId, messageObj.data as string);
         else Logger.warn(this.LOG_TAG, `onFormEvent() 未知指令: ${action}`);
     }
 

@@ -5,8 +5,8 @@ import CommonUtils from '../../common/utils/CommonUtils';
 import CommonConstants from '../../common/constants/CommonConstants';
 
 @ComponentV2
-export struct CommandListItem {
-    private LOG_TAG = "[view/components/CommandListItem]";
+export struct CommandTile {
+    private LOG_TAG = "[view/components/CommandTile]";
 
     @Param item: CommandEntryViewModel = new CommandEntryViewModel();
 
@@ -164,7 +164,7 @@ export struct CommandListItem {
                     .enabled(!this.isRunning)
                     .stateEffect(true)
                     .onClick(() => {
-                        CommonUtils.vibrate(CommonConstants.Vibrate_Effect_ID_HARD);
+                        CommonUtils.vibrate(CommonConstants.VIBRATE_EFFECT_ID_HARD);
                         this.runCommand();
                     })
             }

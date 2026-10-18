@@ -101,7 +101,7 @@ export default class MultipleCommandsEditEntryAbility extends UIAbility {
 
         Logger.debug(this.LOG_TAG, `编辑多设备卡片，卡片 ID = ${formID}`);
 
-        if(formID.trim() !== '') AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_FormID, formID);
+        if(formID.trim() !== '') AppStorage.setOrCreate(CommonConstants.APP_STORAGE_KEY_FORM_ID, formID);
         else {
             Logger.warn(this.LOG_TAG, 'handleFormWant() 卡片 ID 无效');
             CommonUtils.closeApplication(this.LOG_TAG, this.context);
@@ -119,7 +119,7 @@ export default class MultipleCommandsEditEntryAbility extends UIAbility {
 
             this.context.getApplicationContext().setColorMode(appSettings.colorMode);
 
-            AppStorageV2.connect(AppSettings, CommonConstants.AppStorage_KEY_AppSettings, () => appSettings);
+            AppStorageV2.connect(AppSettings, CommonConstants.APP_STORAGE_KEY_APP_SETTINGS, () => appSettings);
 
             Logger.debug(this.LOG_TAG, `setColorMode() 窗口颜色设置: ${appSettings.colorMode}`)
         } catch (err) {

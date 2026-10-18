@@ -55,29 +55,29 @@ struct MultipleCommandsFormEdit {
     }
 
     private handleParamsFromForm(): void {
-        if(AppStorage.has(CommonConstants.AppStorage_KEY_FormID)) {
-            const formIDParam: string | undefined = AppStorage.get(CommonConstants.AppStorage_KEY_FormID);
+        if(AppStorage.has(CommonConstants.APP_STORAGE_KEY_FORM_ID)) {
+            const formIDParam: string | undefined = AppStorage.get(CommonConstants.APP_STORAGE_KEY_FORM_ID);
             if(formIDParam) {
                 this.formID = formIDParam as string;
                 Logger.debug(this.LOG_TAG, `传入 formID: ${formIDParam}`);
-                AppStorage.delete(CommonConstants.AppStorage_KEY_FormID);
+                AppStorage.delete(CommonConstants.APP_STORAGE_KEY_FORM_ID);
             }
         }
     }
 
-    private handleCheckboxChange(itemId: number, isChecked: boolean): void {
+    private handleSelectionChange(itemID: number, isChecked: boolean): void {
         if (isChecked) {
             // 选中当前条目，添加到数组
-            if(!this.selectedIDs.includes(itemId)) this.selectedIDs.push(itemId);
+            if(!this.selectedIDs.includes(itemID)) this.selectedIDs.push(itemID);
         } else {
             // 取消选中，从数组中移除
-            const index = this.selectedIDs.indexOf(itemId);
+            const index = this.selectedIDs.indexOf(itemID);
             if (index >= 0) this.selectedIDs.splice(index, 1);
         }
     }
 
-    private toggleSelection(itemId: number): void {
-        this.handleCheckboxChange(itemId, !this.selectedIDs.includes(itemId));
+    private toggleSelection(itemID: number): void {
+        this.handleSelectionChange(itemID, !this.selectedIDs.includes(itemID));
     }
 
     private async handleConfirmClick(): Promise<void> {
@@ -170,7 +170,7 @@ struct MultipleCommandsFormEdit {
     @Builder
     ConfirmButton() {
         Row() {
-            Button($r('app.string.FormEdit_Confirm_Button_Text'), { type: ButtonType.Capsule })
+            Button($r('app.string.FormEdit_Confirm_Button_Label'), { type: ButtonType.Capsule })
                 .width(StyleConstants.EIGHTY_PERCENT)
                 .fontWeight(FontWeight.Medium)
                 .enabled(this.selectedIDs.length !== 0 && !this.isUpdating)
@@ -230,7 +230,7 @@ struct MultipleCommandsFormEdit {
                                         Checkbox()
                                             .select(this.selectedIDs.includes(item.id))
                                             .onChange((isChecked: boolean) => {
-                                                this.handleCheckboxChange(item.id, isChecked);
+                                                this.handleSelectionChange(item.id, isChecked);
                                             })
                                             .hitTestBehavior(HitTestMode.None)
 

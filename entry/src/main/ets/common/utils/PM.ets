@@ -158,7 +158,7 @@ export class PM {
         }
     }
 
-    async removeBindingsByShortcutIdSingle(shortcutID: number): Promise<string[]> {
+    async removeBindingsByShortcutIDSingle(shortcutID: number): Promise<string[]> {
         await this.waitForReady();
 
         if (!this.dataPreferences) return [];
@@ -178,7 +178,7 @@ export class PM {
 
             return removedFormIDs;
         } catch (err) {
-            Logger.error(this.LOG_TAG, `removeBindingsByShortcutIdSingle() 删除指令绑定失败, ${err}`);
+            Logger.error(this.LOG_TAG, `removeBindingsByShortcutIDSingle() 删除指令绑定失败, ${err}`);
             return [];
         }
     }
@@ -281,7 +281,7 @@ export class PM {
         }
     }
 
-    async removeBindingsByShortcutIdMultiple(shortcutID: number): Promise<string[]> {
+    async removeBindingsByShortcutIDMultiple(shortcutID: number): Promise<string[]> {
         await this.waitForReady();
 
         if (!this.dataPreferences) return [];
@@ -311,7 +311,7 @@ export class PM {
 
             return affectedFormIDs;
         } catch (err) {
-            Logger.error(this.LOG_TAG, `removeBindingsByShortcutIdMultiple() 删除指令绑定失败, ${err}`);
+            Logger.error(this.LOG_TAG, `removeBindingsByShortcutIDMultiple() 删除指令绑定失败, ${err}`);
             return [];
         }
     }

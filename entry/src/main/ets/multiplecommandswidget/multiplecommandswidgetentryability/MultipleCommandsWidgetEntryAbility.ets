@@ -40,11 +40,11 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
 
             const method = params['method'] as string;
 
-            CommonUtils.vibrate(CommonConstants.Vibrate_Effect_ID_HARD);
+            CommonUtils.vibrate(CommonConstants.VIBRATE_EFFECT_ID_HARD);
 
             // up 方法仅用于拉起应用进程，直接返回（该方法暂时关闭）
             // if(method === CommonConstants.FormCall_Up) return; else
-            if(method === CommonConstants.FormCall_Run) this.handleRunMethod(params).then();
+            if(method === CommonConstants.FORM_CALL_RUN) this.handleRunMethod(params).then();
             else Logger.warn(this.LOG_TAG, `onCreate() 未知 method`);
         } else Logger.warn(this.LOG_TAG, `onCreate() want 为空`);
     }
@@ -57,8 +57,8 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
         this.db.init(this.context.getApplicationContext());
         this.pm.init(this.context.getApplicationContext());
 
-        const asfAddr = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address);
-        const asfPwd = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password);
+        const asfAddr = await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_ADDRESS);
+        const asfPwd = await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_PASSWORD);
 
         this.asf.setAddress(asfAddr);
         this.asf.setASFPassword(asfPwd);

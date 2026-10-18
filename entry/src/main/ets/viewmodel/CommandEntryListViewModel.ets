@@ -81,8 +81,8 @@ export default class CommandEntryListViewModel {
         const allMultipleBindings = await this.pm.getAllCardBindingsMultiple();
 
         const allFormIDMap: Map<string, string[]> = new Map<string, string[]>();
-        allFormIDMap.set(CommonConstants.FormResult_MapKey_Single, allSingleBindings.map(binding => binding.formID));
-        allFormIDMap.set(CommonConstants.FormResult_MapKey_Multiple, allMultipleBindings.map(binding => binding.formID));
+        allFormIDMap.set(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE, allSingleBindings.map(binding => binding.formID));
+        allFormIDMap.set(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE, allMultipleBindings.map(binding => binding.formID));
 
         const success = await this.dataModel.importData(address, password, entries);
         if (success) {
@@ -149,8 +149,8 @@ export default class CommandEntryListViewModel {
     }
 
     private async updateForms(formIDMap: Map<string, string[]>): Promise<boolean> {
-        const singleFormIDs = formIDMap.get(CommonConstants.FormResult_MapKey_Single) ?? [];
-        const multipleFormIDs = formIDMap.get(CommonConstants.FormResult_MapKey_Multiple) ?? [];
+        const singleFormIDs = formIDMap.get(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE) ?? [];
+        const multipleFormIDs = formIDMap.get(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE) ?? [];
 
         if(singleFormIDs.length === 0 && multipleFormIDs.length === 0) return true;
 

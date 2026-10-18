@@ -8,7 +8,7 @@ import { vibrator } from '@kit.SensorServiceKit';
 import { formBindingData } from '@kit.FormKit';
 
 import Logger from './Logger';
-import { ExportJson } from '../../model/JsonObjects';
+import { ExportJsonObject } from '../../model/JsonObjects';
 import SingleCommandFormData from '../../singlecommandwidget/model/SingleCommandFormData';
 import MultipleCommandsFormData from '../../multiplecommandswidget/model/MultipleCommandsFormData';
 
@@ -167,10 +167,10 @@ class CommonUtils {
     }
 
     // 导入功能
-    // 解析 json 字符串到 ExportJson 对象
-    public async parseData(jsonStr: string): Promise<ExportJson> {
+    // 解析 json 字符串到 ExportJsonObject 对象
+    public async parseData(jsonStr: string): Promise<ExportJsonObject> {
         try {
-            const exportJson = JSON.parse(jsonStr) as ExportJson;
+            const exportJson = JSON.parse(jsonStr) as ExportJsonObject;
 
             if (Array.isArray(exportJson.CommandEntryList)) {
                 Logger.debug(this.LOG_TAG, `数据解析成功, 指令列表长度: ${exportJson.CommandEntryList.length}`);

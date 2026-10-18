@@ -32,20 +32,20 @@ export class DB {
     private KEY_CommandEntries_Command = 'COMMAND';
     private KEY_CommandEntries_OrderIndex = 'ORDERINDEX';
     private KEY_CommandEntries_AccountInputRequired = 'AIR';
-    private KEY_CommandEntries_IdInputRequired = 'IIR';
+    private KEY_CommandEntries_IDInputRequired = 'IIR';
 
     private SQL_CREATE_TABLE_HostInfo = `CREATE TABLE IF NOT EXISTS ${this.TN_HostInfo} (
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
         ${this.KEY_HostInfo_KEY} TEXT NOT NULL UNIQUE,
         ${this.KEY_HostInfo_VALUE} TEXT NOT NULL
     )`;
-    private SQL_CREATE_TABLE_CommandEntires = `CREATE TABLE IF NOT EXISTS ${this.TN_CommandEntries} (
+    private SQL_CREATE_TABLE_CommandEntries = `CREATE TABLE IF NOT EXISTS ${this.TN_CommandEntries} (
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
         ${this.KEY_CommandEntries_Nickname} TEXT NOT NULL,
         ${this.KEY_CommandEntries_Command} TEXT NOT NULL,
         ${this.KEY_CommandEntries_OrderIndex} INTEGER DEFAULT 0,
         ${this.KEY_CommandEntries_AccountInputRequired} INTEGER NOT NULL,
-        ${this.KEY_CommandEntries_IdInputRequired} INTEGER NOT NULL
+        ${this.KEY_CommandEntries_IDInputRequired} INTEGER NOT NULL
     )`;
 
     private SQL_DELETE_TABLE_Prefix = "DELETE FROM ";
@@ -64,7 +64,7 @@ export class DB {
             // 异步初始化数据库
             relationalStore.getRdbStore(context, this.STORE_CONFIG).then((store) => {
                 store.executeSync(this.SQL_CREATE_TABLE_HostInfo);
-                store.executeSync(this.SQL_CREATE_TABLE_CommandEntires);
+                store.executeSync(this.SQL_CREATE_TABLE_CommandEntries);
 
                 this.rdbStore = store;
                 resolve(); // 解析Promise表示初始化完成
@@ -147,8 +147,8 @@ export class DB {
     }
 
     async areSettingsComplete(): Promise<boolean> {
-        const address = await this.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address);
-        const password = await this.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password);
+        const address = await this.getSetting(CommonConstants.DB_KEY_HOST_INFO_ADDRESS);
+        const password = await this.getSetting(CommonConstants.DB_KEY_HOST_INFO_PASSWORD);
 
         return address.trim() !== '' && password.trim() !== '';
     }
@@ -188,11 +188,11 @@ export class DB {
             await this.rdbStore.executeSql(`${this.SQL_DELETE_TABLE_Prefix}${this.TN_CommandEntries}`);
 
             const addressBucket: relationalStore.ValuesBucket = {
-                'KEY': CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address,
+                'KEY': CommonConstants.DB_KEY_HOST_INFO_ADDRESS,
                 'VALUE': address
             };
             const passwordBucket: relationalStore.ValuesBucket = {
-                'KEY': CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password,
+                'KEY': CommonConstants.DB_KEY_HOST_INFO_PASSWORD,
                 'VALUE': password
             };
             await this.rdbStore.insert(this.TN_HostInfo, addressBucket);
@@ -240,7 +240,7 @@ export class DB {
                 this.KEY_CommandEntries_Command,
                 this.KEY_CommandEntries_OrderIndex,
                 this.KEY_CommandEntries_AccountInputRequired,
-                this.KEY_CommandEntries_IdInputRequired
+                this.KEY_CommandEntries_IDInputRequired
             ]);
 
             if(queryResult.goToNextRow()) {
@@ -251,7 +251,7 @@ export class DB {
                 const accountInputRequired =
                     queryResult.getLong(queryResult.getColumnIndex(this.KEY_CommandEntries_AccountInputRequired));
                 const idInputRequired =
-                    queryResult.getLong(queryResult.getColumnIndex(this.KEY_CommandEntries_IdInputRequired));
+                    queryResult.getLong(queryResult.getColumnIndex(this.KEY_CommandEntries_IDInputRequired));
 
                 const commandEntry = new CommandEntry(id, nickname, command, orderIndex, accountInputRequired, idInputRequired);
 
@@ -285,7 +285,7 @@ export class DB {
                 this.KEY_CommandEntries_Command,
                 this.KEY_CommandEntries_OrderIndex,
                 this.KEY_CommandEntries_AccountInputRequired,
-                this.KEY_CommandEntries_IdInputRequired
+                this.KEY_CommandEntries_IDInputRequired
             ]);
 
             if(!queryResult) throw new Error("查询为空");
@@ -302,7 +302,7 @@ export class DB {
                 const accountInputRequired =
                     queryResult.getLong(queryResult.getColumnIndex(this.KEY_CommandEntries_AccountInputRequired));
                 const idInputRequired =
-                    queryResult.getLong(queryResult.getColumnIndex(this.KEY_CommandEntries_IdInputRequired));
+                    queryResult.getLong(queryResult.getColumnIndex(this.KEY_CommandEntries_IDInputRequired));
 
                 commandEntries.push(new CommandEntry(
                     id, nickname, command, orderIndex, accountInputRequired, idInputRequired

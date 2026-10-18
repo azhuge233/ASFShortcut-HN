@@ -1,20 +1,24 @@
 class CommonConstants {
-    public readonly DB_KEY_HostInfo_KEY_NAME_Address = 'Address';
-    public readonly DB_KEY_HostInfo_KEY_NAME_Password = 'Password';
+    public readonly DB_KEY_HOST_INFO_ADDRESS = 'Address';
+    public readonly DB_KEY_HOST_INFO_PASSWORD = 'Password';
 
-    public readonly Vibrate_Effect_ID_SOFT = 'haptic.effect.soft';
-    public readonly Vibrate_Effect_ID_HARD = 'haptic.effect.hard';
+    public readonly VIBRATE_EFFECT_ID_SOFT = 'haptic.effect.soft';
+    public readonly VIBRATE_EFFECT_ID_HARD = 'haptic.effect.hard';
 
-    public readonly AppStorage_KEY_ShortcutPath = 'path';
-    public readonly AppStorage_KEY_FormID = 'formID';
-    public readonly AppStorage_KEY_AppSettings = "AppSettings";
+    public readonly APP_STORAGE_KEY_SHORTCUT_PATH = 'path';
+    public readonly APP_STORAGE_KEY_FORM_ID = 'formID';
+    public readonly APP_STORAGE_KEY_APP_SETTINGS = "AppSettings";
 
-    public readonly FormMessage_Restore = 'restore';
+    public readonly FORM_MESSAGE_RESTORE = 'restore';
 
-    public readonly FormCall_Run = 'run';
+    public readonly FORM_CALL_RUN = 'run';
 
-    public readonly FormResult_MapKey_Single = 'single';
-    public readonly FormResult_MapKey_Multiple = 'multiple';
+    public readonly FORM_ACTION_ROUTER = 'router';
+    public readonly FORM_ACTION_CALL = 'call';
+    public readonly FORM_ACTION_MESSAGE = 'message';
+
+    public readonly FORM_RESULT_MAP_KEY_SINGLE = 'single';
+    public readonly FORM_RESULT_MAP_KEY_MULTIPLE = 'multiple';
 }
 
 export default new CommonConstants();

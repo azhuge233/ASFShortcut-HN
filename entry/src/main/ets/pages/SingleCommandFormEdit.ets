@@ -8,7 +8,7 @@ import Logger from '../common/utils/Logger';
 import { PM } from '../common/utils/PM';
 import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
 import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
-import FormData from '../singlecommandwidget/model/SingleCommandFormData';
+import SingleCommandFormData from '../singlecommandwidget/model/SingleCommandFormData';
 import CommonConstants from '../common/constants/CommonConstants';
 import CommonUtils from '../common/utils/CommonUtils';
 
@@ -54,29 +54,29 @@ struct SingleCommandFormEdit {
     }
 
     private handleParamsFromForm(): void {
-        if(AppStorage.has(CommonConstants.AppStorage_KEY_FormID)) {
-            const formIDParam: string | undefined = AppStorage.get(CommonConstants.AppStorage_KEY_FormID);
+        if(AppStorage.has(CommonConstants.APP_STORAGE_KEY_FORM_ID)) {
+            const formIDParam: string | undefined = AppStorage.get(CommonConstants.APP_STORAGE_KEY_FORM_ID);
             if(formIDParam) {
                 this.formID = formIDParam as string;
                 Logger.debug(this.LOG_TAG, `传入 formID: ${formIDParam}`);
-                AppStorage.delete(CommonConstants.AppStorage_KEY_FormID);
+                AppStorage.delete(CommonConstants.APP_STORAGE_KEY_FORM_ID);
             }
         }
 
     }
 
-    private handleCheckboxChange(itemId: number, isChecked: boolean): void {
+    private handleSelectionChange(itemID: number, isChecked: boolean): void {
         if (isChecked) {
             // 选中当前条目，清空之前的选择
-            this.selectedID = itemId;
-        } else if (this.selectedID === itemId) {
+            this.selectedID = itemID;
+        } else if (this.selectedID === itemID) {
             // 取消选中当前已选中的条目
             this.selectedID = null;
         }
     }
 
-    private toggleSelection(itemId: number): void {
-        this.handleCheckboxChange(itemId, this.selectedID !== itemId);
+    private toggleSelection(itemID: number): void {
+        this.handleSelectionChange(itemID, this.selectedID !== itemID);
     }
 
     private async handleConfirmClick(): Promise<void> {
@@ -95,7 +95,7 @@ struct SingleCommandFormEdit {
         try {
             this.isUpdating = true;
 
-            const formData: FormData = new FormData(this.formID, true);
+            const formData: SingleCommandFormData = new SingleCommandFormData(this.formID, true);
 
             formData.shortcutID = selectedItem.id;
             formData.nickname = selectedItem.nickname;
@@ -171,7 +171,7 @@ struct SingleCommandFormEdit {
     @Builder
     ConfirmButton() {
         Row() {
-            Button($r('app.string.FormEdit_Confirm_Button_Text'), { type: ButtonType.Capsule })
+            Button($r('app.string.FormEdit_Confirm_Button_Label'), { type: ButtonType.Capsule })
                 .width(StyleConstants.EIGHTY_PERCENT)
                 .fontWeight(FontWeight.Medium)
                 .enabled(this.selectedID !== null && !this.isUpdating)
@@ -231,7 +231,7 @@ struct SingleCommandFormEdit {
                                         Checkbox()
                                             .select(this.selectedID === item.id)
                                             .onChange((isChecked: boolean) => {
-                                                this.handleCheckboxChange(item.id, isChecked);
+                                                this.handleSelectionChange(item.id, isChecked);
                                             })
                                             .hitTestBehavior(HitTestMode.None)
 

@@ -135,7 +135,7 @@ export default class EntryAbility extends UIAbility {
 
             const formID = params['formID'];
             if (typeof formID === 'string' && formID.trim() !== '') {
-                AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_FormID, formID);
+                AppStorage.setOrCreate(CommonConstants.APP_STORAGE_KEY_FORM_ID, formID);
             } else {
                 Logger.warn(this.LOG_TAG, `handleFormWant() formID 为空`);
             }
@@ -149,7 +149,7 @@ export default class EntryAbility extends UIAbility {
         Logger.debug(this.LOG_TAG, `长按快捷方式转入`);
         const shortCutKey = want?.parameters?.shortCutKey;
         if (typeof shortCutKey === 'string' && shortCutKey.trim() !== '') {
-            AppStorage.setOrCreate(CommonConstants.AppStorage_KEY_ShortcutPath, shortCutKey);
+            AppStorage.setOrCreate(CommonConstants.APP_STORAGE_KEY_SHORTCUT_PATH, shortCutKey);
         } else {
             Logger.warn(this.LOG_TAG, `handleShortcutWant() 快捷方式参数为空`);
         }
@@ -166,7 +166,7 @@ export default class EntryAbility extends UIAbility {
 
             this.context.getApplicationContext().setColorMode(appSettings.colorMode);
 
-            AppStorageV2.connect(AppSettings, CommonConstants.AppStorage_KEY_AppSettings, () => appSettings);
+            AppStorageV2.connect(AppSettings, CommonConstants.APP_STORAGE_KEY_APP_SETTINGS, () => appSettings);
 
             Logger.debug(this.LOG_TAG, `setColorMode() 窗口颜色设置: ${appSettings.colorMode}`)
         } catch (err) {

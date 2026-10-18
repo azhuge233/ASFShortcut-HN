@@ -11,7 +11,7 @@ import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
 import { DB } from '../common/utils/DB';
 import CommonConstants from '../common/constants/CommonConstants';
 import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
-import { CommandListItem } from '../view/components/CommandTile';
+import { CommandTile } from '../view/components/CommandTile';
 import StyleConstants from '../common/constants/StyleConstants';
 import CommonUtils from '../common/utils/CommonUtils';
 
@@ -93,13 +93,13 @@ struct Index {
         if (this.pageStack.size() === 0) await this.checkSettingsAndInit();
         await this.listViewModel.loadCommandEntries();
 
-        if (AppStorage.has(CommonConstants.AppStorage_KEY_ShortcutPath)) {
+        if (AppStorage.has(CommonConstants.APP_STORAGE_KEY_SHORTCUT_PATH)) {
             Logger.debug(this.LOG_TAG, `检测到长按快捷方式页面`);
 
-            const path: string | undefined = AppStorage.get(CommonConstants.AppStorage_KEY_ShortcutPath);
+            const path: string | undefined = AppStorage.get(CommonConstants.APP_STORAGE_KEY_SHORTCUT_PATH);
             if (path) {
                 await this.goToSpecifyPage(path);
-                AppStorage.delete(CommonConstants.AppStorage_KEY_ShortcutPath);
+                AppStorage.delete(CommonConstants.APP_STORAGE_KEY_SHORTCUT_PATH);
             }
         }
     }
@@ -182,7 +182,7 @@ struct Index {
     private inputPopup(type: string): Promise<string> {
         if (type == "Account") return new Promise((resolve) => {
             this.pageStack.pushPath({
-                name: "AccInputDialog",
+                name: "AccountInputDialog",
                 onPop: (popInfo) => {
                     CommonUtils.returnFromSubPage(popInfo);
                     resolve(popInfo.result as string);
@@ -215,8 +215,8 @@ struct Index {
 
     // 从数据库加载设置条目
     private async loadSettings() {
-        this.currentAddress = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address);
-        this.currentASFPassword = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password);
+        this.currentAddress = await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_ADDRESS);
+        this.currentASFPassword = await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_PASSWORD);
     }
 
     // 初始化 ASF 服务
@@ -353,7 +353,7 @@ struct Index {
                         status: ProgressStatus.LOADING
                     })
 
-                Text($r("app.string.Index_processing"))
+                Text($r("app.string.Index_Processing"))
                     .margin({ top: StyleConstants.MARGIN_TWENTY })
                     .fontSize(StyleConstants.PROGRESS_TEXT_FONT_SIZE)
             }
@@ -434,7 +434,7 @@ struct Index {
                 List({ scroller: this.scrollerForList }) {
                     ForEach(this.listViewModel.commandEntries, (item: CommandEntryViewModel) => {
                         ListItem() {
-                            CommandListItem({
+                            CommandTile({
                                 item: item,
                                 onAccountInput: () => this.inputPopup("Account"),
                                 onIDInput: () => this.inputPopup("ID"),
@@ -476,7 +476,7 @@ struct Index {
                             return true;
                         }, {
                             onLongPress: () => {
-                                CommonUtils.vibrate(CommonConstants.Vibrate_Effect_ID_SOFT);
+                                CommonUtils.vibrate(CommonConstants.VIBRATE_EFFECT_ID_SOFT);
                             }
                         })
                 }
@@ -602,7 +602,7 @@ struct Index {
                         this.testCommand.trim() !== '')
                     .onClick(async () => {
                         this.isProcessing = true;
-                        CommonUtils.vibrate(CommonConstants.Vibrate_Effect_ID_HARD);
+                        CommonUtils.vibrate(CommonConstants.VIBRATE_EFFECT_ID_HARD);
                         await this.sendTestCommand(this.testAddress, this.testPassword, this.testCommand);
                     })
                     .margin({ bottom: StyleConstants.MARGIN_TWENTY })

@@ -8,7 +8,7 @@ import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
 import { DB } from '../common/utils/DB';
 import { MoreMenuItem } from '../view/components/MoreMenuItem';
 import CommonUtils from '../common/utils/CommonUtils';
-import { ExportJson, SettingsJsonObject } from '../model/JsonObjects';
+import { ExportJsonObject, SettingsJsonObject } from '../model/JsonObjects';
 import CommonConstants from '../common/constants/CommonConstants';
 import CommandEntry from '../model/CommandEntry';
 
@@ -86,12 +86,12 @@ struct MorePage {
     async export(): Promise<void> {
         try {
             const settingsJsonObject = new SettingsJsonObject(
-                await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address),
-                await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password)
+                await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_ADDRESS),
+                await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_PASSWORD)
             );
             const commandEntryJsonObjectList = await this.listViewModel.toCommandEntryJsonObjectList();
 
-            const exportJson = new ExportJson(settingsJsonObject, commandEntryJsonObjectList);
+            const exportJson = new ExportJsonObject(settingsJsonObject, commandEntryJsonObjectList);
 
             const jsonString = JSON.stringify(exportJson, null, 4);
 
@@ -244,7 +244,7 @@ struct MorePage {
                         status: ProgressStatus.LOADING
                     })
 
-                Text($r("app.string.Index_processing"))
+                Text($r("app.string.Index_Processing"))
                     .margin({ top: StyleConstants.MARGIN_TWENTY })
                     .fontSize(StyleConstants.PROGRESS_TEXT_FONT_SIZE)
             }
@@ -282,7 +282,7 @@ struct MorePage {
     EntryDivider() {
         Divider()
             .lineCap(LineCapStyle.Round)
-            .strokeWidth(StyleConstants.MORE_MENU_DIVIDER_STOKE_WIDTH)
+            .strokeWidth(StyleConstants.MORE_MENU_DIVIDER_STROKE_WIDTH)
             .width(StyleConstants.NINETY_PERCENT)
     }
 

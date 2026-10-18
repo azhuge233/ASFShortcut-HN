@@ -49,9 +49,9 @@
       }
     },
     {
-      "name": "AccInputDialog",
-      "pageSourceFile": "src/main/ets/view/dialogs/AccInputDialog.ets",
-      "buildFunction": "AccInputDialogBuilder",
+      "name": "AccountInputDialog",
+      "pageSourceFile": "src/main/ets/view/dialogs/AccountInputDialog.ets",
+      "buildFunction": "AccountInputDialogBuilder",
       "data": {
         "description" : "ASF account Input Dialog"
       }

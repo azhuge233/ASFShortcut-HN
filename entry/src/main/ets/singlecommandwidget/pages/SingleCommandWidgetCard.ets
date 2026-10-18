@@ -16,18 +16,14 @@ struct SingleCommandWidgetCard {
 
     @LocalStorageProp('runResult') private runResult: string = '';
 
-    private readonly ActionTypeRouter = 'router';
-    private readonly ActionTypeCall = 'call';
-    private readonly ActionTypeMessage = 'message';
+    private readonly ENTRY_ABILITY_NAME: string = 'EntryAbility';
+    private readonly WIDGET_ENTRY_ABILITY_NAME: string = 'SingleCommandWidgetEntryAbility';
 
-    private readonly EntryAbilityName: string = 'EntryAbility';
-    private readonly WidgetEntryAbilityName: string = 'SingleCommandWidgetEntryAbility';
-
-    private readonly FormEditPageRoute: string = 'pages/SingleCommandFormEdit';
+    private readonly FORM_EDIT_PAGE_ROUTE: string = 'pages/SingleCommandFormEdit';
 
     private sendMessageAction(action: string, data: number | string | null) {
         postCardAction(this, {
-            action: this.ActionTypeMessage,
+            action: CommonConstants.FORM_ACTION_MESSAGE,
             params: {
                 formAction: action,
                 data: data
@@ -36,7 +32,7 @@ struct SingleCommandWidgetCard {
     }
 
     aboutToAppear(): void {
-        this.sendMessageAction(CommonConstants.FormMessage_Restore, 'aboutToAppear()');
+        this.sendMessageAction(CommonConstants.FORM_MESSAGE_RESTORE, 'aboutToAppear()');
     }
 
     @Builder
@@ -142,14 +138,14 @@ struct SingleCommandWidgetCard {
         .height(StyleConstants.FULL_PERCENT)
         .width(StyleConstants.FULL_PERCENT)
         .onAppear(() => {
-            this.sendMessageAction(CommonConstants.FormMessage_Restore, 'Init() Component');
+            this.sendMessageAction(CommonConstants.FORM_MESSAGE_RESTORE, 'Init() Component');
         })
         .onClick(() => {
             postCardAction(this, {
-                action: this.ActionTypeRouter,
-                abilityName: this.EntryAbilityName,
+                action: CommonConstants.FORM_ACTION_ROUTER,
+                abilityName: this.ENTRY_ABILITY_NAME,
                 params: {
-                    targetPage: this.FormEditPageRoute,
+                    targetPage: this.FORM_EDIT_PAGE_ROUTE,
                     formID: this.formID
                 }
             });
@@ -167,7 +163,7 @@ struct SingleCommandWidgetCard {
         .width(StyleConstants.FULL_PERCENT)
         .onClick(() => {
             if(this.isRunning) {
-                this.sendMessageAction(CommonConstants.FormMessage_Restore, 'RunningContent() Component');
+                this.sendMessageAction(CommonConstants.FORM_MESSAGE_RESTORE, 'RunningContent() Component');
             }
         })
     }
@@ -184,13 +180,13 @@ struct SingleCommandWidgetCard {
         .onClick(() => {
             if (!this.isRunning) {
                 if(this.runResult !== '') { // 如果正在显示执行结果，恢复卡片显示
-                    this.sendMessageAction(CommonConstants.FormMessage_Restore, 'MainContent() Component');
+                    this.sendMessageAction(CommonConstants.FORM_MESSAGE_RESTORE, 'MainContent() Component');
                 } else if (this.isInitialized) { // 正常显示状态，执行指令
                     postCardAction(this, {
-                        action: this.ActionTypeCall,
-                        abilityName: this.WidgetEntryAbilityName,
+                        action: CommonConstants.FORM_ACTION_CALL,
+                        abilityName: this.WIDGET_ENTRY_ABILITY_NAME,
                         params: {
-                            method: CommonConstants.FormCall_Run,
+                            method: CommonConstants.FORM_CALL_RUN,
                             formID: this.formID,
                             shortcutID: this.shortcutID,
                             nickname: this.nickname,

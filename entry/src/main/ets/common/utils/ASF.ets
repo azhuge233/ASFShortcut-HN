@@ -11,8 +11,8 @@ export class ASF {
 
     private apiEndpoint = "/Api/Command";
 
-    private ContentTypeJson = "application/json";
-    private UserAgent = "ASF Shortcut HarmonyOS";
+    private CONTENT_TYPE_JSON = "application/json";
+    private USER_AGENT = "ASF Shortcut HarmonyOS";
 
     // 设置全局服务器地址
     setAddress(address: string) {
@@ -67,8 +67,8 @@ export class ASF {
             expectDataType: http.HttpDataType.STRING,
             usingCache: false,
             header: {
-                "Content-Type": this.ContentTypeJson,
-                "User-Agent": this.UserAgent,
+                "Content-Type": this.CONTENT_TYPE_JSON,
+                "User-Agent": this.USER_AGENT,
                 "Authentication": password
             },
             readTimeout: 10000,

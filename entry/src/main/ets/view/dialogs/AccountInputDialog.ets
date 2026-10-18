@@ -3,12 +3,12 @@ import { hdsMaterial, HdsNavDestination, ScrollEffectType } from "@kit.UIDesignK
 import StyleConstants from "../../common/constants/StyleConstants";
 
 @Builder
-export function AccInputDialogBuilder() {
-    AccInputDialog();
+export function AccountInputDialogBuilder() {
+    AccountInputDialog();
 }
 
 @ComponentV2
-export struct AccInputDialog {
+export struct AccountInputDialog {
     pathStack: NavPathStack = new NavPathStack();
 
     @Local inputValue: string = "";

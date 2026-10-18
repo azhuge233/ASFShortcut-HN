@@ -80,7 +80,7 @@ class StyleConstants {
     public readonly MORE_MENU_ITEM_FONT_SIZE = 17;
     public readonly MORE_MENU_ITEM_DESC_FONT_SIZE = 12;
     public readonly MORE_MENU_VERSION_FONT_SIZE = 13;
-    public readonly MORE_MENU_DIVIDER_STOKE_WIDTH = 2;
+    public readonly MORE_MENU_DIVIDER_STROKE_WIDTH = 2;
 
     public readonly LIVE_TEST_LABEL_FONT_SIZE = 17;
 

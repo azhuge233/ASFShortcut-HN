@@ -229,7 +229,7 @@
       "value": "Add"
     },
     {
-      "name": "Index_processing",
+      "name": "Index_Processing",
       "value": "Processing..."
     },
     {
@@ -449,7 +449,7 @@
       "value": "Press to choose Shortcut"
     },
     {
-      "name": "FormEdit_Confirm_Button_Text",
+      "name": "FormEdit_Confirm_Button_Label",
       "value": "Confirm"
     },
     {

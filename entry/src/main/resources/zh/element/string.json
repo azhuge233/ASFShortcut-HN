@@ -229,7 +229,7 @@
       "value": "添加"
     },
     {
-      "name": "Index_processing",
+      "name": "Index_Processing",
       "value": "处理中..."
     },
     {
@@ -449,7 +449,7 @@
       "value": "点击选择指令"
     },
     {
-      "name": "FormEdit_Confirm_Button_Text",
+      "name": "FormEdit_Confirm_Button_Label",
       "value": "确认"
     },
     {

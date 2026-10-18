@@ -85,7 +85,7 @@ export default class MultipleCommandsFormAbility extends FormExtensionAbility {
 
         Logger.debug(this.LOG_TAG, `onFormEvent() 接收指令 ${action}`);
 
-        if(action === CommonConstants.FormMessage_Restore) await this.handleRestoreAction(formId, messageObj.data as string);
+        if(action === CommonConstants.FORM_MESSAGE_RESTORE) await this.handleRestoreAction(formId, messageObj.data as string);
         else Logger.warn(this.LOG_TAG, `onFormEvent() 未知指令: ${action}`);
     }
 

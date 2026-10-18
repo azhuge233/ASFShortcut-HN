@@ -34,15 +34,15 @@ struct ASFSettingsPage {
     }
 
     async loadSettings(): Promise<void> {
-        this.address = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address);
-        this.asfPassword = await this.db.getSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password);
+        this.address = await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_ADDRESS);
+        this.asfPassword = await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_PASSWORD);
     }
 
     async saveSettings(): Promise<boolean> {
         this.isSaving = true;
 
-        const success1 = await this.db.saveSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Address, CommonUtils.trimAddress(this.address));
-        const success2 = await this.db.saveSetting(CommonConstants.DB_KEY_HostInfo_KEY_NAME_Password, this.asfPassword);
+        const success1 = await this.db.saveSetting(CommonConstants.DB_KEY_HOST_INFO_ADDRESS, CommonUtils.trimAddress(this.address));
+        const success2 = await this.db.saveSetting(CommonConstants.DB_KEY_HOST_INFO_PASSWORD, this.asfPassword);
 
         this.isSaving = false;
 

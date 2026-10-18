@@ -95,8 +95,8 @@ export default class CommandEntryList {
             const allMultipleBindings = await this.pm.getAllCardBindingsMultiple();
 
             const allFormIDMap: Map<string, string[]> = new Map<string, string[]>();
-            allFormIDMap.set(CommonConstants.FormResult_MapKey_Single, allSingleBindings.map(binding => binding.formID));
-            allFormIDMap.set(CommonConstants.FormResult_MapKey_Multiple, allMultipleBindings.map(binding => binding.formID));
+            allFormIDMap.set(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE, allSingleBindings.map(binding => binding.formID));
+            allFormIDMap.set(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE, allMultipleBindings.map(binding => binding.formID));
 
             // 清空卡片绑定
             const success = await this.pm.clearAllBindings();
@@ -148,20 +148,20 @@ export default class CommandEntryList {
     private async updateAllFormBelongsToEntry(commandEntry: CommandEntry): Promise<Map<string, string[]>> {
         let affectedMap: Map<string, string[]> = new Map<string, string[]>();
 
-        affectedMap.set(CommonConstants.FormResult_MapKey_Single, await this.pm.updateByShortcutSingle(commandEntry));
-        affectedMap.set(CommonConstants.FormResult_MapKey_Multiple, await this.pm.updateByShortcutMultiple(commandEntry));
+        affectedMap.set(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE, await this.pm.updateByShortcutSingle(commandEntry));
+        affectedMap.set(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE, await this.pm.updateByShortcutMultiple(commandEntry));
 
-        Logger.debug(this.LOG_TAG, `已更新相关卡片: 单指令 ${affectedMap.get(CommonConstants.FormResult_MapKey_Single)?.length} 个，多指令 ${affectedMap.get(CommonConstants.FormResult_MapKey_Multiple)?.length} 个`);
+        Logger.debug(this.LOG_TAG, `已更新相关卡片: 单指令 ${affectedMap.get(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE)?.length} 个，多指令 ${affectedMap.get(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE)?.length} 个`);
         return affectedMap;
     }
 
     private async removeAllFormBelongsToEntryID(commandID: number): Promise<Map<string, string[]>> {
         let affectedMap: Map<string, string[]> = new Map<string, string[]>();
 
-        affectedMap.set(CommonConstants.FormResult_MapKey_Single, await this.pm.removeBindingsByShortcutIdSingle(commandID));
-        affectedMap.set(CommonConstants.FormResult_MapKey_Multiple, await this.pm.removeBindingsByShortcutIdMultiple(commandID));
+        affectedMap.set(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE, await this.pm.removeBindingsByShortcutIDSingle(commandID));
+        affectedMap.set(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE, await this.pm.removeBindingsByShortcutIDMultiple(commandID));
 
-        Logger.debug(this.LOG_TAG, `已清除相关卡片: 单指令卡片 ${affectedMap.get(CommonConstants.FormResult_MapKey_Single)?.length} 个，多指令卡片 ${affectedMap.get(CommonConstants.FormResult_MapKey_Multiple)?.length} 个`);
+        Logger.debug(this.LOG_TAG, `已清除相关卡片: 单指令卡片 ${affectedMap.get(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE)?.length} 个，多指令卡片 ${affectedMap.get(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE)?.length} 个`);
         return affectedMap;
     }
 }
