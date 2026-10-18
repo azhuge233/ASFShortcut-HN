@@ -76,6 +76,10 @@ struct MultipleCommandsFormEdit {
         }
     }
 
+    private toggleSelection(itemId: number): void {
+        this.handleCheckboxChange(itemId, !this.selectedIDs.includes(itemId));
+    }
+
     private async handleConfirmClick(): Promise<void> {
         if (this.selectedIDs.length === 0 || this.isUpdating || !this.formID) return;
 
@@ -228,6 +232,7 @@ struct MultipleCommandsFormEdit {
                                             .onChange((isChecked: boolean) => {
                                                 this.handleCheckboxChange(item.id, isChecked);
                                             })
+                                            .hitTestBehavior(HitTestMode.None)
 
                                     }
                                     .width(StyleConstants.TWENTY_PERCENT)
@@ -236,6 +241,10 @@ struct MultipleCommandsFormEdit {
                                 .height(StyleConstants.TEN_PERCENT)
                                 .width(StyleConstants.FULL_PERCENT)
                                 .borderStyle(BorderStyle.Solid)
+                                .onClick(() => {
+                                    // 整行可选中；复选框只显示状态，点击由行统一处理
+                                    this.toggleSelection(item.id);
+                                })
                             }
                             .margin({
                                 top: StyleConstants.FIVE_PERCENT,

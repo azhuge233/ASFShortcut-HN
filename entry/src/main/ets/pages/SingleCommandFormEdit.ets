@@ -75,6 +75,10 @@ struct SingleCommandFormEdit {
         }
     }
 
+    private toggleSelection(itemId: number): void {
+        this.handleCheckboxChange(itemId, this.selectedID !== itemId);
+    }
+
     private async handleConfirmClick(): Promise<void> {
         if (!this.selectedID || this.isUpdating || !this.formID) return;
 
@@ -229,6 +233,7 @@ struct SingleCommandFormEdit {
                                             .onChange((isChecked: boolean) => {
                                                 this.handleCheckboxChange(item.id, isChecked);
                                             })
+                                            .hitTestBehavior(HitTestMode.None)
 
                                     }
                                     .width(StyleConstants.TWENTY_PERCENT)
@@ -237,6 +242,10 @@ struct SingleCommandFormEdit {
                                 .height(StyleConstants.TEN_PERCENT)
                                 .width(StyleConstants.FULL_PERCENT)
                                 .borderStyle(BorderStyle.Solid)
+                                .onClick(() => {
+                                    // 整行可选中；复选框只显示状态，点击由行统一处理
+                                    this.toggleSelection(item.id);
+                                })
                             }
                             .margin({
                                 top: StyleConstants.FIVE_PERCENT,
