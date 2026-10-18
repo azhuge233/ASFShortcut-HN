@@ -1,5 +1,8 @@
 # ASFShortcut
 
+> [!IMPORTANT]
+> This repository has been developed with AI assistance since commit [`d37b7bc`](https://github.com/azhuge233/ASFShortcut-HN/commit/d37b7bc) (1.6.6).
+
 A HarmonyOS client for [ArchiSteamFarm](https://github.com/JustArchiNET/ArchiSteamFarm) (ASF).
 
 Send custom commands to ASF and view the results directly.
