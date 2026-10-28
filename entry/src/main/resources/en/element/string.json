@@ -465,6 +465,14 @@
       "value": "ASF command run failed, please try again"
     },
     {
+      "name": "Form_Run_Cancelled_Message",
+      "value": "Cancelled"
+    },
+    {
+      "name": "Form_Running_Cancel_Label",
+      "value": "Tap again to cancel"
+    },
+    {
       "name": "Color_Mode_System_Label",
       "value": "System"
     },

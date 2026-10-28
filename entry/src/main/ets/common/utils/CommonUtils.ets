@@ -5,7 +5,7 @@ import { picker, fileIo as fs } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
 import { buffer } from '@kit.ArkTS';
 import { vibrator } from '@kit.SensorServiceKit';
-import { formBindingData } from '@kit.FormKit';
+import { formBindingData, formProvider } from '@kit.FormKit';
 
 import Logger from './Logger';
 import { ExportJsonObject } from '../../model/JsonObjects';
@@ -199,6 +199,25 @@ class CommonUtils {
     public createMultipleCommandFormBindingData(data: string | MultipleCommandsFormData): formBindingData.FormBindingData {
         if(typeof(data) === "string") return this.createEmptyMultipleCommandsFormBindingData(data);
         else return formBindingData.createFormBindingData(data);
+    }
+
+    // 唯一的卡片写入入口：updateForm 失败重试一次，两次都记日志
+    // 早写运行态、sendFormRunning、终态、兜底终态四处共用，不各自直调 updateForm
+    public async updateFormWithRetry(formID: string, formInfo: formBindingData.FormBindingData): Promise<boolean> {
+        try {
+            await formProvider.updateForm(formID, formInfo);
+            return true;
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `updateFormWithRetry() 首次写入失败，重试一次, ${formID}, ${err}`);
+        }
+
+        try {
+            await formProvider.updateForm(formID, formInfo);
+            return true;
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `updateFormWithRetry() 重试仍失败, ${formID}, ${err}`);
+            return false;
+        }
     }
 
     // 获取时间（毫秒）

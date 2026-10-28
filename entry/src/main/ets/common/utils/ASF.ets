@@ -14,6 +14,9 @@ export class ASF {
     private CONTENT_TYPE_JSON = "application/json";
     private USER_AGENT = "ASF Shortcut HarmonyOS";
 
+    // 当前在途请求：request() 前登记，结束或取消时清空
+    private currentRequest: http.HttpRequest | null = null;
+
     // 设置全局服务器地址
     setAddress(address: string) {
         this.address = this.getFinalAddress(address);
@@ -48,6 +51,25 @@ export class ASF {
         }
     }
 
+    // 取消在途请求：销毁当前 HttpRequest；无在途请求时为空操作
+    // 只由卡片运行路径调用，send / sendTest 的参数、超时与响应解析不受影响
+    cancel(): void {
+        const request = this.currentRequest;
+
+        if (!request) {
+            Logger.debug(this.LOG_TAG, `cancel() 无在途请求`);
+            return;
+        }
+
+        this.currentRequest = null;
+        try {
+            request.destroy();
+            Logger.info(this.LOG_TAG, `cancel() 已销毁在途请求`);
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `cancel() 销毁在途请求失败, ${JSON.stringify(err)}`);
+        }
+    }
+
     // 返回拼接 API endpoint 后的最终地址
     private getFinalAddress(address: string) {
         return `${CommonUtils.trimAddress(address)}${this.apiEndpoint}`;
@@ -59,6 +81,7 @@ export class ASF {
         Logger.debug(this.LOG_TAG, `sendRequest() 指令长度：${command.length}`);
 
         const httpRequest = http.createHttp();
+        this.currentRequest = httpRequest;
 
         // 设置指令参数和 ASF 密码请求头
         const requestOptions: http.HttpRequestOptions = {
@@ -86,7 +109,13 @@ export class ASF {
             Logger.error(this.LOG_TAG, `sendRequest() 发送请求失败, ${JSON.stringify(err)}`);
             throw err as Error;
         } finally {
-            httpRequest.destroy();
+            // 取消路径可能已由 cancel() 销毁同一请求：这里只清自己登记的引用
+            if (this.currentRequest === httpRequest) this.currentRequest = null;
+            try {
+                httpRequest.destroy();
+            } catch (err) {
+                Logger.warn(this.LOG_TAG, `sendRequest() 销毁请求失败, ${JSON.stringify(err)}`);
+            }
         }
     }
 };

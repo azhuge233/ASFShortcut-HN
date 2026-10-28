@@ -12,6 +12,10 @@ class CommonConstants {
     public readonly FORM_MESSAGE_RESTORE = 'restore';
 
     public readonly FORM_CALL_RUN = 'run';
+    public readonly FORM_CALL_CANCEL = 'cancel';
+
+    // 卡片侧硬超时（毫秒）：整个运行过程的上界
+    public readonly FORM_RUN_TIMEOUT_MS = 15000;
 
     public readonly FORM_ACTION_ROUTER = 'router';
     public readonly FORM_ACTION_CALL = 'call';

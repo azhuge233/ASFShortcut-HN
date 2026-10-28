@@ -45,6 +45,13 @@ struct MultipleCommandsWidgetCard {
             Text($r("app.string.Form_Running_Label"))
                 .fontSize(StyleConstants.FORM_RUNNING_LABEL_FONT_SIZE)
                 .fontColor(Color.White)
+
+            Text($r("app.string.Form_Running_Cancel_Label"))
+                .fontSize(StyleConstants.FORM_RUNNING_LABEL_FONT_SIZE)
+                .fontColor(Color.White)
+                .margin({
+                    top: StyleConstants.MARGIN_FIVE
+                })
         }
         .width(StyleConstants.FULL_PERCENT)
         .alignItems(HorizontalAlign.Center)
@@ -193,8 +200,17 @@ struct MultipleCommandsWidgetCard {
         .height(StyleConstants.FULL_PERCENT)
         .width(StyleConstants.FULL_PERCENT)
         .onClick(() => {
-            // 如果正在显示执行结果，恢复卡片显示
-            if(this.isRunning) this.sendMessageAction(CommonConstants.FORM_MESSAGE_RESTORE, 'RunningContent() Component');
+            // 运行态点击 = 取消：只带 formID，其余卡片数据由 Ability 从 PM 绑定取
+            if(this.isRunning) {
+                postCardAction(this, {
+                    action: CommonConstants.FORM_ACTION_CALL,
+                    abilityName: this.WIDGET_ENTRY_ABILITY_NAME,
+                    params: {
+                        method: CommonConstants.FORM_CALL_CANCEL,
+                        formID: this.formID
+                    }
+                });
+            }
         })
     }
 

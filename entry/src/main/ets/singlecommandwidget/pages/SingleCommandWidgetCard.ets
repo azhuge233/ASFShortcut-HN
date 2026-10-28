@@ -55,6 +55,13 @@ struct SingleCommandWidgetCard {
             Text($r("app.string.Form_Running_Label"))
                 .fontSize(StyleConstants.FORM_RUNNING_LABEL_FONT_SIZE)
                 .fontColor(Color.White)
+
+            Text($r("app.string.Form_Running_Cancel_Label"))
+                .fontSize(StyleConstants.FORM_RUNNING_LABEL_FONT_SIZE)
+                .fontColor(Color.White)
+                .margin({
+                    top: StyleConstants.MARGIN_FIVE
+                })
         }
         .width(StyleConstants.SEVENTY_PERCENT)
         .alignItems(HorizontalAlign.Center)
@@ -163,7 +170,15 @@ struct SingleCommandWidgetCard {
         .width(StyleConstants.FULL_PERCENT)
         .onClick(() => {
             if(this.isRunning) {
-                this.sendMessageAction(CommonConstants.FORM_MESSAGE_RESTORE, 'RunningContent() Component');
+                // 运行态点击 = 取消：只带 formID，其余卡片数据由 Ability 从 PM 绑定取
+                postCardAction(this, {
+                    action: CommonConstants.FORM_ACTION_CALL,
+                    abilityName: this.WIDGET_ENTRY_ABILITY_NAME,
+                    params: {
+                        method: CommonConstants.FORM_CALL_CANCEL,
+                        formID: this.formID
+                    }
+                });
             }
         })
     }

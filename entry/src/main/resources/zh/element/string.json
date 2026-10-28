@@ -465,6 +465,14 @@
       "value": "ASF 指令执行失败，请重试"
     },
     {
+      "name": "Form_Run_Cancelled_Message",
+      "value": "已取消"
+    },
+    {
+      "name": "Form_Running_Cancel_Label",
+      "value": "再次点击以取消"
+    },
+    {
       "name": "Color_Mode_System_Label",
       "value": "跟随系统"
     },
