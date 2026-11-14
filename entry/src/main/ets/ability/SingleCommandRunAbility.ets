@@ -207,7 +207,7 @@ export default class SingleCommandWidgetEntryAbility extends UIAbility {
             formData.isRunning = false;
             formData.runResult = this.getRunFailedMessage();
 
-            const written = await this.publisher.publish(formID, formData);
+            const written = await this.publisher.publishWithRetry(formID, formData);
 
             Logger.info(this.LOG_TAG, `writeFallbackTerminal() 无在跑会话，写兜底终态${written ? '成功' : '失败'}: ${formID}`);
         } catch (err) {
@@ -223,7 +223,7 @@ export default class SingleCommandWidgetEntryAbility extends UIAbility {
         formData.command = this.command;
         formData.isRunning = true;
 
-        await this.publisher.publish(this.formID, formData);
+        await this.publisher.publishWithRetry(this.formID, formData);
     }
 
     private async getNewFormData(): Promise<SingleCommandFormData> {
@@ -251,7 +251,7 @@ export default class SingleCommandWidgetEntryAbility extends UIAbility {
 
         formData.isRunning = true;
 
-        await this.publisher.publish(this.formID, formData);
+        await this.publisher.publishWithRetry(this.formID, formData);
     }
 
     private async updateCommandFromDB(): Promise<void> {
@@ -294,7 +294,7 @@ export default class SingleCommandWidgetEntryAbility extends UIAbility {
             formData.runResult = runResult; // 显示执行结果
             formData.isRunning = false; // 取消卡片正在运行状态
 
-            const written = await this.publisher.publish(token.formID, formData);
+            const written = await this.publisher.publishWithRetry(token.formID, formData);
 
             if (written) Logger.debug(this.LOG_TAG, `finishRun() 已写终态: ${runResult}`);
             else Logger.error(this.LOG_TAG, `finishRun() 终态两次写入均失败，卡片停在运行态: ${token.formID}`);

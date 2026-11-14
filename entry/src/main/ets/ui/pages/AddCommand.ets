@@ -1,51 +1,48 @@
 import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
 
 import Logger from '../../common/utils/Logger';
-import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
-import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
 import StyleConstants from '../../common/constants/StyleConstants';
 import PageContext from '../common/PageContext';
+import CommandListViewModel from '../../viewmodel/CommandListViewModel';
+import { CommandEditViewModel, EditSaveOutcome } from '../../viewmodel/CommandEditViewModel';
 
 @Builder
 export function AddCommandBuilder() {
     AddCommand();
 }
 
+/**
+ * 新增指令页（B3 重写）：只绑定 `CommandEditViewModel`。
+ * 页面自留导航栈与提示；草稿、校验、保存与失败类别都在 VM 里（设计 §2.4.4 的 `AddCommand` 行）。
+ */
 @Entry
 @ComponentV2
 struct AddCommand {
     private LOG_TAG = '[pages/AddCommand]';
 
-    @Local newCommandViewModel: CommandEntryViewModel = new CommandEntryViewModel();
+    // 路由参数到达前先占一个空 VM，`onReady` 拿到真正的列表 VM 后替换
+    @Local viewModel: CommandEditViewModel = new CommandEditViewModel(new CommandListViewModel());
 
     private uiContext = this.getUIContext();
     private promptAction = this.uiContext.getPromptAction();
 
-    private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
-
     pathStack: NavPathStack | undefined = undefined;
 
-    clearInput() {
-        this.newCommandViewModel.nickname = '';
-        this.newCommandViewModel.command = '';
-        this.newCommandViewModel.accountInputRequired = 0;
-        this.newCommandViewModel.idInputRequired = 0;
-    }
+    private async saveCommand(): Promise<void> {
+        const outcome: EditSaveOutcome = await this.viewModel.save();
 
-    async saveCommand() {
-        if (!this.newCommandViewModel.nickname.trim() || !this.newCommandViewModel.command.trim()) {
-            PageContext.alert($r("app.string.AddCommand_Invalid_Input"), this.promptAction);
+        if (outcome.ok) {
+            PageContext.alert($r("app.string.AddCommand_Add_Success"), this.promptAction);
+            this.viewModel.startAdd();
             return;
         }
 
-        try {
-            const success = await this.listViewModel.addCommandEntry(this.newCommandViewModel.toCommandEntry());
-            if (success) {
-                PageContext.alert($r("app.string.AddCommand_Add_Success"), this.promptAction);
-                this.clearInput();
-            } else PageContext.alert($r("app.string.AddCommand_Add_Failed_Try_Again"), this.promptAction);
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `保存命令失败: ${err}`);
+        if (outcome.failure === 'invalid') {
+            PageContext.alert($r("app.string.AddCommand_Invalid_Input"), this.promptAction);
+        } else if (outcome.failure === 'rejected') {
+            PageContext.alert($r("app.string.AddCommand_Add_Failed_Try_Again"), this.promptAction);
+        } else {
+            Logger.error(this.LOG_TAG, `保存命令失败: ${outcome.failure}`);
             PageContext.alert($r("app.string.AddCommand_Add_Failed"), this.promptAction);
         }
     }
@@ -65,12 +62,12 @@ struct AddCommand {
                     TextInput(
                         {
                             placeholder: $r("app.string.AddCommand_Name_Input_Placeholder"),
-                            text: this.newCommandViewModel.nickname
+                            text: this.viewModel.nickname
                         }
                     )
                         .onChange(
                             (value: string) => {
-                                this.newCommandViewModel.nickname = value;
+                                this.viewModel.nickname = value;
                             }
                         )
                         .defaultFocus(true)
@@ -86,12 +83,12 @@ struct AddCommand {
                     TextInput(
                         {
                             placeholder: $r("app.string.AddCommand_Command_Input_Placeholder"),
-                            text: this.newCommandViewModel.command
+                            text: this.viewModel.command
                         }
                     )
                         .onChange(
                             (value: string) => {
-                                this.newCommandViewModel.command = value;
+                                this.viewModel.command = value;
                             }
                         )
                         .defaultFocus(false)
@@ -108,10 +105,10 @@ struct AddCommand {
 
                         // 需要输入账户的选项
                         Row({ space: StyleConstants.ADD_COMMAND_ROW_SPACE }) {
-                            Toggle({ type: ToggleType.Checkbox, isOn: this.newCommandViewModel.accountRequired })
+                            Toggle({ type: ToggleType.Checkbox, isOn: this.viewModel.accountRequired })
                                 .onChange(
                                     (value: boolean) => {
-                                        this.newCommandViewModel.accountRequired = value;
+                                        this.viewModel.accountRequired = value;
                                     }
                                 )
                             Text($r("app.string.AddCommand_Needs_ASF_Account_Input_Label"))
@@ -122,10 +119,10 @@ struct AddCommand {
 
                         // 需要输入 App ID 的选项
                         Row({ space: StyleConstants.ADD_COMMAND_ROW_SPACE }) {
-                            Toggle({ type: ToggleType.Checkbox, isOn: this.newCommandViewModel.idRequired })
+                            Toggle({ type: ToggleType.Checkbox, isOn: this.viewModel.idRequired })
                                 .onChange(
                                     (value: boolean) => {
-                                        this.newCommandViewModel.idRequired = value;
+                                        this.viewModel.idRequired = value;
                                     }
                                 )
                             Text($r("app.string.AddCommand_Needs_ASF_ID_Input_Label"))
@@ -149,10 +146,7 @@ struct AddCommand {
                     // 按钮区域
                     Button($r("app.string.AddCommand_Add_Button_Label"))
                         .width(StyleConstants.SEVENTY_PERCENT)
-                        .enabled(
-                            this.newCommandViewModel.nickname.trim() !== "" &&
-                                this.newCommandViewModel.command.trim() !== ""
-                        )
+                        .enabled(this.viewModel.canSave() && !this.viewModel.isSaving)
                         .margin({ top: StyleConstants.MARGIN_FORTY })
                         .onClick(
                             () => {
@@ -186,7 +180,14 @@ struct AddCommand {
         .width(StyleConstants.FULL_PERCENT)
         .onReady((context: NavDestinationContext) => {
             this.pathStack = context.pathStack;
-            this.listViewModel = context.pathInfo.param as CommandEntryListViewModel;
+            // 路由参数带的是主列表的 VM：新增要落库并刷新列表与卡片，走的就是它
+            const param: CommandListViewModel = context.pathInfo.param as CommandListViewModel;
+            if (param instanceof CommandListViewModel) {
+                this.viewModel = new CommandEditViewModel(param);
+            } else {
+                Logger.warn(this.LOG_TAG, `未收到列表 VM，保留占位实例`);
+            }
+            this.viewModel.startAdd();
         })
         .onBackPressed(() => {
             this.pathStack?.pop("Back pressed");

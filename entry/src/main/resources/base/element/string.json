@@ -535,6 +535,22 @@
     {
       "name": "Index_Load_Failed_Retry",
       "value": "Failed to load commands. Tap to retry."
+    },
+    {
+      "name": "Index_Search_No_Result",
+      "value": "No matching commands."
+    },
+    {
+      "name": "Index_Search_Placeholder",
+      "value": "Search commands or nicknames"
+    },
+    {
+      "name": "Index_Reorder_Failed",
+      "value": "Failed to reorder"
+    },
+    {
+      "name": "More_Clear_Bindings_Failed",
+      "value": "Bindings not cleared"
     }
   ]
 }

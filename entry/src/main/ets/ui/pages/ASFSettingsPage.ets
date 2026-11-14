@@ -1,53 +1,34 @@
 import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
 
 import Logger from '../../common/utils/Logger';
-import { SettingsDao } from '../../data/dao/SettingsDao';
-import CommonConstants from '../../common/constants/CommonConstants';
 import StyleConstants from '../../common/constants/StyleConstants';
 import PageContext from '../common/PageContext';
-import { AsfAddress } from '../../domain/service/AsfAddress';
+import AsfSettingsViewModel from '../../viewmodel/AsfSettingsViewModel';
 
 @Builder
 export function ASFSettingsPageBuilder() {
     ASFSettingsPage();
 }
 
+/**
+ * ASF 设置页（B3 重写）：只绑定 `AsfSettingsViewModel`（设计 §2.4.4 的 `ASFSettingsPage` 行）。
+ * 页面自留导航栈与提示；地址规范化、两个键的落盘与保存中标记都在 VM 里。
+ */
 @Entry
 @ComponentV2
 struct ASFSettingsPage {
     private LOG_TAG = "[pages/ASFSettingsPage]";
 
-    @Local address: string = '';
-    @Local asfPassword: string = '';
-
-    @Local isSaving: boolean = false;
+    @Local viewModel: AsfSettingsViewModel = new AsfSettingsViewModel();
 
     pathStack: NavPathStack | undefined = undefined;
-
-    private db = SettingsDao.getInstance();
 
     private uiContext = this.getUIContext();
     private promptAction = this.uiContext.getPromptAction();
 
     aboutToAppear(): void {
         // 加载当前设置
-        this.loadSettings();
-    }
-
-    async loadSettings(): Promise<void> {
-        this.address = await this.db.get(CommonConstants.DB_KEY_HOST_INFO_ADDRESS);
-        this.asfPassword = await this.db.get(CommonConstants.DB_KEY_HOST_INFO_PASSWORD);
-    }
-
-    async saveSettings(): Promise<boolean> {
-        this.isSaving = true;
-
-        const success1 = await this.db.save(CommonConstants.DB_KEY_HOST_INFO_ADDRESS, AsfAddress.normalize(this.address));
-        const success2 = await this.db.save(CommonConstants.DB_KEY_HOST_INFO_PASSWORD, this.asfPassword);
-
-        this.isSaving = false;
-
-        return success1 && success2;
+        this.viewModel.load();
     }
 
     build() {
@@ -65,14 +46,17 @@ struct ASFSettingsPage {
                         .margin({ bottom: StyleConstants.MARGIN_TEN })
 
                     TextInput(
-                        { text: this.address, placeholder: $r("app.string.SettingsPage_Address_Input_Placeholder") }
+                        {
+                            text: this.viewModel.address,
+                            placeholder: $r("app.string.SettingsPage_Address_Input_Placeholder")
+                        }
                     )
                         .width(StyleConstants.NINETY_PERCENT)
                         .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
                         .padding(StyleConstants.PADDING_TEN)
                         .onChange(
                             (value: string) => {
-                                this.address = value;
+                                this.viewModel.address = value;
                             }
                         )
                         .margin({ bottom: StyleConstants.MARGIN_THIRTY })
@@ -84,7 +68,7 @@ struct ASFSettingsPage {
 
                     TextInput(
                         {
-                            text: this.asfPassword,
+                            text: this.viewModel.password,
                             placeholder: $r("app.string.SettingsPage_Password_Input_Placeholder")
                         }
                     )
@@ -94,21 +78,21 @@ struct ASFSettingsPage {
                         .padding(StyleConstants.PADDING_TEN)
                         .onChange(
                             (value: string) => {
-                                this.asfPassword = value;
+                                this.viewModel.password = value;
                             }
                         )
                         .margin({ bottom: StyleConstants.MARGIN_FIFTY })
 
                     Button(
-                        this.isSaving ? $r("app.string.SettingsPage_Save_Button_Saving") :
+                        this.viewModel.isSaving ? $r("app.string.SettingsPage_Save_Button_Saving") :
                             $r("app.string.SettingsPage_Save_Button_Label"), { type: ButtonType.Capsule }
                     )
                         .width(StyleConstants.EIGHTY_PERCENT)
                         .fontColor(Color.White)
-                        .enabled(!this.isSaving && this.address.trim() !== '' && this.asfPassword.trim() !== '')
+                        .enabled(!this.viewModel.isSaving && this.viewModel.canSave())
                         .onClick(
                             async () => {
-                                const saveSuccess = await this.saveSettings();
+                                const saveSuccess = await this.viewModel.save();
                                 if (saveSuccess) {
                                     PageContext.alert($r("app.string.SettingsPage_Save_Success"), this.promptAction);
                                     this.pathStack?.pop("Submit pressed");
@@ -133,7 +117,7 @@ struct ASFSettingsPage {
             this.pathStack = context.pathStack;
         })
         .onBackPressed(() => {
-            if(this.isSaving) {
+            if (this.viewModel.isSaving) {
                 PageContext.alert($r("app.string.SettingsPage_Save_Button_Saving"), this.promptAction);
                 return true;
             }

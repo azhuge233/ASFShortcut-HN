@@ -71,6 +71,19 @@ class TransferFiles {
         return uris;
     }
 
+    // 域层（`domain/service/`）只按不透明上下文转发：规则 1 禁它 import `@kit.AbilityKit`，
+    // 窗口上下文的还原只留在本文件内（设计 §3.3「上下文（`common.UIAbilityContext`）的形状」）。
+
+    // 导出：供域层调用，行为与 saveToFile 完全一致
+    public async saveToFileFrom(json: string, context: Object): Promise<boolean> {
+        return this.saveToFile(json, context as common.UIAbilityContext);
+    }
+
+    // 导入：供域层调用，行为与 pickFile 完全一致
+    public async pickFileFrom(context: Object): Promise<string[]> {
+        return this.pickFile(context as common.UIAbilityContext);
+    }
+
     // 导入功能
     // 读取备份文件
     public async readFile(uri: string): Promise<string | undefined> {

@@ -5,31 +5,36 @@ import bundleManager from '@ohos.bundle.bundleManager';
 
 import Logger from '../../common/utils/Logger';
 import StyleConstants from '../../common/constants/StyleConstants';
-import { AppSettingsStore, toDomainColorMode, toPlatformColorMode } from '../../data/store/AppSettingsStore';
+import CommonConstants from '../../common/constants/CommonConstants';
+import { toDomainColorMode, toPlatformColorMode } from '../../common/utils/ColorModeMapper';
 import { AppSettings, ColorMode } from '../../domain/model/AppSettings';
 import { ColorModeRow, colorModeOptions } from '../components/ColorModeRow';
-import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
-import { SettingsDao } from '../../data/dao/SettingsDao';
+import CommandListViewModel from '../../viewmodel/CommandListViewModel';
+import MoreViewModel, { MoreActionResult } from '../../viewmodel/MoreViewModel';
 import { MoreMenuItem } from '../components/MoreMenuItem';
 import PageContext from '../common/PageContext';
-import TransferFiles from '../../data/file/TransferFiles';
-import { ExportJsonObject, SettingsJsonObject } from '../../domain/model/JsonObjects';
-import CommonConstants from '../../common/constants/CommonConstants';
 
 @Builder
 export function MorePageBuilder() {
     MorePage();
 }
 
+/**
+ * 更多功能页（B3 重写）：只绑定 `MoreViewModel`（设计 §2.4.4 的 `MorePage` 行）。
+ *
+ * 页面自留：导航栈、提示、窗口上下文、三张菜单项表、`ColorModeRow` 的选项表。
+ * 导出 / 导入 / 清空 / 版本号 / 颜色模式都经 VM；页面不直连数据层（设置、文件存取、卡片发布
+ * 都在 VM 背后的端口后面），也不再自己拼备份 JSON。
+ *
+ * 颜色模式两段分工（§2.9）：VM 发意图（写共享 `AppSettings` + 落盘），
+ * 平台调用 `getApplicationContext().setColorMode` 留在页面。
+ */
 @Entry
 @ComponentV2
 struct MorePage {
     private LOG_TAG = '[pages/More]';
 
-    @Local private isProcessing: boolean = false;
-
-    @Local versionName: string = '';
-    @Local versionCode: string = '';
+    @Local viewModel: MoreViewModel = new MoreViewModel(new CommandListViewModel());
 
     @Local appSettings: AppSettings = AppStorageV2.connect(AppSettings, CommonConstants.APP_STORAGE_KEY_APP_SETTINGS,
         () => new AppSettings(ColorMode.FOLLOW_SYSTEM))!;
@@ -39,12 +44,6 @@ struct MorePage {
     private promptAction = this.uiContext.getPromptAction();
 
     pathStack: NavPathStack | undefined = undefined;
-
-    private db = SettingsDao.getInstance();
-
-    private aSM: AppSettingsStore = AppSettingsStore.getInstance();
-
-    private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
 
     private settingsEntries: Array<[Resource, Resource, Resource | null, () => void | Promise<void>]> = [
       [
@@ -70,97 +69,66 @@ struct MorePage {
       [ $r("app.string.More_Clear_Label"), $r("app.media.clean"), null, async () => { await this.clear(); } ]
     ];
 
-    aboutToAppear(): void {
+    /** 版本号由页面读 `bundleManager` 后交给 VM（平台调用不进 VM，§2.4.1） */
+    private readVersion(): void {
         try {
             let bundleInfo = bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT);
-            this.versionName = bundleInfo.versionName;
-            this.versionCode = bundleInfo.versionCode.toString();
+            this.viewModel.setVersion(bundleInfo.versionName, bundleInfo.versionCode.toString());
         } catch (error) {
             Logger.error(this.LOG_TAG, `同步获取失败: ${error.message}`);
         }
     }
 
-    // B0 期暂留本页：写设置 + 改应用颜色模式两项照搬原颜色模式设置页的 applyColorMode，B3 搬进 `MoreViewModel`。
-    // 领域枚举 ↔ 平台枚举的换算只在 `AppSettingsStore` 里一份，本页两个方向都调那个函数。
-    private async applyColorMode(mode: ConfigurationConstant.ColorMode) {
-        const domainMode: ColorMode | null = toDomainColorMode(mode);
-        if (domainMode === null) return;
+    /** 选中即生效：VM 写设置并落盘，页面接着应用平台颜色模式；同值不做任何事（1.7.1 同一判据） */
+    private async applyColorMode(platformMode: ConfigurationConstant.ColorMode,
+        domainMode: ColorMode): Promise<void> {
+        if (this.viewModel.colorMode === domainMode) return;
 
-        if (this.appSettings.colorMode === domainMode) return;
-
-        this.appSettings.colorMode = domainMode;
-        await this.aSM.set(this.appSettings);
+        await this.viewModel.selectColorMode(domainMode);
 
         try {
-            this.context.getApplicationContext().setColorMode(mode);
-            Logger.debug(this.LOG_TAG, `窗口颜色设置: ${mode}`);
+            this.context.getApplicationContext().setColorMode(platformMode);
+            Logger.debug(this.LOG_TAG, `窗口颜色设置: ${platformMode}`);
         } catch (err) {
             Logger.error(this.LOG_TAG, `设置窗口颜色模式失败, ${err}`);
         }
     }
 
     async export(): Promise<void> {
-        try {
-            const settingsJsonObject = new SettingsJsonObject(
-                await this.db.get(CommonConstants.DB_KEY_HOST_INFO_ADDRESS),
-                await this.db.get(CommonConstants.DB_KEY_HOST_INFO_PASSWORD)
-            );
-            const commandEntryJsonObjectList = await this.listViewModel.toCommandEntryJsonObjectList();
+        const result: MoreActionResult = await this.viewModel.export(this.context);
 
-            const exportJson = new ExportJsonObject(settingsJsonObject, commandEntryJsonObjectList);
-
-            const jsonString = JSON.stringify(exportJson, null, 4);
-
-            const success = await TransferFiles.saveToFile(jsonString, this.context);
-
-            if (success) PageContext.alert($r("app.string.More_Export_Success"), this.promptAction);
-            else Logger.warn(this.LOG_TAG, `导出取消`);
-        } catch (err) {
+        if (result.ok) PageContext.alert($r("app.string.More_Export_Success"), this.promptAction);
+        else if (result.cancelled) Logger.warn(this.LOG_TAG, `导出取消`);
+        else {
+            Logger.error(this.LOG_TAG, `导出失败, ${result.reason}`);
             PageContext.alert($r("app.string.More_Export_Failed"), this.promptAction);
-            Logger.error(this.LOG_TAG, `导出失败, ${err}`)
         }
     }
 
-    async import() {
-        try {
-            const uris = await TransferFiles.pickFile(this.context);
+    async import(): Promise<void> {
+        const result: MoreActionResult = await this.viewModel.pickAndImport(this.context);
 
-            // set to true, blocking user actions
-            this.isProcessing = true;
-
-            if (uris.length > 0) {
-                let backupFilePath: string = uris[0];
-                Logger.debug(this.LOG_TAG, `备份文件路径: ${backupFilePath}`);
-
-                const jsonString = await TransferFiles.readFile(backupFilePath);
-
-                if(jsonString === undefined) throw new Error("读取文件失败");
-
-                const exportJson = await TransferFiles.parseData(jsonString);
-
-                // 字段校验、事务整体替换与绑定清理都在领域层（X2：绑定未清则如实报失败）
-                const result = await this.listViewModel.importData(exportJson);
-
-                if (!result.ok) {
-                    if (!result.bindingsCleared) {
-                        PageContext.alert($r("app.string.More_Import_Clear_Bindings_Failed"), this.promptAction);
-                    } else PageContext.alert(`导入失败: ${result.reason}`, this.promptAction);
-                    return;
-                }
-
-                PageContext.alert($r("app.string.More_Import_Success"), this.promptAction);
-
-                this.pathStack?.pop("OK");
-            } else Logger.warn(this.LOG_TAG, "未选择文件");
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `导入失败, ${err}`);
-            PageContext.alert(`导入失败: ${err}`, this.promptAction);
-        } finally {
-            this.isProcessing = false;
+        if (result.ok) {
+            PageContext.alert($r("app.string.More_Import_Success"), this.promptAction);
+            this.pathStack?.pop("OK");
+            return;
         }
+
+        if (result.cancelled) {
+            Logger.warn(this.LOG_TAG, `导入已取消`);
+            return;
+        }
+
+        // 导入完成但绑定没清掉：如实报明并让用户重新绑定（X2）
+        if (result.failure === 'bindings') {
+            PageContext.alert($r("app.string.More_Import_Clear_Bindings_Failed"), this.promptAction);
+            return;
+        }
+
+        PageContext.alert(`导入失败: ${result.reason}`, this.promptAction);
     }
 
-    async importConfirm() {
+    async importConfirm(): Promise<void> {
         try {
             const result = await this.promptAction.showDialog({
                 title: $r("app.string.More_Import_Confirm_Title"),
@@ -177,7 +145,7 @@ struct MorePage {
                 ]
             });
 
-            if(result.index === 0) await this.import();
+            if (result.index === 0) await this.import();
             else Logger.warn(this.LOG_TAG, "导入已取消");
         } catch (err) {
             if (err && (err.code === 100006 || err.message?.toLowerCase().includes('cancel'))) {
@@ -189,7 +157,7 @@ struct MorePage {
         }
     }
 
-    async clear() {
+    async clear(): Promise<void> {
         try {
             const result = await this.promptAction.showDialog({
                 title: $r("app.string.More_Clear_Confirm_Title"),
@@ -207,11 +175,18 @@ struct MorePage {
             });
 
             if (result.index === 0) {
-                const clearResult = await this.listViewModel.clearCommandEntry();
+                const clearResult: MoreActionResult = await this.viewModel.clearAll();
+
                 if (clearResult.ok) {
                     PageContext.alert($r("app.string.More_Clear_Success"), this.promptAction);
                     this.pathStack?.pop("Clear press");
-                } else PageContext.alert($r("app.string.More_Clear_Failed_Try_Again"), this.promptAction);
+                } else {
+                    // 失败原因（含「绑定未解除」）进日志；绑定未解除时给专键提示，其余沿用通用失败文案
+                    Logger.warn(this.LOG_TAG, `清除失败, 类别 ${clearResult.failure}, 原因 ${clearResult.reason}`);
+                    PageContext.alert(clearResult.failure === 'bindings' ?
+                        $r("app.string.More_Clear_Bindings_Failed") :
+                        $r("app.string.More_Clear_Failed_Try_Again"), this.promptAction);
+                }
             } else Logger.warn(this.LOG_TAG, "清除已取消");
         } catch (err) {
             if (err && (err.code === 100006 || err.message?.toLowerCase().includes('cancel'))) {
@@ -289,7 +264,7 @@ struct MorePage {
 
     @Builder
     VersionFooter() {
-        Text(`${this.versionName} (${this.versionCode})`)
+        Text(`${this.viewModel.versionName} (${this.viewModel.versionCode})`)
             .width(StyleConstants.FULL_PERCENT)
             .fontColor(Color.Grey)
             .fontSize(StyleConstants.MORE_MENU_VERSION_FONT_SIZE)
@@ -310,9 +285,11 @@ struct MorePage {
                             label: $r("app.string.Color_Mode_Settings_Title"),
                             desc: $r("app.string.Color_Mode_Desc"),
                             options: colorModeOptions,
-                            currentMode: toPlatformColorMode(this.appSettings.colorMode),
+                            currentMode: toPlatformColorMode(this.viewModel.colorMode),
                             onSelectMode: (mode: ConfigurationConstant.ColorMode) => {
-                                this.applyColorMode(mode);
+                                const domainMode: ColorMode | null = toDomainColorMode(mode);
+                                if (domainMode === null) return;
+                                this.applyColorMode(mode, domainMode);
                             }
                         })
 
@@ -332,7 +309,7 @@ struct MorePage {
                 .height(StyleConstants.FULL_PERCENT)
                 .width(StyleConstants.FULL_PERCENT)
 
-                if (this.isProcessing) {
+                if (this.viewModel.isProcessing) {
                     this.LoadingContent();
                 }
             }
@@ -355,7 +332,17 @@ struct MorePage {
         .width(StyleConstants.FULL_PERCENT)
         .onReady((context: NavDestinationContext) => {
             this.pathStack = context.pathStack;
-            this.listViewModel = context.pathInfo.param as CommandEntryListViewModel;
+
+            // 路由参数带的是主列表的 VM：导入 / 清空要落库并刷新列表与卡片，走的就是它
+            const param: CommandListViewModel = context.pathInfo.param as CommandListViewModel;
+            if (param instanceof CommandListViewModel) {
+                this.viewModel = new MoreViewModel(param);
+            } else {
+                Logger.warn(this.LOG_TAG, `未收到列表 VM，保留占位实例`);
+            }
+
+            this.viewModel.attachSettings(this.appSettings);
+            this.readVersion();
         })
         .onBackPressed(() => {
             this.pathStack?.pop("Back pressed");

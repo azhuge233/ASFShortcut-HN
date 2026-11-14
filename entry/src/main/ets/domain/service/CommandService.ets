@@ -1,14 +1,49 @@
 import Logger from '../../common/utils/Logger';
 import CommonConstants from '../../common/constants/CommonConstants';
 import { CommandDao } from '../../data/dao/CommandDao';
+import { SettingsDao } from '../../data/dao/SettingsDao';
+import TransferFiles from '../../data/file/TransferFiles';
 import { FormBindingStore } from '../../data/store/FormBindingStore';
 import CommandEntry from '../model/CommandEntry';
+import { CommandEntryJsonObject, ExportJsonObject, SettingsJsonObject } from '../model/JsonObjects';
 import MultipleCommandsFormData from '../model/MultipleCommandsFormData';
 import SingleCommandFormData from '../model/SingleCommandFormData';
 import { CommandRepository } from '../repository/CommandRepository';
 import { FormBindingRepository } from '../repository/FormBindingRepository';
+import { SettingsRepository } from '../repository/SettingsRepository';
 
 const LOG_TAG: string = '[CommandService]';
+
+/**
+ * 备份导出与导入的结果（设计 §3.3 的调用链）：取消不是失败、失败分四类，
+ * `reason` 保留可读细节。VM 把它转成自己的 `MoreActionResult`，界面按 `failure` 选文案。
+ */
+export class BackupResult {
+    ok: boolean = false;
+    cancelled: boolean = false;
+    // 'none' | 'bindings' | 'reason' | 'error'
+    failure: string = 'none';
+    reason: string = '';
+
+    static succeed(): BackupResult {
+        const result = new BackupResult();
+        result.ok = true;
+        return result;
+    }
+
+    static cancel(): BackupResult {
+        const result = new BackupResult();
+        result.cancelled = true;
+        return result;
+    }
+
+    static fail(failure: string, reason: string): BackupResult {
+        const result = new BackupResult();
+        result.failure = failure;
+        result.reason = reason;
+        return result;
+    }
+}
 
 /**
  * 一次增删改的结果：成功与否、受影响的 `formID` 映射（按单卡 / 多卡分开，键沿用 `CommonConstants`）、
@@ -44,11 +79,14 @@ export class CommandMutationResult {
 export class CommandService {
     private commands: CommandRepository;
     private bindings: FormBindingRepository;
+    private settings: SettingsRepository;
 
     constructor(commands: CommandRepository = CommandDao.getInstance(),
-                bindings: FormBindingRepository = FormBindingStore.getInstance()) {
+                bindings: FormBindingRepository = FormBindingStore.getInstance(),
+                settings: SettingsRepository = SettingsDao.getInstance()) {
         this.commands = commands;
         this.bindings = bindings;
+        this.settings = settings;
     }
 
     /** 删除一条指令：先解绑含该 ID 的全部绑定，解绑失败则本次删除失败、库不变（X1） */
@@ -151,6 +189,56 @@ export class CommandService {
         for (const pair of multipleBindings) multipleIDs.push(pair[0]);
 
         return this.toAffectedMap(singleIDs, multipleIDs);
+    }
+
+    /**
+     * 导出：设置 + 指令组装成备份 JSON，交 `TransferFiles` 存盘（设计 §3.3 的调用链）。
+     * 用户取消保存位置时 `cancelled = true`——取消不是失败，界面不提示失败。
+     */
+    async exportData(context: Object): Promise<BackupResult> {
+        try {
+            const settingsJson: SettingsJsonObject = new SettingsJsonObject(
+                await this.settings.get(CommonConstants.DB_KEY_HOST_INFO_ADDRESS),
+                await this.settings.get(CommonConstants.DB_KEY_HOST_INFO_PASSWORD)
+            );
+
+            const entries: Array<CommandEntry> = await this.commands.list();
+            const entryJsonList: Array<CommandEntryJsonObject> = entries.map(
+                (entry: CommandEntry) => new CommandEntryJsonObject(entry.nickname, entry.command, entry.orderIndex,
+                    entry.accountInputRequired, entry.idInputRequired)
+            );
+
+            const jsonString: string = JSON.stringify(new ExportJsonObject(settingsJson, entryJsonList), null, 4);
+
+            const saved: boolean = await TransferFiles.saveToFileFrom(jsonString, context);
+            if (!saved) return BackupResult.cancel();
+
+            Logger.debug(LOG_TAG, `exportData() 已导出 ${entryJsonList.length} 条指令`);
+            return BackupResult.succeed();
+        } catch (err) {
+            Logger.error(LOG_TAG, `exportData() 导出失败, ${err}`);
+            return BackupResult.fail('error', `${err}`);
+        }
+    }
+
+    /**
+     * 选备份文件。单独一步，是为了让「导入中的遮罩」仍从选完文件之后才升起（与 1.7.1 同一时机）。
+     * 抛错由调用方按「导入失败」处置。
+     */
+    async pickBackupFile(context: Object): Promise<string[]> {
+        return TransferFiles.pickFileFrom(context);
+    }
+
+    /**
+     * 读备份文件并解析成导入用的 JSON 对象（设计 §3.3 的调用链前半）。
+     * 读失败抛错，由调用方按「导入失败」处置——与 1.7.1 的 `throw new Error("读取文件失败")` 同口径。
+     * 解析之后交 `CommandImportService`（经 `CommandEntryList.importData`）做字段校验与事务整体替换。
+     */
+    async readBackup(uris: string[]): Promise<ExportJsonObject> {
+        const jsonString: string | undefined = await TransferFiles.readFile(uris[0]);
+        if (jsonString === undefined) throw new Error('读取文件失败');
+
+        return TransferFiles.parseData(jsonString);
     }
 
     private toAffectedMap(singleIDs: string[], multipleIDs: string[]): Map<string, string[]> {

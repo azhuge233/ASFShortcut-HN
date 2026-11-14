@@ -3,41 +3,16 @@ import { deviceInfo } from '@kit.BasicServicesKit';
 import { ConfigurationConstant } from '@kit.AbilityKit';
 
 import Logger from '../../common/utils/Logger';
+import { toDomainColorMode, toPlatformColorMode } from '../../common/utils/ColorModeMapper';
 import { AppSettings, ColorMode } from '../../domain/model/AppSettings';
+import { AppSettingsRepository } from '../../domain/repository/AppSettingsRepository';
 
 const LOG_TAG: string = '[AppSettingsStore]';
 
 /*
- * `ASFS_App_Preferences` 的读写。
- * 这里也是「领域枚举 `ColorMode` ↔ 平台 `ConfigurationConstant.ColorMode`」映射表的落点之一
- * （另一处是 `ability/` 调 `setColorMode` 的地方，设计 §1.5、§2.9）；落盘值仍是原枚举数值，旧数据可直接读。
+ * `ASFS_App_Preferences` 的读写。落盘值仍是原枚举数值，旧数据可直接读。
+ * 领域枚举 ↔ 平台枚举的映射表在 `common/utils/ColorModeMapper.ets`（B3 搬出本文件，供 ui 与 data 共用）。
  */
-
-/** 领域枚举 → 平台枚举。`MorePage` 与本文件之外的调用方都走这一个函数，映射表不复制第二份 */
-export function toPlatformColorMode(mode: ColorMode): ConfigurationConstant.ColorMode {
-    switch (mode) {
-        case ColorMode.DARK:
-            return ConfigurationConstant.ColorMode.COLOR_MODE_DARK;
-        case ColorMode.LIGHT:
-            return ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT;
-        default:
-            return ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET;
-    }
-}
-
-/** 落盘数值（或平台枚举）→ 领域枚举；不认识的值返回 null（调用方按「未设置」处理） */
-export function toDomainColorMode(value: number): ColorMode | null {
-    switch (value) {
-        case ConfigurationConstant.ColorMode.COLOR_MODE_DARK:
-            return ColorMode.DARK;
-        case ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT:
-            return ColorMode.LIGHT;
-        case ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET:
-            return ColorMode.FOLLOW_SYSTEM;
-        default:
-            return null;
-    }
-}
 
 export class AppSettingsStore {
     private static instance: AppSettingsStore | null = null;
@@ -120,5 +95,25 @@ export class AppSettingsStore {
             return false;
         }
         return true;
+    }
+}
+
+/**
+ * `AppSettingsRepository` 的 data 侧实现（设计 §2.4.1）。VM 只认这个接口，不认 Store。
+ *
+ * 单独立类而不让 `AppSettingsStore` 直接 implements，是因为接口的 `get()` / `set(mode)`
+ * 与 Store 既有的 `get(): Promise<AppSettings | null>` / `set(appSettings)` 同名不同形；
+ * 接口「只加不减」，既有签名不动（三个 Ability 仍在用），所以由本类做转发。
+ */
+export class AppSettingsRepositoryImpl implements AppSettingsRepository {
+    private store: AppSettingsStore = AppSettingsStore.getInstance();
+
+    async get(): Promise<ColorMode> {
+        const settings: AppSettings | null = await this.store.get();
+        return settings ? settings.colorMode : ColorMode.FOLLOW_SYSTEM;
+    }
+
+    async set(mode: ColorMode): Promise<boolean> {
+        return this.store.set(new AppSettings(mode));
     }
 }

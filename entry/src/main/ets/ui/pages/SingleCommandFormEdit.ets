@@ -1,124 +1,66 @@
 import { common } from '@kit.AbilityKit';
-import { formProvider } from '@kit.FormKit';
 import { HdsNavigation, HdsNavigationTitleMode, ScrollEffectType, hdsMaterial } from '@kit.UIDesignKit';
 
 import StyleConstants from '../../common/constants/StyleConstants';
-import { SettingsDao } from '../../data/dao/SettingsDao';
 import Logger from '../../common/utils/Logger';
-import { FormBindingStore } from '../../data/store/FormBindingStore';
-import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
-import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
-import SingleCommandFormData from '../../domain/model/SingleCommandFormData';
 import CommonConstants from '../../common/constants/CommonConstants';
 import PageContext from '../common/PageContext';
-import { FormPublisher } from '../../data/form/FormPublisher';
+import CommandFormEditViewModel from '../../viewmodel/CommandFormEditViewModel';
+import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
 
+/**
+ * 单指令卡的编辑页（B3 重写）：只绑定 `CommandFormEditViewModel`。
+ * 页面自留上下文（关窗）、滚动对象、提示与勾选呈现；绑定落盘与卡片写入都在 VM 里。
+ * 单卡只允许一个选中，这个「只许一个」的规则留在页面（设计 §2.4.2 的 `CommandFormEditViewModel` 行）。
+ */
 @Entry
 @ComponentV2
 struct SingleCommandFormEdit {
     private LOG_TAG = "[pages/SingleCommandFormEdit]";
 
-    @Local listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
-
-    @Local isLoading: boolean = true;
-
-    @Local isDBInitialized: boolean = true;
-
-    @Local selectedID: number | null = null;
-    @Local isUpdating: boolean = false;
+    @Local viewModel: CommandFormEditViewModel = new CommandFormEditViewModel();
 
     private context = this.getUIContext().getHostContext() as common.UIAbilityContext;
-
-    private db = SettingsDao.getInstance();
-    private pm = FormBindingStore.getInstance();
 
     private scrollerForList: ListScroller = new ListScroller();
 
     private formID: string = '';
 
     async onPageShow(): Promise<void> {
-        await this.checkSettings();
-        await this.listViewModel.loadCommandEntries();
-
-        this.handleParamsFromForm();
-
-        this.isLoading = false;
+        this.formID = this.readFormID();
+        await this.viewModel.init(this.formID);
     }
 
     onPageHide(): void {
         PageContext.closeApplication(this.LOG_TAG, this.context);
     }
 
-    private async checkSettings(): Promise<void> {
-        const isComplete = await this.db.areComplete();
-        if (!isComplete) this.isDBInitialized = false;
+    private readFormID(): string {
+        if (!AppStorage.has(CommonConstants.APP_STORAGE_KEY_FORM_ID)) return '';
+
+        const formIDParam: string | undefined = AppStorage.get(CommonConstants.APP_STORAGE_KEY_FORM_ID);
+        if (!formIDParam) return '';
+
+        Logger.debug(this.LOG_TAG, `传入 formID: ${formIDParam}`);
+        AppStorage.delete(CommonConstants.APP_STORAGE_KEY_FORM_ID);
+        return formIDParam;
     }
 
-    private handleParamsFromForm(): void {
-        if(AppStorage.has(CommonConstants.APP_STORAGE_KEY_FORM_ID)) {
-            const formIDParam: string | undefined = AppStorage.get(CommonConstants.APP_STORAGE_KEY_FORM_ID);
-            if(formIDParam) {
-                this.formID = formIDParam as string;
-                Logger.debug(this.LOG_TAG, `传入 formID: ${formIDParam}`);
-                AppStorage.delete(CommonConstants.APP_STORAGE_KEY_FORM_ID);
-            }
-        }
-
-    }
-
-    private handleSelectionChange(itemID: number, isChecked: boolean): void {
-        if (isChecked) {
-            // 选中当前条目，清空之前的选择
-            this.selectedID = itemID;
-        } else if (this.selectedID === itemID) {
-            // 取消选中当前已选中的条目
-            this.selectedID = null;
-        }
-    }
-
+    // 整行可选中；单卡只留一个选中项
     private toggleSelection(itemID: number): void {
-        this.handleSelectionChange(itemID, this.selectedID !== itemID);
-    }
-
-    private async handleConfirmClick(): Promise<void> {
-        if (!this.selectedID || this.isUpdating || !this.formID) return;
-
-        // 查找选中的条目
-        const selectedItem = this.listViewModel.commandEntries.find(
-            (item: CommandEntryViewModel) => item.id === this.selectedID
-        );
-
-        if (!selectedItem) {
-            Logger.error(this.LOG_TAG, '未找到选中的条目');
+        if (this.viewModel.isSelected(itemID)) {
+            this.viewModel.toggleSelection(itemID);
             return;
         }
 
-        try {
-            this.isUpdating = true;
+        this.viewModel.selectedIDs = [];
+        this.viewModel.toggleSelection(itemID);
+    }
 
-            const formData: SingleCommandFormData = new SingleCommandFormData(this.formID, true);
-
-            formData.shortcutID = selectedItem.id;
-            formData.nickname = selectedItem.nickname;
-            formData.command = selectedItem.command;
-
-            // 持久化存储卡片绑定信息
-            await this.pm.bindSingle(formData);
-
-            // 创建表单绑定数据
-            const formInfo = FormPublisher.getInstance().createSingleCommandFormBindingData(formData);
-            // 更新卡片
-            await formProvider.updateForm(this.formID as string, formInfo);
-
-            Logger.debug(this.LOG_TAG, `卡片更新成功: formID: ${this.formID}, commandId: ${selectedItem.id}`);
-
-            // 更新成功后关闭页面
-            PageContext.closeApplication(this.LOG_TAG, this.context);
-        } catch (error) {
-            Logger.error(this.LOG_TAG, `更新卡片失败: ${error}`);
-        } finally {
-            this.isUpdating = false;
-        }
+    private async handleConfirmClick(): Promise<void> {
+        const saved: boolean = await this.viewModel.confirmSingle();
+        // 保存成功后关闭页面（1.7.1 同一判据：绑定与卡片写入都成功才关）
+        if (saved) PageContext.closeApplication(this.LOG_TAG, this.context);
     }
 
     @Builder
@@ -175,7 +117,7 @@ struct SingleCommandFormEdit {
             Button($r('app.string.FormEdit_Confirm_Button_Label'), { type: ButtonType.Capsule })
                 .width(StyleConstants.EIGHTY_PERCENT)
                 .fontWeight(FontWeight.Medium)
-                .enabled(this.selectedID !== null && !this.isUpdating)
+                .enabled(this.viewModel.canConfirm())
                 .onClick(async () => {
                     await this.handleConfirmClick();
                 })
@@ -190,8 +132,8 @@ struct SingleCommandFormEdit {
 
     @Builder
     MainContent() {
-        if(!this.isDBInitialized) this.SetupNotice();
-        else if(this.listViewModel.commandEntries.length === 0) this.NoShortcutsNotice()
+        if (!this.viewModel.isSettingsComplete) this.SetupNotice();
+        else if (!this.viewModel.hasAnyEntry) this.NoShortcutsNotice();
         else {
             Column() {
                 Text($r("app.string.FormEdit_Notice_Label"))
@@ -203,58 +145,51 @@ struct SingleCommandFormEdit {
                     })
 
                 List({ scroller: this.scrollerForList }) {
-                    ForEach(this.listViewModel.commandEntries, (item: CommandEntryViewModel) => {
-                        if (item.accountInputRequired === 0 && item.idInputRequired === 0) {
-                            ListItem() {
-                                Row() {
-                                    Column() {
-                                        Text(item.nickname)
-                                            .fontWeight(FontWeight.Medium)
-                                            .maxLines(1)
-                                            .textOverflow({ overflow: TextOverflow.Ellipsis })
-                                            .fontColor(this.selectedID === item.id ?
-                                                $r('sys.color.interactive_active') : $r('sys.color.font_primary'))
+                    ForEach(this.viewModel.bindableEntries, (item: CommandEntryViewModel) => {
+                        ListItem() {
+                            Row() {
+                                Column() {
+                                    Text(item.nickname)
+                                        .fontWeight(FontWeight.Medium)
+                                        .maxLines(1)
+                                        .textOverflow({ overflow: TextOverflow.Ellipsis })
+                                        .fontColor(this.viewModel.isSelected(item.id) ?
+                                            $r('sys.color.interactive_active') : $r('sys.color.font_primary'))
 
-                                        Text(item.command)
-                                            .maxLines(1)
-                                            .textOverflow({ overflow: TextOverflow.MARQUEE })
-                                            .fontColor(this.selectedID === item.id ?
-                                                $r('sys.color.interactive_active') : $r('sys.color.font_secondary'))
-                                    }
-                                    .width(StyleConstants.EIGHTY_PERCENT)
-                                    .alignItems(HorizontalAlign.Center)
-                                    .padding({
-                                        left: StyleConstants.PADDING_TWO,
-                                        right: StyleConstants.PADDING_TWO
-                                    })
-
-                                    Column() {
-                                        Checkbox()
-                                            .select(this.selectedID === item.id)
-                                            .onChange((isChecked: boolean) => {
-                                                this.handleSelectionChange(item.id, isChecked);
-                                            })
-                                            .hitTestBehavior(HitTestMode.None)
-
-                                    }
-                                    .width(StyleConstants.TWENTY_PERCENT)
-                                    .alignItems(HorizontalAlign.Center)
+                                    Text(item.command)
+                                        .maxLines(1)
+                                        .textOverflow({ overflow: TextOverflow.MARQUEE })
+                                        .fontColor(this.viewModel.isSelected(item.id) ?
+                                            $r('sys.color.interactive_active') : $r('sys.color.font_secondary'))
                                 }
-                                .height(StyleConstants.TEN_PERCENT)
-                                .width(StyleConstants.FULL_PERCENT)
-                                .borderStyle(BorderStyle.Solid)
-                                .onClick(() => {
-                                    // 整行可选中；复选框只显示状态，点击由行统一处理
-                                    this.toggleSelection(item.id);
+                                .width(StyleConstants.EIGHTY_PERCENT)
+                                .alignItems(HorizontalAlign.Center)
+                                .padding({
+                                    left: StyleConstants.PADDING_TWO,
+                                    right: StyleConstants.PADDING_TWO
                                 })
+
+                                Column() {
+                                    Checkbox()
+                                        .select(this.viewModel.isSelected(item.id))
+                                        .hitTestBehavior(HitTestMode.None)
+                                }
+                                .width(StyleConstants.TWENTY_PERCENT)
+                                .alignItems(HorizontalAlign.Center)
                             }
-                            .margin({
-                                top: StyleConstants.FIVE_PERCENT,
-                                left: StyleConstants.TWO_PERCENT,
-                                right: StyleConstants.TWO_PERCENT,
-                                bottom: StyleConstants.FIVE_PERCENT
+                            .height(StyleConstants.TEN_PERCENT)
+                            .width(StyleConstants.FULL_PERCENT)
+                            .borderStyle(BorderStyle.Solid)
+                            .onClick(() => {
+                                this.toggleSelection(item.id);
                             })
                         }
+                        .margin({
+                            top: StyleConstants.FIVE_PERCENT,
+                            left: StyleConstants.TWO_PERCENT,
+                            right: StyleConstants.TWO_PERCENT,
+                            bottom: StyleConstants.FIVE_PERCENT
+                        })
                     }, (item: CommandEntryViewModel) => item.id.toString())
                 }
                 .lanes(2)
@@ -273,7 +208,7 @@ struct SingleCommandFormEdit {
 
     build() {
         HdsNavigation() {
-            if(this.isLoading) this.LoadingContent();
+            if (this.viewModel.isLoading) this.LoadingContent();
             else this.MainContent();
         }
         .titleBar({

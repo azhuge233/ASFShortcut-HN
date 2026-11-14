@@ -5,7 +5,8 @@ import Logger from '../common/utils/Logger';
 import { Database } from '../data/Database';
 import CommonConstants from '../common/constants/CommonConstants';
 import { FormBindingStore } from '../data/store/FormBindingStore';
-import { AppSettingsStore, toPlatformColorMode } from '../data/store/AppSettingsStore';
+import { AppSettingsStore } from '../data/store/AppSettingsStore';
+import { toPlatformColorMode } from '../common/utils/ColorModeMapper';
 import { AppSettings, ColorMode } from '../domain/model/AppSettings';
 import PageContext from '../ui/common/PageContext';
 

@@ -5,38 +5,20 @@ import { HdsNavigation, HdsNavigationMenuContentOptions, HdsTabs,
 import { hdsMaterial } from '@kit.UIDesignKit';
 
 import Logger from '../../common/utils/Logger';
-import { AsfClient } from '../../data/network/AsfClient';
-import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
-import { SettingsDao } from '../../data/dao/SettingsDao';
 import CommonConstants from '../../common/constants/CommonConstants';
+import CommandListViewModel, { CommandOutcome } from '../../viewmodel/CommandListViewModel';
 import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
 import { CommandTile } from '../components/CommandTile';
+import { LiveTestSection } from '../components/LiveTestSection';
 import StyleConstants from '../../common/constants/StyleConstants';
 import PageContext from '../common/PageContext';
-import { CommandSendResult } from '../../domain/repository/CommandSender';
 
 @Entry
 @ComponentV2
 struct Index {
     private LOG_TAG = "[pages/Index]";
 
-    @Local listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
-
-    // 正在显示的底部导航栏下标，控制导航栏文字、图标的样式
-    @Local currentIndex: number = 0;
-    // 用于控制初始化覆盖层的显示状态
-    @Local showSetupDialog: boolean = false;
-    // 指令执行状态，用于控制测试指令覆盖层的显示状态
-    @Local private isProcessing: boolean = false;
-    // 正在执行的指令ID集合，用于控制对应条目的左滑操作：.enabled(true/false)
-    @Local private runningCommandIDs: Set<number> = new Set<number>();
-
-    @Local currentAddress: string = '';
-    @Local currentASFPassword: string = '';
-
-    @Local testAddress: string = '';
-    @Local testPassword: string = '';
-    @Local testCommand: string = '';
+    @Local viewModel: CommandListViewModel = new CommandListViewModel();
 
     private uiContext = this.getUIContext();
     private context = this.uiContext.getHostContext() as common.UIAbilityContext;
@@ -44,9 +26,6 @@ struct Index {
 
     private scrollerForList: ListScroller = new ListScroller();
     private tabController: HdsTabsController = new HdsTabsController();
-
-    private db = SettingsDao.getInstance();
-    private asf = new AsfClient();
 
     // HdsNavigation 新版菜单
     private menus: HdsNavigationMenuContentOptions = {
@@ -59,7 +38,7 @@ struct Index {
                         this.safeCloseSwipeActions();
                         this.pageStack.pushPath({
                             name: "AddCommand",
-                            param: this.listViewModel,
+                            param: this.viewModel,
                             onPop: async (popInfo) => {
                                 PageContext.returnFromSubPage(popInfo);
                             }
@@ -75,9 +54,9 @@ struct Index {
                         this.safeCloseSwipeActions();
                         this.pageStack.pushPath({
                             name: "MorePage",
-                            param: this.listViewModel,
+                            param: this.viewModel,
                             onPop: async (popInfo) => {
-                                await this.checkSettingsAndInit();
+                                await this.viewModel.init();
                                 PageContext.returnFromSubPage(popInfo);
                             }
                         });
@@ -89,9 +68,19 @@ struct Index {
 
     pageStack: NavPathStack = new NavPathStack();
 
+    aboutToAppear(): void {
+        // 拖拽落库失败：VM 内部已按数据库顺序回滚，页面再刷一次并 toast 提示（设计 §2.4.5）
+        this.viewModel.onMoveFailed = () => {
+            Logger.warn(this.LOG_TAG, `拖拽顺序未保存，列表已回滚`);
+            PageContext.alert($r("app.string.Index_Reorder_Failed"), this.promptAction);
+            this.viewModel.loadEntries();
+        };
+    }
+
     async onPageShow() {
-        if (this.pageStack.size() === 0) await this.checkSettingsAndInit();
-        await this.listViewModel.loadCommandEntries();
+        // 首次进入要先把设置与发送器准备好；从子页回来只重读列表
+        if (this.pageStack.size() === 0) await this.viewModel.init();
+        else await this.viewModel.loadEntries();
 
         if (AppStorage.has(CommonConstants.APP_STORAGE_KEY_SHORTCUT_PATH)) {
             Logger.debug(this.LOG_TAG, `检测到长按快捷方式页面`);
@@ -111,8 +100,7 @@ struct Index {
     // 快捷方式跳转判断
     private async goToSpecifyPage(path: string): Promise<void> {
         // 应用未初始化，不跳转
-        const isComplete = await this.db.areComplete();
-        if (!isComplete) {
+        if (this.viewModel.showSetup) {
             PageContext.alert($r("app.string.App_Shortcut_Add_Shortcut_Not_Init_Alert"), this.promptAction);
             Logger.debug(this.LOG_TAG, `应用未完成初始化，停止跳转`);
             return;
@@ -125,7 +113,7 @@ struct Index {
             Logger.debug(this.LOG_TAG, `跳转至页面 ${path}`);
             this.pageStack.pushPath({
                 name: path,
-                param: this.listViewModel,
+                param: this.viewModel,
                 onPop: async (popInfo) => {
                     PageContext.returnFromSubPage(popInfo);
                 }
@@ -135,39 +123,29 @@ struct Index {
         }
     }
 
-    // 发送指令
+    // 发送指令：结果呈现留在页面，VM 只给 kind 与文本（设计 §2.4.2）
     private async sendCommand(nickname: string, command: string): Promise<void> {
-        try {
-            const result = await this.asf.send(command);
-            this.isProcessing = false;
-
-            this.handleResponse(nickname, result);
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `<sendCommand> 错误, ${(err as Error).message}`);
-            PageContext.alert(`错误: ${(err as Error).message}`, this.promptAction);
-        } finally {
-            this.isProcessing = false;
-        }
+        const outcome: CommandOutcome = await this.viewModel.execute(nickname, command);
+        this.presentOutcome(nickname, outcome);
     }
 
-    // 发送测试指令：另建实例，不污染主页面的地址与密码
-    private async sendTestCommand(address: string, password: string, command: string): Promise<void> {
-        try {
-            const testClient = new AsfClient();
-            testClient.setAddress(address);
-            testClient.setPassword(password);
+    // 发送测试指令：振动与结果标题留在页面
+    private async sendTestCommand(): Promise<void> {
+        PageContext.vibrate(CommonConstants.VIBRATE_EFFECT_ID_HARD);
 
-            const result = await testClient.sendTest(command);
-            this.isProcessing = false;
+        const outcome: CommandOutcome = await this.viewModel.executeTest(this.viewModel.testAddress,
+            this.viewModel.testPassword, this.viewModel.testCommand);
 
-            this.handleResponse(this.context.resourceManager.getStringSync($r("app.string.LiveTest_Result_Title").id),
-                result);
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `<sendTestCommand> 错误, ${(err as Error).message}`);
-            PageContext.alert(`错误: ${(err as Error).message}`, this.promptAction);
-        } finally {
-            this.isProcessing = false;
-        }
+        const testTitle: string = this.context.resourceManager
+            .getStringSync($r("app.string.LiveTest_Result_Title").id);
+        this.presentOutcome(testTitle, outcome);
+    }
+
+    // 按呈现意图选控件：结果弹对话框、其他响应码提示、失败按错误提示
+    private presentOutcome(nickname: string, outcome: CommandOutcome): void {
+        if (outcome.kind === 'result') this.resultPopup(nickname, outcome.text);
+        else if (outcome.kind === 'notice') PageContext.alert(outcome.text, this.promptAction);
+        else PageContext.alert(`错误: ${outcome.text}`, this.promptAction);
     }
 
     // 执行指令后，显示结果的对话框
@@ -209,47 +187,11 @@ struct Index {
     // 防止列表没有条目时闪退
     private safeCloseSwipeActions(): void {
         try {
-            if (this.listViewModel.commandEntries.length > 0) {
+            if (this.viewModel.entries.length > 0) {
                 this.scrollerForList.closeAllSwipeActions();
             }
         } catch (err) {
             Logger.debug(this.LOG_TAG, `关闭左滑菜单失败, ${err}`);
-        }
-    }
-
-    // 从数据库加载设置条目
-    private async loadSettings() {
-        this.currentAddress = await this.db.get(CommonConstants.DB_KEY_HOST_INFO_ADDRESS);
-        this.currentASFPassword = await this.db.get(CommonConstants.DB_KEY_HOST_INFO_PASSWORD);
-    }
-
-    // 初始化 ASF 服务
-    // 设置服务器地址和 ASF 密码
-    private initASF() {
-        this.asf.setAddress(this.currentAddress);
-        this.asf.setPassword(this.currentASFPassword)
-    }
-
-    // 检查数据库是否存在设置
-    // 并初始化 ASF 的服务器地址和密码
-    private async checkSettingsAndInit(): Promise<void> {
-        const isComplete = await this.db.areComplete();
-        if (!isComplete) this.showSetupDialog = true; else {
-            await this.loadSettings();
-            this.initASF();
-        }
-    }
-
-    // 处理 ASF 响应：200 弹结果，其他响应码提示 Message；发送失败按错误抛出
-    private handleResponse(commandNickname: string, result: CommandSendResult) {
-        if (!result.ok) throw new Error(result.error);
-
-        if (result.statusCode == 200) {
-            Logger.debug(this.LOG_TAG, `${result.text}`);
-            this.resultPopup(commandNickname, result.text);
-        } else {
-            Logger.debug(this.LOG_TAG, `${result.text}`);
-            PageContext.alert(`${result.text} 响应码: ${result.statusCode}`, this.promptAction);
         }
     }
 
@@ -285,7 +227,7 @@ struct Index {
                     });
 
                     if (result.index === 0) {
-                        const deleteResult = await this.listViewModel.deleteCommandEntry(entry.toCommandEntry());
+                        const deleteResult = await this.viewModel.deleteEntry(entry.toCommandEntry());
                         if (!deleteResult.ok) {
                             PageContext.alert(deleteResult.unbindFailed ?
                                 $r("app.string.Index_Deletion_Failed_Unbind") : $r("app.string.Index_Deletion_Failed"),
@@ -320,7 +262,7 @@ struct Index {
                 this.safeCloseSwipeActions();
                 this.pageStack.pushPath({
                     name: "EditPage",
-                    param: [this.listViewModel, entry],
+                    param: [this.viewModel, entry],
                     onPop: (popInfo) => {
                         PageContext.returnFromSubPage(popInfo);
                     }
@@ -394,11 +336,11 @@ struct Index {
                         this.pageStack.pushPath({
                             name: "ASFSettingsPage",
                             onPop: async (popInfo) => {
-                                await this.checkSettingsAndInit();
+                                await this.viewModel.init();
                                 PageContext.returnFromSubPage(popInfo);
                             }
                         });
-                        this.showSetupDialog = false;
+                        this.viewModel.showSetup = false;
                     })
             }
             .width(StyleConstants.FULL_PERCENT)
@@ -414,11 +356,45 @@ struct Index {
         })
     }
 
+    // 加载失败：显示原因入口并可重试，不把读失败显示成「没有指令」（X3）
+    @Builder
+    LoadFailedContent() {
+        Column() {
+            Text($r("app.string.Index_Load_Failed_Retry"))
+                .fontSize(StyleConstants.INDEX_NO_ENTRY_TITLE_FONT_SIZE)
+                .fontColor(Color.Gray)
+                .textAlign(TextAlign.Center)
+                .onClick(async () => {
+                    Logger.debug(this.LOG_TAG, `点击重试加载, 原因: ${this.viewModel.loadError}`);
+                    await this.viewModel.retryLoad();
+                })
+        }
+        .justifyContent(FlexAlign.Center)
+        .layoutWeight(StyleConstants.INDEX_LAYOUT_WEIGHT)
+        .width(StyleConstants.FULL_PERCENT)
+    }
+
+    // 搜索控件：不占标题栏、不新增浮层（设计 §2.4.3、§8）
+    @Builder
+    SearchBar() {
+        Search({
+            value: this.viewModel.keyword,
+            placeholder: $r("app.string.Index_Search_Placeholder")
+        })
+            .width(StyleConstants.NINETY_PERCENT)
+            .margin({ bottom: StyleConstants.MARGIN_FIVE })
+            .onChange((value: string) => {
+                this.viewModel.setKeyword(value);
+            })
+    }
+
     // 主页
     @Builder
     MainContent() {
         Column() {
-            if (this.listViewModel.commandEntries.length === 0) {
+            if (this.viewModel.loadError !== '') {
+                this.LoadFailedContent();
+            } else if (this.viewModel.isEmpty()) {
                 Column() {
                     Text($r("app.string.Index_No_Commands_Label"))
                         .fontSize(StyleConstants.INDEX_NO_ENTRY_TITLE_FONT_SIZE)
@@ -431,187 +407,75 @@ struct Index {
                 .justifyContent(FlexAlign.Center)
                 .layoutWeight(StyleConstants.INDEX_LAYOUT_WEIGHT)
                 .width(StyleConstants.FULL_PERCENT)
+            } else if (this.viewModel.isNoMatch()) {
+                Column() {
+                    this.SearchBar();
+
+                    Column() {
+                        Text($r("app.string.Index_Search_No_Result"))
+                            .fontSize(StyleConstants.INDEX_NO_ENTRY_TITLE_FONT_SIZE)
+                            .fontColor(Color.Gray)
+                    }
+                    .justifyContent(FlexAlign.Center)
+                    .layoutWeight(StyleConstants.INDEX_LAYOUT_WEIGHT)
+                    .width(StyleConstants.FULL_PERCENT)
+                }
+                .width(StyleConstants.FULL_PERCENT)
+                .height(StyleConstants.FULL_PERCENT)
             } else {
-                List({ scroller: this.scrollerForList }) {
-                    ForEach(this.listViewModel.commandEntries, (item: CommandEntryViewModel) => {
-                        ListItem() {
-                            CommandTile({
-                                item: item,
-                                onAccountInput: () => this.inputPopup("Account"),
-                                onIDInput: () => this.inputPopup("ID"),
-                                onSendCommand: (command: string) => this.sendCommand(item.nickname, command),
-                                onRunningStateChange: (isRunning: boolean) => {
-                                    if (isRunning) this.runningCommandIDs.add(item.id); else this.runningCommandIDs.delete(item.id);
-                                    this.runningCommandIDs = new Set(this.runningCommandIDs);
-                                    Logger.debug(this.LOG_TAG,
-                                        `正在运行的指令：${Array.from(this.runningCommandIDs).join(', ')}`);
+                Column() {
+                    this.SearchBar();
+
+                    List({ scroller: this.scrollerForList }) {
+                        ForEach(this.viewModel.entries, (item: CommandEntryViewModel) => {
+                            ListItem() {
+                                CommandTile({
+                                    item: item,
+                                    onAccountInput: () => this.inputPopup("Account"),
+                                    onIDInput: () => this.inputPopup("ID"),
+                                    onSendCommand: (command: string) => this.sendCommand(item.nickname, command),
+                                    onRunningStateChange: (isRunning: boolean) => {
+                                        this.viewModel.setRunning(item.id, isRunning);
+                                    }
+                                })
+                            }
+                            .enabled(!this.viewModel.runningIDs.has(item.id))
+                            .swipeAction({
+                                end: {
+                                    builder: () => {
+                                        this.EditButton(item);
+                                        this.DeleteButton(item);
+                                    }
                                 }
                             })
-                        }
-                        .enabled(!this.runningCommandIDs.has(item.id))
-                        .swipeAction({
-                            end: {
-                                builder: () => {
-                                    this.EditButton(item);
-                                    this.DeleteButton(item);
+                            .margin({
+                                top: StyleConstants.TWO_PERCENT,
+                                left: StyleConstants.ONE_PERCENT,
+                                right: StyleConstants.ONE_PERCENT,
+                                bottom: StyleConstants.TWO_PERCENT
+                            })
+                        }, (item: CommandEntryViewModel) => item.id.toString())
+                            .onMove((from: number, to: number) => {
+                                // 同步返回、失败按 DB 顺序回滚：VM 落库失败时调 onMoveFailed
+                                return this.viewModel.move(from, to);
+                            }, {
+                                onLongPress: () => {
+                                    PageContext.vibrate(CommonConstants.VIBRATE_EFFECT_ID_SOFT);
                                 }
-                            }
-                        })
-                        .margin({
-                            top: StyleConstants.TWO_PERCENT,
-                            left: StyleConstants.ONE_PERCENT,
-                            right: StyleConstants.ONE_PERCENT,
-                            bottom: StyleConstants.TWO_PERCENT
-                        })
-                    }, (item: CommandEntryViewModel) => item.id.toString())
-                        .onMove((from: number, to: number) => {
-                            this.listViewModel.reorderEntries(from, to).then((success) => {
-                                if (!success) {
-                                    Logger.warn(this.LOG_TAG, `拖拽排序失败，重新加载列表`);
-                                    this.listViewModel.loadCommandEntries();
-                                }
-                            }).catch((err: Error) => {
-                                Logger.error(this.LOG_TAG, `拖拽排序异常: ${err}`);
-                                this.listViewModel.loadCommandEntries();
-                            });
-                            return true;
-                        }, {
-                            onLongPress: () => {
-                                PageContext.vibrate(CommonConstants.VIBRATE_EFFECT_ID_SOFT);
-                            }
-                        })
+                            })
+                    }
+                    .padding(StyleConstants.PADDING_EIGHT)
+                    .layoutWeight(StyleConstants.INDEX_LAYOUT_WEIGHT)
+                    .height(StyleConstants.FULL_PERCENT)
+                    .width(StyleConstants.FULL_PERCENT)
                 }
-                .padding(StyleConstants.PADDING_EIGHT)
-                .layoutWeight(StyleConstants.INDEX_LAYOUT_WEIGHT)
-                .height(StyleConstants.FULL_PERCENT)
                 .width(StyleConstants.FULL_PERCENT)
+                .height(StyleConstants.FULL_PERCENT)
             }
         }
         .width(StyleConstants.FULL_PERCENT)
         .height(StyleConstants.FULL_PERCENT)
         .justifyContent(FlexAlign.Center)
-    }
-
-    // 测试页
-    @Builder
-    LiveTestContent() {
-        Scroll() {
-            Column() {
-                // 提示信息
-                Column() {
-                    Text($r("app.string.LiveTest_Notice_Title"))
-                        .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE)
-                        .fontWeight(FontWeight.Bold)
-                        .fontColor($r("sys.color.font_emphasize"))
-                        .margin({ bottom: StyleConstants.MARGIN_FIVE })
-
-                    Text($r("app.string.LiveTest_Notice_Content"))
-                        .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE - 2)
-                        .fontColor(Color.Gray)
-                        .textAlign(TextAlign.Start)
-                }
-                .width(StyleConstants.NINETY_PERCENT)
-                .padding(StyleConstants.PADDING_TEN)
-                .backgroundColor($r("app.color.index_test_page_notice_background"))
-                .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
-                .margin({ bottom: StyleConstants.MARGIN_TEN })
-
-                // 服务器地址输入
-                Text($r("app.string.LiveTest_Address_Label"))
-                    .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE)
-                    .alignSelf(ItemAlign.Start)
-                    .margin({
-                        bottom: StyleConstants.MARGIN_TEN
-                    })
-
-                Row() {
-                    TextInput({
-                        text: this.testAddress,
-                        placeholder: $r("app.string.LiveTest_Address_Input_Placeholder")
-                    })
-                        .layoutWeight(1)
-                        .border({
-                            width: StyleConstants.INPUT_BORDER_WIDTH,
-                            color: Color.Gray
-                        })
-                        .padding(StyleConstants.PADDING_TEN)
-                        .onChange((value: string) => {
-                            this.testAddress = value;
-                        })
-
-                    Text("/Api/Command")
-                        .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE - 2)
-                        .margin({ left: StyleConstants.MARGIN_TEN })
-                }
-                .width(StyleConstants.NINETY_PERCENT)
-                .margin({ bottom: StyleConstants.MARGIN_TEN })
-
-                // 密码输入
-                Text($r("app.string.LiveTest_Password_Label"))
-                    .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE)
-                    .alignSelf(ItemAlign.Start)
-                    .margin({
-                        bottom: StyleConstants.MARGIN_TEN
-                    })
-
-                TextInput({
-                    text: this.testPassword,
-                    placeholder: $r("app.string.LiveTest_Password_Input_Placeholder")
-                })
-                    .type(InputType.Password)
-                    .width(StyleConstants.NINETY_PERCENT)
-                    .border({
-                        width: StyleConstants.INPUT_BORDER_WIDTH,
-                        color: Color.Gray
-                    })
-                    .padding(StyleConstants.PADDING_TEN)
-                    .onChange((value: string) => {
-                        this.testPassword = value;
-                    })
-                    .margin({ bottom: StyleConstants.MARGIN_TEN })
-
-                // 指令输入
-                Text($r("app.string.LiveTest_Command_Label"))
-                    .fontSize(StyleConstants.LIVE_TEST_LABEL_FONT_SIZE)
-                    .alignSelf(ItemAlign.Start)
-                    .margin({
-                        bottom: StyleConstants.MARGIN_TEN
-                    })
-
-                TextInput({
-                    text: this.testCommand,
-                    placeholder: $r("app.string.LiveTest_Command_Input_Placeholder")
-                })
-                    .width(StyleConstants.NINETY_PERCENT)
-                    .border({
-                        width: StyleConstants.INPUT_BORDER_WIDTH,
-                        color: Color.Gray
-                    })
-                    .padding(StyleConstants.PADDING_TEN)
-                    .onChange((value: string) => {
-                        this.testCommand = value;
-                    })
-                    .margin({ bottom: StyleConstants.MARGIN_FORTY })
-
-                // 发送按钮
-                Button($r("app.string.LiveTest_Send_Button_Label"), { type: ButtonType.Capsule })
-                    .width(StyleConstants.EIGHTY_PERCENT)
-                    .fontColor(Color.White)
-                    .enabled(!this.isProcessing &&
-                        this.testAddress.trim() !== '' &&
-                        this.testPassword.trim() !== '' &&
-                        this.testCommand.trim() !== '')
-                    .onClick(async () => {
-                        this.isProcessing = true;
-                        PageContext.vibrate(CommonConstants.VIBRATE_EFFECT_ID_HARD);
-                        await this.sendTestCommand(this.testAddress, this.testPassword, this.testCommand);
-                    })
-                    .margin({ bottom: StyleConstants.MARGIN_TWENTY })
-
-                Blank()
-                    .layoutWeight(1)
-            }
-        }
     }
 
     build() {
@@ -620,7 +484,7 @@ struct Index {
                 Stack({ alignContent: Alignment.Top }) {
                     HdsTabs({ controller: this.tabController }) {
                         TabContent() {
-                            if (!this.showSetupDialog) this.MainContent();
+                            if (!this.viewModel.showSetup) this.MainContent();
                         }
                         .tabBar(new BottomTabBarStyle({
                             normal: new SymbolGlyphModifier($r("sys.symbol.doc_plaintext_fill")),
@@ -628,7 +492,14 @@ struct Index {
                         }, $r("app.string.Index_Tab_Label_Home")))
 
                         TabContent() {
-                            if (!this.showSetupDialog) this.LiveTestContent();
+                            if (!this.viewModel.showSetup) {
+                                LiveTestSection({
+                                    viewModel: this.viewModel,
+                                    onSend: async () => {
+                                        await this.sendTestCommand();
+                                    }
+                                })
+                            }
                         }
                         .tabBar(new BottomTabBarStyle({
                             normal: new SymbolGlyphModifier($r("sys.symbol.worldclock_fill")),
@@ -644,6 +515,9 @@ struct Index {
                             materialType: hdsMaterial.MaterialType.ADAPTIVE,
                             materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
                         }
+                    })
+                    .onChange((index: number) => {
+                        this.viewModel.setCurrentTab(index);
                     })
                 }
             }
@@ -679,11 +553,11 @@ struct Index {
                 Logger.debug(this.LOG_TAG, "Loaded!");
             })
 
-            if (this.showSetupDialog) {
+            if (this.viewModel.showSetup) {
                 this.SetupPopup();
             }
 
-            if (this.isProcessing) {
+            if (this.viewModel.isProcessing) {
                 this.LoadingContent();
             }
         }
