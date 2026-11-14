@@ -2,17 +2,18 @@ import { FormExtensionAbility, formInfo, formProvider } from '@kit.FormKit';
 import { Want } from '@kit.AbilityKit';
 
 import Logger from '../common/utils/Logger';
-import { DB } from '../common/utils/DB';
-import { PM } from '../common/utils/PM';
+import { Database } from '../data/Database';
+import { FormBindingStore } from '../data/store/FormBindingStore';
 import CommonConstants from '../common/constants/CommonConstants';
-import CommonUtils from '../common/utils/CommonUtils';
+import { FormPublisher } from '../data/form/FormPublisher';
 import MultipleCommandsFormData from '../domain/model/MultipleCommandsFormData';
 
 export default class MultipleCommandsFormAbility extends FormExtensionAbility {
     private LOG_TAG = '[MultipleCommandsFormAbility]';
 
-    private db: DB = DB.getInstance();
-    private pm: PM = PM.getInstance();
+    private db: Database = Database.getInstance();
+    private pm: FormBindingStore = FormBindingStore.getInstance();
+    private publisher: FormPublisher = FormPublisher.getInstance();
 
     onAddForm(want: Want) {
         // Called to return a FormBindingData object.
@@ -25,7 +26,7 @@ export default class MultipleCommandsFormAbility extends FormExtensionAbility {
             Logger.warn(this.LOG_TAG, `onAddForm() formID 为空`);
         }
 
-        return CommonUtils.createMultipleCommandFormBindingData(formID);
+        return this.publisher.createMultipleCommandFormBindingData(formID);
     }
 
     async onRemoveForm(formId: string) {
@@ -49,14 +50,14 @@ export default class MultipleCommandsFormAbility extends FormExtensionAbility {
             if(formData) {
                 Logger.debug(this.LOG_TAG, `onUpdateForm() 查询到 formID = ${formId} 的卡片 formData`);
 
-                const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData);
+                const formInfo = this.publisher.createMultipleCommandFormBindingData(formData);
                 await formProvider.updateForm(formId, formInfo);
 
                 Logger.debug(this.LOG_TAG, `onUpdateForm() formID = ${formId} 的卡片已更新`);
             } else {
                 Logger.warn(this.LOG_TAG, `onUpdateForm() formID = ${formId} 的卡片 formData 为空`);
 
-                const formInfo = CommonUtils.createMultipleCommandFormBindingData(formId);
+                const formInfo = this.publisher.createMultipleCommandFormBindingData(formId);
                 await formProvider.updateForm(formId, formInfo);
 
                 Logger.warn(this.LOG_TAG, `onUpdateForm() 已重置 formID = ${formId} 的卡片`);
@@ -111,13 +112,16 @@ export default class MultipleCommandsFormAbility extends FormExtensionAbility {
     }
 
     private async unbindForm(formID: string) {
-        const success = await this.pm.unbind(formID);
-        if(success) Logger.debug(this.LOG_TAG, `unbindForm() 已删除卡片绑定: ${formID}`);
-        else Logger.warn(this.LOG_TAG, `unbindForm() 删除卡片绑定失败: ${formID}`)
+        try {
+            await this.pm.unbind(formID);
+            Logger.debug(this.LOG_TAG, `unbindForm() 已删除卡片绑定: ${formID}`);
+        } catch (err) {
+            Logger.warn(this.LOG_TAG, `unbindForm() 删除卡片绑定失败: ${formID}`);
+        }
     }
 
     private async getFormDataByID(formID: string): Promise<MultipleCommandsFormData | null> {
-        const formData = await this.pm.getFormDataByIDMultiple(formID);
+        const formData = await this.pm.getMultiple(formID);
 
         Logger.debug(this.LOG_TAG, `getFormDataByID() ${formID} 查询结果: ${JSON.stringify(formData)}`);
 
@@ -131,7 +135,7 @@ export default class MultipleCommandsFormAbility extends FormExtensionAbility {
     private async handleRestoreAction(formID: string, from: string) {
         Logger.debug(this.LOG_TAG, `handleRestoreAction() 调用方: ${from}`);
 
-        const formData = await this.pm.getFormDataByIDMultiple(formID);
+        const formData = await this.pm.getMultiple(formID);
 
         if(formData) Logger.debug(this.LOG_TAG, `handleRestoreAction() 查询到 formID = ${formID} 卡片的绑定数据: ${JSON.stringify(formData)}`);
         else {

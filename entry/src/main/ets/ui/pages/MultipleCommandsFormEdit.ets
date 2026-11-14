@@ -3,15 +3,16 @@ import { formProvider } from '@kit.FormKit';
 import { HdsNavigation, HdsNavigationTitleMode, ScrollEffectType, hdsMaterial } from '@kit.UIDesignKit';
 
 import StyleConstants from '../../common/constants/StyleConstants';
-import { DB } from '../../common/utils/DB';
+import { SettingsDao } from '../../data/dao/SettingsDao';
 import Logger from '../../common/utils/Logger';
-import { PM } from '../../common/utils/PM';
+import { FormBindingStore } from '../../data/store/FormBindingStore';
 import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
 import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
 import CommonConstants from '../../common/constants/CommonConstants';
-import CommonUtils from '../../common/utils/CommonUtils';
+import PageContext from '../common/PageContext';
 import MultipleCommandsFormData from '../../domain/model/MultipleCommandsFormData';
 import WidgetCommand from '../../domain/model/WidgetCommand';
+import { FormPublisher } from '../../data/form/FormPublisher';
 
 @Entry
 @ComponentV2
@@ -29,8 +30,8 @@ struct MultipleCommandsFormEdit {
 
     private context = this.getUIContext().getHostContext() as common.UIAbilityContext;
 
-    private db = DB.getInstance();
-    private pm = PM.getInstance();
+    private db = SettingsDao.getInstance();
+    private pm = FormBindingStore.getInstance();
 
     private scrollerForList: ListScroller = new ListScroller();
 
@@ -46,11 +47,11 @@ struct MultipleCommandsFormEdit {
     }
 
     onPageHide(): void {
-        CommonUtils.closeApplication(this.LOG_TAG, this.context);
+        PageContext.closeApplication(this.LOG_TAG, this.context);
     }
 
     private async checkSettings(): Promise<void> {
-        const isComplete = await this.db.areSettingsComplete();
+        const isComplete = await this.db.areComplete();
         if (!isComplete) this.isDBInitialized = false;
     }
 
@@ -101,17 +102,17 @@ struct MultipleCommandsFormEdit {
             formData.commandList = selectedItems.map(item => new WidgetCommand(item.id, item.nickname, item.command));
 
             // 持久化存储卡片绑定信息
-            await this.pm.bindMultiple(this.formID, formData);
+            await this.pm.bindMultiple(formData);
 
             // 创建表单绑定数据
-            const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData);
+            const formInfo = FormPublisher.getInstance().createMultipleCommandFormBindingData(formData);
             // 更新卡片
             await formProvider.updateForm(this.formID as string, formInfo);
 
             Logger.debug(this.LOG_TAG, `卡片更新成功: formID: ${this.formID}, commandIDs: ${this.selectedIDs}`);
 
             // 更新成功后关闭页面
-            CommonUtils.closeApplication(this.LOG_TAG, this.context);
+            PageContext.closeApplication(this.LOG_TAG, this.context);
         } catch (error) {
             Logger.error(this.LOG_TAG, `更新卡片失败: ${error}`);
         } finally {

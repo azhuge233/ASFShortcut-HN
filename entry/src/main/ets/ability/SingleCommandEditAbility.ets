@@ -1,13 +1,13 @@
-import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
+import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { AppStorageV2, window, KeyboardAvoidMode } from '@kit.ArkUI';
 
 import Logger from '../common/utils/Logger';
-import { DB } from '../common/utils/DB';
+import { Database } from '../data/Database';
 import CommonConstants from '../common/constants/CommonConstants';
-import { PM } from '../common/utils/PM';
-import { AppSettingsManager } from '../common/utils/AppSettingsManager';
-import { AppSettings } from '../domain/model/AppSettings';
-import CommonUtils from '../common/utils/CommonUtils';
+import { FormBindingStore } from '../data/store/FormBindingStore';
+import { AppSettingsStore, toPlatformColorMode } from '../data/store/AppSettingsStore';
+import { AppSettings, ColorMode } from '../domain/model/AppSettings';
+import PageContext from '../ui/common/PageContext';
 
 export default class SingleCommandEditEntryAbility extends UIAbility {
     private LOG_TAG = "[SingleCommandEditEntryAbility]";
@@ -15,9 +15,9 @@ export default class SingleCommandEditEntryAbility extends UIAbility {
     private targetPage: string = 'ui/pages/SingleCommandFormEdit';
     private currentWindowStage: window.WindowStage | null = null;
 
-    private db = DB.getInstance();
-    private pm = PM.getInstance();
-    private aSM = AppSettingsManager.getInstance();
+    private db = Database.getInstance();
+    private pm = FormBindingStore.getInstance();
+    private aSM = AppSettingsStore.getInstance();
 
     onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
         Logger.debug(this.LOG_TAG, 'onCreate()');
@@ -104,7 +104,7 @@ export default class SingleCommandEditEntryAbility extends UIAbility {
         if(formID.trim() !== '') AppStorage.setOrCreate(CommonConstants.APP_STORAGE_KEY_FORM_ID, formID);
         else {
             Logger.warn(this.LOG_TAG, 'handleFormWant() 卡片 ID 无效');
-            CommonUtils.closeApplication(this.LOG_TAG, this.context);
+            PageContext.closeApplication(this.LOG_TAG, this.context);
         }
     }
 
@@ -113,11 +113,11 @@ export default class SingleCommandEditEntryAbility extends UIAbility {
             let appSettings = await this.aSM.get();
 
             if(!appSettings) {
-                appSettings = new AppSettings(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET)
+                appSettings = new AppSettings(ColorMode.FOLLOW_SYSTEM)
                 await this.aSM.set(appSettings);
             }
 
-            this.context.getApplicationContext().setColorMode(appSettings.colorMode);
+            this.context.getApplicationContext().setColorMode(toPlatformColorMode(appSettings.colorMode));
 
             AppStorageV2.connect(AppSettings, CommonConstants.APP_STORAGE_KEY_APP_SETTINGS, () => appSettings);
 

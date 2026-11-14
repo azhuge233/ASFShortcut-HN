@@ -1,11 +1,13 @@
 import Logger from '../common/utils/Logger';
-import { PM } from '../common/utils/PM';
+import { FormBindingStore } from '../data/store/FormBindingStore';
+import { FormPublisher } from '../data/form/FormPublisher';
 import CommandEntry from '../domain/model/CommandEntry';
 import CommandEntryList from '../domain/model/CommandEntryList';
-import { CommandEntryJsonObject } from '../domain/model/JsonObjects';
+import { CommandEntryJsonObject, ExportJsonObject } from '../domain/model/JsonObjects';
+import { CommandImportResult } from '../domain/service/CommandImportService';
+import { CommandMutationResult } from '../domain/service/CommandService';
 import { CommandEntryViewModel } from "./CommandEntryViewModel";
 import { formProvider } from '@kit.FormKit';
-import CommonUtils from '../common/utils/CommonUtils';
 import CommonConstants from '../common/constants/CommonConstants';
 
 @ObservedV2
@@ -15,10 +17,14 @@ export default class CommandEntryListViewModel {
     @Trace commandEntries: Array<CommandEntryViewModel> = [];
     private dataModel: CommandEntryList = new CommandEntryList([]);
 
-    private pm = PM.getInstance();
+    private pm = FormBindingStore.getInstance();
+    private publisher = FormPublisher.getInstance();
 
     async loadCommandEntries() {
-        await this.dataModel.loadCommandEntries();
+        const loaded = await this.dataModel.loadCommandEntries();
+
+        // 读失败时保留上一次的列表：把失败显示成「没有指令」是假话（错误态与重试入口在 B3 的 VM 上）
+        if (!loaded) return;
 
         this.commandEntries = this.dataModel.commandEntries.map(entry => {
             const viewModel = new CommandEntryViewModel();
@@ -36,60 +42,54 @@ export default class CommandEntryListViewModel {
         return false;
     }
 
-    async updateCommandEntry(commandEntry: CommandEntry): Promise<boolean> {
+    async updateCommandEntry(commandEntry: CommandEntry): Promise<CommandMutationResult> {
         const result = await this.dataModel.updateCommandEntry(commandEntry);
-        // 更新成功，返回绑定了该 entry 的所有 formID
-        // 更新失败，返回 false
-        if(typeof(result) !== "boolean") {
+        // 更新成功，affected 携带绑定了该 entry 的所有 formID
+        if (result.ok) {
             await this.loadCommandEntries();
-            await this.updateForms(result);
-            return true;
+            await this.updateForms(result.affected);
         }
-        return false;
+        return result;
     }
 
-    async deleteCommandEntry(commandEntry: CommandEntry): Promise<boolean> {
+    async deleteCommandEntry(commandEntry: CommandEntry): Promise<CommandMutationResult> {
         const result = await this.dataModel.deleteCommandEntry(commandEntry);
-        // 删除成功，返回绑定了该 entry 的所有 formID
-        // 删除失败，返回 false
-        if(typeof(result) !== "boolean") {
+        if (result.ok) {
             // 删除后刷新 commandEntries 和 dataModel 内的 commandEntries
             await this.loadCommandEntries();
             // 刷新后再更新列表内剩余条目的位置下标
             // 要注意执行顺序，如果在刷新前执行，位置下标不变
             // 因为 commandEntries 和 dataModel 内的 commandEntries 未更新
             await this.updateEntriesOrder();
-            await this.updateForms(result);
-            return true;
+            await this.updateForms(result.affected);
         }
-        return false;
+        return result;
     }
 
-    async clearCommandEntry(): Promise<boolean> {
+    async clearCommandEntry(): Promise<CommandMutationResult> {
         const result = await this.dataModel.clearCommandEntry();
-        if(typeof(result) !== "boolean") {
+        if (result.ok) {
             await this.loadCommandEntries();
-            await this.updateForms(result);
-            return true;
+            await this.updateForms(result.affected);
         }
-        return false;
+        return result;
     }
 
-    async importData(address: string, password: string, entries: Array<CommandEntry>): Promise<boolean> {
+    async importData(json: ExportJsonObject): Promise<CommandImportResult> {
         // 导入会清空全部绑定；先收集受影响 formID，成功后用空绑定重置卡片 UI
-        const allSingleBindings = await this.pm.getAllCardBindingsSingle();
-        const allMultipleBindings = await this.pm.getAllCardBindingsMultiple();
+        const allSingleBindings = await this.pm.listSingle();
+        const allMultipleBindings = await this.pm.listMultiple();
 
         const allFormIDMap: Map<string, string[]> = new Map<string, string[]>();
-        allFormIDMap.set(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE, allSingleBindings.map(binding => binding.formID));
-        allFormIDMap.set(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE, allMultipleBindings.map(binding => binding.formID));
+        allFormIDMap.set(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE, allSingleBindings.map(pair => pair[0]));
+        allFormIDMap.set(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE, allMultipleBindings.map(pair => pair[0]));
 
-        const success = await this.dataModel.importData(address, password, entries);
-        if (success) {
+        const result = await this.dataModel.importData(json);
+        if (result.ok) {
             await this.loadCommandEntries();
             await this.updateForms(allFormIDMap);
         }
-        return success;
+        return result;
     }
 
     async toCommandEntryJsonObjectList(): Promise<Array<CommandEntryJsonObject>> {
@@ -109,17 +109,15 @@ export default class CommandEntryListViewModel {
         const movedItem = currentEntries.splice(fromIndex, 1);
         currentEntries.splice(toIndex, 0, movedItem[0]);
 
-        // 重新分配连续的 orderIndex
-        const reorderedEntriesWithNewIndex = currentEntries.map((entry, index) => {
+        // 重新分配连续的 orderIndex，交仓库整批写入
+        const reorderedEntries = currentEntries.map((entry, index) => {
             entry.orderIndex = index;
-            return entry;
+            return entry.toCommandEntry();
         });
 
-        // 批量更新数据库的数据
-        const updatePayload = reorderedEntriesWithNewIndex.map((entry, index) => [entry.id, index]);
-        const success = await this.dataModel.updateEntriesOrder(updatePayload);
+        const success = await this.dataModel.updateEntriesOrder(reorderedEntries);
 
-        if(success) {
+        if (success) {
             await this.loadCommandEntries();
             return true;
         }
@@ -131,17 +129,14 @@ export default class CommandEntryListViewModel {
     // 并同步到数据库
     private async updateEntriesOrder(): Promise<boolean> {
         // 重新设置当前列表条目的位置下标，生成新的列表
-        const reorderedEntriesWithNewIndex = this.commandEntries.map((entry, index) => {
+        const reorderedEntries = this.commandEntries.map((entry, index) => {
             entry.orderIndex = index;
-            return entry;
+            return entry.toCommandEntry();
         });
 
-        // 提取新列表的 [id - 位置] 下标映射（长度为2的数组）
-        const updatePayload = reorderedEntriesWithNewIndex.map((entry, index) => [entry.id, index]);
-        // 更新到数据库
-        const success = await this.dataModel.updateEntriesOrder(updatePayload);
+        const success = await this.dataModel.updateEntriesOrder(reorderedEntries);
 
-        if(success) {
+        if (success) {
             await this.loadCommandEntries();
             return true;
         }
@@ -152,17 +147,18 @@ export default class CommandEntryListViewModel {
         const singleFormIDs = formIDMap.get(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE) ?? [];
         const multipleFormIDs = formIDMap.get(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE) ?? [];
 
-        if(singleFormIDs.length === 0 && multipleFormIDs.length === 0) return true;
+        if (singleFormIDs.length === 0 && multipleFormIDs.length === 0) return true;
 
         let allSuccess = true;
 
-        for(const formID of singleFormIDs) {
+        for (const formID of singleFormIDs) {
             try {
-                const formData = await this.pm.getFormDataByIDSingle(formID);
+                const formData = await this.pm.getSingle(formID);
 
                 // 如果 formData 不为空，生成新 FormBindingData 更新卡片 UI
                 // 如果 formData 为空，说明该卡片已解绑，生成空 FormBindingData
-                const formInfo = CommonUtils.createSingleCommandFormBindingData(formData ?? formID);
+                const formInfo = this.publisher.createSingleCommandFormBindingData(formData ?? formID);
+                // 本路径 1.7.1 不重试，B2 保持直调（加重试是第七项行为变更，B3 统一口径）
                 await formProvider.updateForm(formID, formInfo);
 
                 Logger.debug(this.LOG_TAG, `已更新单指令卡片, formID = ${formID}`);
@@ -172,11 +168,11 @@ export default class CommandEntryListViewModel {
             }
         }
 
-        for(const formID of multipleFormIDs) {
+        for (const formID of multipleFormIDs) {
             try {
-                const formData = await this.pm.getFormDataByIDMultiple(formID);
+                const formData = await this.pm.getMultiple(formID);
 
-                const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData ?? formID);
+                const formInfo = this.publisher.createMultipleCommandFormBindingData(formData ?? formID);
                 await formProvider.updateForm(formID, formInfo);
 
                 Logger.debug(this.LOG_TAG, `已更新多指令卡片, formID = ${formID}`);

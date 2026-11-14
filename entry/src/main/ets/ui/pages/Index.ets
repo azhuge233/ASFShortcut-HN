@@ -1,4 +1,3 @@
-import http from '@ohos.net.http';
 import { common } from '@kit.AbilityKit';
 import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { HdsNavigation, HdsNavigationMenuContentOptions, HdsTabs,
@@ -6,14 +5,15 @@ import { HdsNavigation, HdsNavigationMenuContentOptions, HdsTabs,
 import { hdsMaterial } from '@kit.UIDesignKit';
 
 import Logger from '../../common/utils/Logger';
-import { ASF } from '../../common/utils/ASF';
+import { AsfClient } from '../../data/network/AsfClient';
 import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
-import { DB } from '../../common/utils/DB';
+import { SettingsDao } from '../../data/dao/SettingsDao';
 import CommonConstants from '../../common/constants/CommonConstants';
 import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
 import { CommandTile } from '../components/CommandTile';
 import StyleConstants from '../../common/constants/StyleConstants';
-import CommonUtils from '../../common/utils/CommonUtils';
+import PageContext from '../common/PageContext';
+import { CommandSendResult } from '../../domain/repository/CommandSender';
 
 @Entry
 @ComponentV2
@@ -45,8 +45,8 @@ struct Index {
     private scrollerForList: ListScroller = new ListScroller();
     private tabController: HdsTabsController = new HdsTabsController();
 
-    private db = DB.getInstance();
-    private asf = new ASF();
+    private db = SettingsDao.getInstance();
+    private asf = new AsfClient();
 
     // HdsNavigation 新版菜单
     private menus: HdsNavigationMenuContentOptions = {
@@ -61,7 +61,7 @@ struct Index {
                             name: "AddCommand",
                             param: this.listViewModel,
                             onPop: async (popInfo) => {
-                                CommonUtils.returnFromSubPage(popInfo);
+                                PageContext.returnFromSubPage(popInfo);
                             }
                         });
                     }
@@ -78,7 +78,7 @@ struct Index {
                             param: this.listViewModel,
                             onPop: async (popInfo) => {
                                 await this.checkSettingsAndInit();
-                                CommonUtils.returnFromSubPage(popInfo);
+                                PageContext.returnFromSubPage(popInfo);
                             }
                         });
                     }
@@ -111,9 +111,9 @@ struct Index {
     // 快捷方式跳转判断
     private async goToSpecifyPage(path: string): Promise<void> {
         // 应用未初始化，不跳转
-        const isComplete = await this.db.areSettingsComplete();
+        const isComplete = await this.db.areComplete();
         if (!isComplete) {
-            CommonUtils.alert($r("app.string.App_Shortcut_Add_Shortcut_Not_Init_Alert"), this.promptAction);
+            PageContext.alert($r("app.string.App_Shortcut_Add_Shortcut_Not_Init_Alert"), this.promptAction);
             Logger.debug(this.LOG_TAG, `应用未完成初始化，停止跳转`);
             return;
         }
@@ -127,7 +127,7 @@ struct Index {
                 name: path,
                 param: this.listViewModel,
                 onPop: async (popInfo) => {
-                    CommonUtils.returnFromSubPage(popInfo);
+                    PageContext.returnFromSubPage(popInfo);
                 }
             });
         } catch (err) {
@@ -138,29 +138,33 @@ struct Index {
     // 发送指令
     private async sendCommand(nickname: string, command: string): Promise<void> {
         try {
-            const resp = await this.asf.send(command);
+            const result = await this.asf.send(command);
             this.isProcessing = false;
 
-            this.handleResponse(nickname, resp);
+            this.handleResponse(nickname, result);
         } catch (err) {
             Logger.error(this.LOG_TAG, `<sendCommand> 错误, ${(err as Error).message}`);
-            CommonUtils.alert(`错误: ${(err as Error).message}`, this.promptAction);
+            PageContext.alert(`错误: ${(err as Error).message}`, this.promptAction);
         } finally {
             this.isProcessing = false;
         }
     }
 
-    // 发送测试指令
+    // 发送测试指令：另建实例，不污染主页面的地址与密码
     private async sendTestCommand(address: string, password: string, command: string): Promise<void> {
         try {
-            const resp = await this.asf.sendTest(address, password, command);
+            const testClient = new AsfClient();
+            testClient.setAddress(address);
+            testClient.setPassword(password);
+
+            const result = await testClient.sendTest(command);
             this.isProcessing = false;
 
             this.handleResponse(this.context.resourceManager.getStringSync($r("app.string.LiveTest_Result_Title").id),
-                resp);
+                result);
         } catch (err) {
             Logger.error(this.LOG_TAG, `<sendTestCommand> 错误, ${(err as Error).message}`);
-            CommonUtils.alert(`错误: ${(err as Error).message}`, this.promptAction);
+            PageContext.alert(`错误: ${(err as Error).message}`, this.promptAction);
         } finally {
             this.isProcessing = false;
         }
@@ -172,7 +176,7 @@ struct Index {
             name: "SelectableDialog",
             param: [commandNickname, message],
             onPop: (popInfo) => {
-                CommonUtils.returnFromSubPage(popInfo);
+                PageContext.returnFromSubPage(popInfo);
             }
         });
     }
@@ -184,7 +188,7 @@ struct Index {
             this.pageStack.pushPath({
                 name: "AccountInputDialog",
                 onPop: (popInfo) => {
-                    CommonUtils.returnFromSubPage(popInfo);
+                    PageContext.returnFromSubPage(popInfo);
                     resolve(popInfo.result as string);
                 }
             });
@@ -192,7 +196,7 @@ struct Index {
             this.pageStack.pushPath({
                 name: "IDInputDialog",
                 onPop: (popInfo) => {
-                    CommonUtils.returnFromSubPage(popInfo);
+                    PageContext.returnFromSubPage(popInfo);
                     resolve(popInfo.result as string);
                 }
             });
@@ -215,44 +219,37 @@ struct Index {
 
     // 从数据库加载设置条目
     private async loadSettings() {
-        this.currentAddress = await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_ADDRESS);
-        this.currentASFPassword = await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_PASSWORD);
+        this.currentAddress = await this.db.get(CommonConstants.DB_KEY_HOST_INFO_ADDRESS);
+        this.currentASFPassword = await this.db.get(CommonConstants.DB_KEY_HOST_INFO_PASSWORD);
     }
 
     // 初始化 ASF 服务
     // 设置服务器地址和 ASF 密码
     private initASF() {
         this.asf.setAddress(this.currentAddress);
-        this.asf.setASFPassword(this.currentASFPassword)
+        this.asf.setPassword(this.currentASFPassword)
     }
 
     // 检查数据库是否存在设置
     // 并初始化 ASF 的服务器地址和密码
     private async checkSettingsAndInit(): Promise<void> {
-        const isComplete = await this.db.areSettingsComplete();
+        const isComplete = await this.db.areComplete();
         if (!isComplete) this.showSetupDialog = true; else {
             await this.loadSettings();
             this.initASF();
         }
     }
 
-    // 处理 ASF 响应
-    private handleResponse(commandNickname: string, resp: http.HttpResponse | undefined) {
-        if (!resp) throw new Error(`空响应`);
+    // 处理 ASF 响应：200 弹结果，其他响应码提示 Message；发送失败按错误抛出
+    private handleResponse(commandNickname: string, result: CommandSendResult) {
+        if (!result.ok) throw new Error(result.error);
 
-        try {
-            const result: Record<string, string> = JSON.parse(resp.result.toString());
-
-            if (resp.responseCode == 200) {
-                Logger.debug(this.LOG_TAG, `${result["Result"]}`);
-                this.resultPopup(commandNickname, result["Result"]);
-            } else {
-                Logger.debug(this.LOG_TAG, `${result["Message"]}`);
-                CommonUtils.alert(`${result["Message"]} 响应码: ${resp.responseCode}`, this.promptAction);
-            }
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `handleResponse() 错误`);
-            throw err as Error;
+        if (result.statusCode == 200) {
+            Logger.debug(this.LOG_TAG, `${result.text}`);
+            this.resultPopup(commandNickname, result.text);
+        } else {
+            Logger.debug(this.LOG_TAG, `${result.text}`);
+            PageContext.alert(`${result.text} 响应码: ${result.statusCode}`, this.promptAction);
         }
     }
 
@@ -288,8 +285,12 @@ struct Index {
                     });
 
                     if (result.index === 0) {
-                        const success = await this.listViewModel.deleteCommandEntry(entry.toCommandEntry());
-                        if (!success) CommonUtils.alert($r("app.string.Index_Deletion_Failed"), this.promptAction);
+                        const deleteResult = await this.listViewModel.deleteCommandEntry(entry.toCommandEntry());
+                        if (!deleteResult.ok) {
+                            PageContext.alert(deleteResult.unbindFailed ?
+                                $r("app.string.Index_Deletion_Failed_Unbind") : $r("app.string.Index_Deletion_Failed"),
+                                this.promptAction);
+                        }
                     } else Logger.warn(this.LOG_TAG, `取消删除`);
                 } catch (err) {
                     Logger.error(this.LOG_TAG, `删除确认框弹出失败`);
@@ -321,7 +322,7 @@ struct Index {
                     name: "EditPage",
                     param: [this.listViewModel, entry],
                     onPop: (popInfo) => {
-                        CommonUtils.returnFromSubPage(popInfo);
+                        PageContext.returnFromSubPage(popInfo);
                     }
                 });
             })
@@ -394,7 +395,7 @@ struct Index {
                             name: "ASFSettingsPage",
                             onPop: async (popInfo) => {
                                 await this.checkSettingsAndInit();
-                                CommonUtils.returnFromSubPage(popInfo);
+                                PageContext.returnFromSubPage(popInfo);
                             }
                         });
                         this.showSetupDialog = false;
@@ -476,7 +477,7 @@ struct Index {
                             return true;
                         }, {
                             onLongPress: () => {
-                                CommonUtils.vibrate(CommonConstants.VIBRATE_EFFECT_ID_SOFT);
+                                PageContext.vibrate(CommonConstants.VIBRATE_EFFECT_ID_SOFT);
                             }
                         })
                 }
@@ -602,7 +603,7 @@ struct Index {
                         this.testCommand.trim() !== '')
                     .onClick(async () => {
                         this.isProcessing = true;
-                        CommonUtils.vibrate(CommonConstants.VIBRATE_EFFECT_ID_HARD);
+                        PageContext.vibrate(CommonConstants.VIBRATE_EFFECT_ID_HARD);
                         await this.sendTestCommand(this.testAddress, this.testPassword, this.testCommand);
                     })
                     .margin({ bottom: StyleConstants.MARGIN_TWENTY })

@@ -1,12 +1,14 @@
 import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
-import { http } from '@kit.NetworkKit';
 import { backgroundTaskManager } from '@kit.BackgroundTasksKit';
 
-import CommonUtils from '../common/utils/CommonUtils';
+import PageContext from '../ui/common/PageContext';
 import Logger from '../common/utils/Logger';
-import { ASF } from '../common/utils/ASF';
-import { DB } from '../common/utils/DB';
-import { PM } from '../common/utils/PM';
+import { AsfClient } from '../data/network/AsfClient';
+import { Database } from '../data/Database';
+import { CommandDao } from '../data/dao/CommandDao';
+import { SettingsDao } from '../data/dao/SettingsDao';
+import { FormBindingStore } from '../data/store/FormBindingStore';
+import { FormPublisher } from '../data/form/FormPublisher';
 import { CardRunSession, RunCancelResult, RunToken } from '../common/utils/CardRunSession';
 import CommonConstants from '../common/constants/CommonConstants';
 import MultipleCommandsFormData from '../domain/model/MultipleCommandsFormData';
@@ -15,9 +17,12 @@ import WidgetCommand from '../domain/model/WidgetCommand';
 export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
     private LOG_TAG = "[MultipleCommandsWidgetEntryAbility]";
 
-    private db = DB.getInstance();
-    private pm = PM.getInstance();
-    private asf = new ASF();
+    private db = Database.getInstance();
+    private pm = FormBindingStore.getInstance();
+    private commands = CommandDao.getInstance();
+    private settings = SettingsDao.getInstance();
+    private publisher = FormPublisher.getInstance();
+    private asf = new AsfClient();
 
     private formID: string = '';
     private shortcutID: number = -1;
@@ -45,7 +50,7 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
 
             const method = params['method'] as string;
 
-            CommonUtils.vibrate(CommonConstants.VIBRATE_EFFECT_ID_HARD);
+            PageContext.vibrate(CommonConstants.VIBRATE_EFFECT_ID_HARD);
 
             if (method === CommonConstants.FORM_CALL_RUN) this.handleRunMethod(params).then();
             else if (method === CommonConstants.FORM_CALL_CANCEL) this.handleCancelMethod(params).then();
@@ -102,11 +107,11 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
         this.db.init(this.context.getApplicationContext());
         this.pm.init(this.context.getApplicationContext());
 
-        const asfAddr = await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_ADDRESS);
-        const asfPwd = await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_PASSWORD);
+        const asfAddr = await this.settings.get(CommonConstants.DB_KEY_HOST_INFO_ADDRESS);
+        const asfPwd = await this.settings.get(CommonConstants.DB_KEY_HOST_INFO_PASSWORD);
 
         this.asf.setAddress(asfAddr);
-        this.asf.setASFPassword(asfPwd);
+        this.asf.setPassword(asfPwd);
     }
 
     // 运行路径：早写运行态 → 15 秒硬超时 → 初始化 → 发请求 → 写终态
@@ -166,13 +171,9 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
             session.registerAbort(token, () => this.asf.cancel());
 
             let payload: string | null = null;
-            try {
-                const response = await this.asf.send(this.command);
-                payload = this.handleResponse(response);
-            } catch (err) {
-                Logger.error(this.LOG_TAG, `handleRunMethod() 指令 ${this.command} 执行错误`);
-                payload = null;
-            }
+            const sendResult = await this.asf.send(this.command);
+            if (sendResult.ok) payload = sendResult.text;
+            else Logger.error(this.LOG_TAG, `handleRunMethod() 指令执行失败, ${sendResult.error}`);
 
             await this.finishRun(token, payload);
         } catch (err) {
@@ -211,17 +212,16 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
         try {
             await this.init();
 
-            const formData = await this.pm.getFormDataByIDMultiple(formID);
+            const formData = await this.pm.getMultiple(formID);
             if (!formData) {
-                Logger.warn(this.LOG_TAG, `writeFallbackTerminal() 无 PM 绑定，不写卡片: ${formID}`);
+                Logger.warn(this.LOG_TAG, `writeFallbackTerminal() 无绑定，不写卡片: ${formID}`);
                 return;
             }
 
             formData.isRunning = false;
             formData.runResult = this.getRunFailedMessage();
 
-            const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData);
-            const written = await CommonUtils.updateFormWithRetry(formID, formInfo);
+            const written = await this.publisher.publish(formID, formData);
 
             Logger.info(this.LOG_TAG, `writeFallbackTerminal() 无在跑会话，写兜底终态${written ? '成功' : '失败'}: ${formID}`);
         } catch (err) {
@@ -235,18 +235,17 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
         formData.commandList = this.commandList;
         formData.isRunning = true;
 
-        const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData);
-        await CommonUtils.updateFormWithRetry(this.formID, formInfo);
+        await this.publisher.publish(this.formID, formData);
     }
 
     private async getNewFormData(): Promise<MultipleCommandsFormData> {
         const formData = new MultipleCommandsFormData(this.formID, true);
 
         try {
-            const bound = await this.pm.getFormDataByIDMultiple(this.formID);
+            const bound = await this.pm.getMultiple(this.formID);
             formData.commandList = bound ? bound.commandList : this.commandList;
         } catch (err) {
-            Logger.warn(this.LOG_TAG, `getNewFormData() 读取 PM 绑定失败，使用 call 参数, ${err}`);
+            Logger.warn(this.LOG_TAG, `getNewFormData() 读取绑定失败，使用 call 参数, ${err}`);
             formData.commandList = this.commandList;
         }
 
@@ -261,12 +260,11 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
 
         formData.isRunning = true;
 
-        const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData);
-        await CommonUtils.updateFormWithRetry(this.formID, formInfo);
+        await this.publisher.publish(this.formID, formData);
     }
 
     private async updateCommandFromDB(): Promise<void> {
-        const commandEntry = await this.db.getCommandByID(this.shortcutID);
+        const commandEntry = await this.commands.getByID(this.shortcutID);
         if(commandEntry) {
             const dbCommand = commandEntry.command;
             if(dbCommand !== this.command) {
@@ -305,8 +303,7 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
             formData.runResult = runResult; // 显示执行结果
             formData.isRunning = false; // 取消卡片正在运行状态
 
-            const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData);
-            const written = await CommonUtils.updateFormWithRetry(token.formID, formInfo);
+            const written = await this.publisher.publish(token.formID, formData);
 
             if (written) Logger.debug(this.LOG_TAG, `finishRun() 已写终态: ${runResult}`);
             else Logger.error(this.LOG_TAG, `finishRun() 终态两次写入均失败，卡片停在运行态: ${token.formID}`);
@@ -364,28 +361,6 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
         } catch (err) {
             Logger.error(this.LOG_TAG, `getStringSync() 失败, ${err}`);
             return '已取消';
-        }
-    }
-
-    private handleResponse(resp: http.HttpResponse | undefined): string {
-        if (!resp) throw new Error(`空响应`);
-
-        try {
-            const result: Record<string, string> = JSON.parse(resp.result.toString());
-            let toastMessage: string = '';
-
-            if (resp.responseCode == 200) {
-                const resultText = result['Result'];
-                toastMessage = typeof resultText === 'string' ? resultText : '';
-            } else {
-                const messageText = result['Message'];
-                toastMessage = typeof messageText === 'string' ? messageText : '';
-            }
-
-            return toastMessage;
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `handleResponse() 错误`);
-            throw err as Error;
         }
     }
 }

@@ -1,7 +1,7 @@
 import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
 
 import StyleConstants from '../../common/constants/StyleConstants';
-import CommonUtils from '../../common/utils/CommonUtils';
+import PageContext from '../common/PageContext';
 import Logger from '../../common/utils/Logger';
 import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
 import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
@@ -27,19 +27,19 @@ struct EditPage {
 
     async saveCommand() {
         if (!this.updatingCommandEntry.nickname.trim() || !this.updatingCommandEntry.command.trim()) {
-            CommonUtils.alert($r("app.string.EditPage_Invalid_Input"), this.promptAction);
+            PageContext.alert($r("app.string.EditPage_Invalid_Input"), this.promptAction);
             return;
         }
 
         try {
-            const success = await this.listViewModel.updateCommandEntry(this.updatingCommandEntry.toCommandEntry());
-            if (success) {
-                CommonUtils.alert($r("app.string.EditPage_Update_Success"), this.promptAction);
+            const result = await this.listViewModel.updateCommandEntry(this.updatingCommandEntry.toCommandEntry());
+            if (result.ok) {
+                PageContext.alert($r("app.string.EditPage_Update_Success"), this.promptAction);
                 this.pathStack?.pop("Button pressed");
-            } else CommonUtils.alert($r("app.string.EditPage_Update_Failed_Try_Again"), this.promptAction);
+            } else PageContext.alert($r("app.string.EditPage_Update_Failed_Try_Again"), this.promptAction);
         } catch (err) {
             Logger.error(this.LOG_TAG, `更新命令失败: ${err}`);
-            CommonUtils.alert($r("app.string.EditPage_Update_Failed"), this.promptAction);
+            PageContext.alert($r("app.string.EditPage_Update_Failed"), this.promptAction);
         }
     }
 

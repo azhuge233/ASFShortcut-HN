@@ -1,10 +1,11 @@
 import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
 
 import Logger from '../../common/utils/Logger';
-import { DB } from '../../common/utils/DB';
+import { SettingsDao } from '../../data/dao/SettingsDao';
 import CommonConstants from '../../common/constants/CommonConstants';
 import StyleConstants from '../../common/constants/StyleConstants';
-import CommonUtils from '../../common/utils/CommonUtils';
+import PageContext from '../common/PageContext';
+import { AsfAddress } from '../../domain/service/AsfAddress';
 
 @Builder
 export function ASFSettingsPageBuilder() {
@@ -23,7 +24,7 @@ struct ASFSettingsPage {
 
     pathStack: NavPathStack | undefined = undefined;
 
-    private db = DB.getInstance();
+    private db = SettingsDao.getInstance();
 
     private uiContext = this.getUIContext();
     private promptAction = this.uiContext.getPromptAction();
@@ -34,15 +35,15 @@ struct ASFSettingsPage {
     }
 
     async loadSettings(): Promise<void> {
-        this.address = await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_ADDRESS);
-        this.asfPassword = await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_PASSWORD);
+        this.address = await this.db.get(CommonConstants.DB_KEY_HOST_INFO_ADDRESS);
+        this.asfPassword = await this.db.get(CommonConstants.DB_KEY_HOST_INFO_PASSWORD);
     }
 
     async saveSettings(): Promise<boolean> {
         this.isSaving = true;
 
-        const success1 = await this.db.saveSetting(CommonConstants.DB_KEY_HOST_INFO_ADDRESS, CommonUtils.trimAddress(this.address));
-        const success2 = await this.db.saveSetting(CommonConstants.DB_KEY_HOST_INFO_PASSWORD, this.asfPassword);
+        const success1 = await this.db.save(CommonConstants.DB_KEY_HOST_INFO_ADDRESS, AsfAddress.normalize(this.address));
+        const success2 = await this.db.save(CommonConstants.DB_KEY_HOST_INFO_PASSWORD, this.asfPassword);
 
         this.isSaving = false;
 
@@ -109,9 +110,9 @@ struct ASFSettingsPage {
                             async () => {
                                 const saveSuccess = await this.saveSettings();
                                 if (saveSuccess) {
-                                    CommonUtils.alert($r("app.string.SettingsPage_Save_Success"), this.promptAction);
+                                    PageContext.alert($r("app.string.SettingsPage_Save_Success"), this.promptAction);
                                     this.pathStack?.pop("Submit pressed");
-                                } else CommonUtils.alert($r("app.string.SettingsPage_Save_Failed"), this.promptAction);
+                                } else PageContext.alert($r("app.string.SettingsPage_Save_Failed"), this.promptAction);
                             }
                         )
                 }
@@ -133,7 +134,7 @@ struct ASFSettingsPage {
         })
         .onBackPressed(() => {
             if(this.isSaving) {
-                CommonUtils.alert($r("app.string.SettingsPage_Save_Button_Saving"), this.promptAction);
+                PageContext.alert($r("app.string.SettingsPage_Save_Button_Saving"), this.promptAction);
                 return true;
             }
             this.pathStack?.pop("Back pressed");

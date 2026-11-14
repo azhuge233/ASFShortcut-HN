@@ -369,6 +369,10 @@
       "value": "Import successfully"
     },
     {
+      "name": "More_Import_Clear_Bindings_Failed",
+      "value": "Imported, but card bindings were not cleared. Rebind your cards."
+    },
+    {
       "name": "More_Import_Confirm_Title",
       "value": "Warning!"
     },
@@ -523,6 +527,14 @@
     {
       "name": "Index_Deletion_Failed",
       "value": "Delete failed. Please try again."
+    },
+    {
+      "name": "Index_Deletion_Failed_Unbind",
+      "value": "Delete failed: card bindings could not be removed. Try again."
+    },
+    {
+      "name": "Index_Load_Failed_Retry",
+      "value": "Failed to load commands. Tap to retry."
     }
   ]
 }

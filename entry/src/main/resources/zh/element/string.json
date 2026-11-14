@@ -369,6 +369,10 @@
       "value": "导入成功"
     },
     {
+      "name": "More_Import_Clear_Bindings_Failed",
+      "value": "导入完成但卡片绑定未清理，请重新绑定"
+    },
+    {
       "name": "More_Import_Confirm_Title",
       "value": "注意!"
     },
@@ -523,6 +527,14 @@
     {
       "name": "Index_Deletion_Failed",
       "value": "删除失败，请重试"
+    },
+    {
+      "name": "Index_Deletion_Failed_Unbind",
+      "value": "删除失败：卡片绑定未能解除，请重试"
+    },
+    {
+      "name": "Index_Load_Failed_Retry",
+      "value": "指令加载失败，点击重试"
     }
   ]
 }

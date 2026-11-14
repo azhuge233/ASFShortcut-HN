@@ -33,9 +33,11 @@
     {
       // 这些文件的 await 目标均为 async/Promise，CodeLinter 类型推断误报；只关闭本规则，保留其余检查
       "files": [
-        "entry/src/main/ets/common/utils/ASF.ets",
-        "entry/src/main/ets/common/utils/DB.ets",
-        "entry/src/main/ets/common/utils/PM.ets",
+        "entry/src/main/ets/data/network/AsfClient.ets",
+        "entry/src/main/ets/data/Database.ets",
+        "entry/src/main/ets/data/dao/CommandDao.ets",
+        "entry/src/main/ets/data/dao/SettingsDao.ets",
+        "entry/src/main/ets/data/store/FormBindingStore.ets",
         "entry/src/main/ets/domain/model/CommandEntryList.ets",
         "entry/src/main/ets/ability/MultipleCommandsFormAbility.ets",
         "entry/src/main/ets/ability/MultipleCommandsRunAbility.ets",

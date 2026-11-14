@@ -23,7 +23,7 @@ export const colorModeOptions: ColorModeOption[] = [
  * 颜色模式行：行解剖照 `MoreMenuItem`（图标 + 标题 + 描述），右侧加原生 `Select` 胶囊。
  *
  * 只做展示与事件：当前档与三档选项由调用方给，选择通过 `onSelectMode` 抛回去。
- * 不持有 `AppStorageV2` 连接、不碰 `AppSettingsManager`、不调 `setColorMode`——写设置与改应用颜色是调用方的事。
+ * 不持有 `AppStorageV2` 连接、不碰设置存储、不调 `setColorMode`——写设置与改应用颜色是调用方的事。
  *
  * 下拉由原生 `Select` 自己弹出，不自绘；`Select` 没有可编程展开的 API，所以可点区域是胶囊自身（行本身不加点击）。
  */

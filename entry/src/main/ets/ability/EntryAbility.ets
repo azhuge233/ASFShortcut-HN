@@ -1,12 +1,12 @@
-import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
+import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { AppStorageV2, window, KeyboardAvoidMode } from '@kit.ArkUI';
 
 import Logger from '../common/utils/Logger';
-import { DB } from '../common/utils/DB';
+import { Database } from '../data/Database';
 import CommonConstants from '../common/constants/CommonConstants';
-import { PM } from '../common/utils/PM';
-import { AppSettingsManager } from '../common/utils/AppSettingsManager';
-import { AppSettings } from '../domain/model/AppSettings';
+import { FormBindingStore } from '../data/store/FormBindingStore';
+import { AppSettingsStore, toPlatformColorMode } from '../data/store/AppSettingsStore';
+import { AppSettings, ColorMode } from '../domain/model/AppSettings';
 
 export default class EntryAbility extends UIAbility {
     private LOG_TAG = "[EntryAbility]";
@@ -14,9 +14,9 @@ export default class EntryAbility extends UIAbility {
     private targetPage: string = 'ui/pages/Index'; // 指定页面，默认为 Index
     private currentWindowStage: window.WindowStage | null = null;
 
-    private db = DB.getInstance();
-    private pm = PM.getInstance();
-    private aSM = AppSettingsManager.getInstance();
+    private db = Database.getInstance();
+    private pm = FormBindingStore.getInstance();
+    private aSM = AppSettingsStore.getInstance();
 
     private static readonly VALID_TARGET_PAGES: Set<string> = new Set([
         'ui/pages/Index',
@@ -159,11 +159,11 @@ export default class EntryAbility extends UIAbility {
             let appSettings = await this.aSM.get();
 
             if(!appSettings) {
-                appSettings = new AppSettings(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET)
+                appSettings = new AppSettings(ColorMode.FOLLOW_SYSTEM)
                 await this.aSM.set(appSettings);
             }
 
-            this.context.getApplicationContext().setColorMode(appSettings.colorMode);
+            this.context.getApplicationContext().setColorMode(toPlatformColorMode(appSettings.colorMode));
 
             AppStorageV2.connect(AppSettings, CommonConstants.APP_STORAGE_KEY_APP_SETTINGS, () => appSettings);
 

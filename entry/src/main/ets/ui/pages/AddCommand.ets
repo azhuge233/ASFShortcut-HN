@@ -4,7 +4,7 @@ import Logger from '../../common/utils/Logger';
 import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
 import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
 import StyleConstants from '../../common/constants/StyleConstants';
-import CommonUtils from '../../common/utils/CommonUtils';
+import PageContext from '../common/PageContext';
 
 @Builder
 export function AddCommandBuilder() {
@@ -34,19 +34,19 @@ struct AddCommand {
 
     async saveCommand() {
         if (!this.newCommandViewModel.nickname.trim() || !this.newCommandViewModel.command.trim()) {
-            CommonUtils.alert($r("app.string.AddCommand_Invalid_Input"), this.promptAction);
+            PageContext.alert($r("app.string.AddCommand_Invalid_Input"), this.promptAction);
             return;
         }
 
         try {
             const success = await this.listViewModel.addCommandEntry(this.newCommandViewModel.toCommandEntry());
             if (success) {
-                CommonUtils.alert($r("app.string.AddCommand_Add_Success"), this.promptAction);
+                PageContext.alert($r("app.string.AddCommand_Add_Success"), this.promptAction);
                 this.clearInput();
-            } else CommonUtils.alert($r("app.string.AddCommand_Add_Failed_Try_Again"), this.promptAction);
+            } else PageContext.alert($r("app.string.AddCommand_Add_Failed_Try_Again"), this.promptAction);
         } catch (err) {
             Logger.error(this.LOG_TAG, `保存命令失败: ${err}`);
-            CommonUtils.alert($r("app.string.AddCommand_Add_Failed"), this.promptAction);
+            PageContext.alert($r("app.string.AddCommand_Add_Failed"), this.promptAction);
         }
     }
 

@@ -5,16 +5,16 @@ import bundleManager from '@ohos.bundle.bundleManager';
 
 import Logger from '../../common/utils/Logger';
 import StyleConstants from '../../common/constants/StyleConstants';
-import { AppSettingsManager } from '../../common/utils/AppSettingsManager';
-import { AppSettings } from '../../domain/model/AppSettings';
+import { AppSettingsStore, toDomainColorMode, toPlatformColorMode } from '../../data/store/AppSettingsStore';
+import { AppSettings, ColorMode } from '../../domain/model/AppSettings';
 import { ColorModeRow, colorModeOptions } from '../components/ColorModeRow';
 import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
-import { DB } from '../../common/utils/DB';
+import { SettingsDao } from '../../data/dao/SettingsDao';
 import { MoreMenuItem } from '../components/MoreMenuItem';
-import CommonUtils from '../../common/utils/CommonUtils';
+import PageContext from '../common/PageContext';
+import TransferFiles from '../../data/file/TransferFiles';
 import { ExportJsonObject, SettingsJsonObject } from '../../domain/model/JsonObjects';
 import CommonConstants from '../../common/constants/CommonConstants';
-import CommandEntry from '../../domain/model/CommandEntry';
 
 @Builder
 export function MorePageBuilder() {
@@ -32,7 +32,7 @@ struct MorePage {
     @Local versionCode: string = '';
 
     @Local appSettings: AppSettings = AppStorageV2.connect(AppSettings, CommonConstants.APP_STORAGE_KEY_APP_SETTINGS,
-        () => new AppSettings(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET))!;
+        () => new AppSettings(ColorMode.FOLLOW_SYSTEM))!;
 
     private uiContext = this.getUIContext();
     private context = this.uiContext.getHostContext() as common.UIAbilityContext;
@@ -40,9 +40,9 @@ struct MorePage {
 
     pathStack: NavPathStack | undefined = undefined;
 
-    private db = DB.getInstance();
+    private db = SettingsDao.getInstance();
 
-    private aSM: AppSettingsManager = AppSettingsManager.getInstance();
+    private aSM: AppSettingsStore = AppSettingsStore.getInstance();
 
     private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
 
@@ -54,7 +54,7 @@ struct MorePage {
               {
                   name: "ASFSettingsPage",
                   onPop: (popInfo) => {
-                      CommonUtils.returnFromSubPage(popInfo);
+                      PageContext.returnFromSubPage(popInfo);
                   }
               }
           );}
@@ -81,10 +81,14 @@ struct MorePage {
     }
 
     // B0 期暂留本页：写设置 + 改应用颜色模式两项照搬原颜色模式设置页的 applyColorMode，B3 搬进 `MoreViewModel`。
+    // 领域枚举 ↔ 平台枚举的换算只在 `AppSettingsStore` 里一份，本页两个方向都调那个函数。
     private async applyColorMode(mode: ConfigurationConstant.ColorMode) {
-        if (this.appSettings.colorMode === mode) return;
+        const domainMode: ColorMode | null = toDomainColorMode(mode);
+        if (domainMode === null) return;
 
-        this.appSettings.colorMode = mode;
+        if (this.appSettings.colorMode === domainMode) return;
+
+        this.appSettings.colorMode = domainMode;
         await this.aSM.set(this.appSettings);
 
         try {
@@ -98,8 +102,8 @@ struct MorePage {
     async export(): Promise<void> {
         try {
             const settingsJsonObject = new SettingsJsonObject(
-                await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_ADDRESS),
-                await this.db.getSetting(CommonConstants.DB_KEY_HOST_INFO_PASSWORD)
+                await this.db.get(CommonConstants.DB_KEY_HOST_INFO_ADDRESS),
+                await this.db.get(CommonConstants.DB_KEY_HOST_INFO_PASSWORD)
             );
             const commandEntryJsonObjectList = await this.listViewModel.toCommandEntryJsonObjectList();
 
@@ -107,19 +111,19 @@ struct MorePage {
 
             const jsonString = JSON.stringify(exportJson, null, 4);
 
-            const success = await CommonUtils.saveToFile(jsonString, this.context);
+            const success = await TransferFiles.saveToFile(jsonString, this.context);
 
-            if (success) CommonUtils.alert($r("app.string.More_Export_Success"), this.promptAction);
+            if (success) PageContext.alert($r("app.string.More_Export_Success"), this.promptAction);
             else Logger.warn(this.LOG_TAG, `导出取消`);
         } catch (err) {
-            CommonUtils.alert($r("app.string.More_Export_Failed"), this.promptAction);
+            PageContext.alert($r("app.string.More_Export_Failed"), this.promptAction);
             Logger.error(this.LOG_TAG, `导出失败, ${err}`)
         }
     }
 
     async import() {
         try {
-            const uris = await CommonUtils.pickFile(this.context);
+            const uris = await TransferFiles.pickFile(this.context);
 
             // set to true, blocking user actions
             this.isProcessing = true;
@@ -128,44 +132,29 @@ struct MorePage {
                 let backupFilePath: string = uris[0];
                 Logger.debug(this.LOG_TAG, `备份文件路径: ${backupFilePath}`);
 
-                const jsonString = await CommonUtils.readFile(backupFilePath);
+                const jsonString = await TransferFiles.readFile(backupFilePath);
 
                 if(jsonString === undefined) throw new Error("读取文件失败");
 
-                const exportJson = await CommonUtils.parseData(jsonString);
+                const exportJson = await TransferFiles.parseData(jsonString);
 
-                // 先构造条目，再由 DB 事务整体替换；失败时回滚，保留原数据
-                const entries: Array<CommandEntry> = [];
-                let commandOrder = 0;
+                // 字段校验、事务整体替换与绑定清理都在领域层（X2：绑定未清则如实报失败）
+                const result = await this.listViewModel.importData(exportJson);
 
-                for (const commandEntryJsonObject of exportJson.CommandEntryList) {
-                    const orderIndex = commandEntryJsonObject.OrderIndex == -1 ? commandOrder : commandEntryJsonObject.OrderIndex;
-                    entries.push(new CommandEntry(
-                        0,
-                        commandEntryJsonObject.Nickname,
-                        commandEntryJsonObject.Command,
-                        orderIndex,
-                        commandEntryJsonObject.AIR,
-                        commandEntryJsonObject.IIR
-                    ));
-                    commandOrder++;
+                if (!result.ok) {
+                    if (!result.bindingsCleared) {
+                        PageContext.alert($r("app.string.More_Import_Clear_Bindings_Failed"), this.promptAction);
+                    } else PageContext.alert(`导入失败: ${result.reason}`, this.promptAction);
+                    return;
                 }
 
-                const success = await this.listViewModel.importData(
-                    exportJson.Settings.Address,
-                    exportJson.Settings.Password,
-                    entries
-                );
-
-                if (!success) throw new Error("导入数据失败");
-
-                CommonUtils.alert($r("app.string.More_Import_Success"), this.promptAction);
+                PageContext.alert($r("app.string.More_Import_Success"), this.promptAction);
 
                 this.pathStack?.pop("OK");
             } else Logger.warn(this.LOG_TAG, "未选择文件");
         } catch (err) {
             Logger.error(this.LOG_TAG, `导入失败, ${err}`);
-            CommonUtils.alert(`导入失败: ${err}`, this.promptAction);
+            PageContext.alert(`导入失败: ${err}`, this.promptAction);
         } finally {
             this.isProcessing = false;
         }
@@ -218,11 +207,11 @@ struct MorePage {
             });
 
             if (result.index === 0) {
-                const success = await this.listViewModel.clearCommandEntry();
-                if (success) {
-                    CommonUtils.alert($r("app.string.More_Clear_Success"), this.promptAction);
+                const clearResult = await this.listViewModel.clearCommandEntry();
+                if (clearResult.ok) {
+                    PageContext.alert($r("app.string.More_Clear_Success"), this.promptAction);
                     this.pathStack?.pop("Clear press");
-                } else CommonUtils.alert($r("app.string.More_Clear_Failed_Try_Again"), this.promptAction);
+                } else PageContext.alert($r("app.string.More_Clear_Failed_Try_Again"), this.promptAction);
             } else Logger.warn(this.LOG_TAG, "清除已取消");
         } catch (err) {
             if (err && (err.code === 100006 || err.message?.toLowerCase().includes('cancel'))) {
@@ -231,7 +220,7 @@ struct MorePage {
             }
 
             Logger.error(this.LOG_TAG, `清除失败, ${err}`);
-            CommonUtils.alert($r("app.string.More_Clear_Failed"), this.promptAction);
+            PageContext.alert($r("app.string.More_Clear_Failed"), this.promptAction);
         }
     }
 
@@ -321,7 +310,7 @@ struct MorePage {
                             label: $r("app.string.Color_Mode_Settings_Title"),
                             desc: $r("app.string.Color_Mode_Desc"),
                             options: colorModeOptions,
-                            currentMode: this.appSettings.colorMode,
+                            currentMode: toPlatformColorMode(this.appSettings.colorMode),
                             onSelectMode: (mode: ConfigurationConstant.ColorMode) => {
                                 this.applyColorMode(mode);
                             }

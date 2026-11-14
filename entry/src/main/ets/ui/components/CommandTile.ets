@@ -1,7 +1,7 @@
 import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
 import Logger from '../../common/utils/Logger';
 import StyleConstants from '../../common/constants/StyleConstants';
-import CommonUtils from '../../common/utils/CommonUtils';
+import PageContext from '../common/PageContext';
 import CommonConstants from '../../common/constants/CommonConstants';
 
 @ComponentV2
@@ -164,7 +164,7 @@ export struct CommandTile {
                     .enabled(!this.isRunning)
                     .stateEffect(true)
                     .onClick(() => {
-                        CommonUtils.vibrate(CommonConstants.VIBRATE_EFFECT_ID_HARD);
+                        PageContext.vibrate(CommonConstants.VIBRATE_EFFECT_ID_HARD);
                         this.runCommand();
                     })
             }

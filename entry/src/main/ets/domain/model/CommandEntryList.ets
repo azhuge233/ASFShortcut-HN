@@ -1,28 +1,50 @@
-import CommandEntry from "./CommandEntry";
 import Logger from '../../common/utils/Logger';
-import { DB } from "../../common/utils/DB"
-import { PM } from "../../common/utils/PM";
-import CommonConstants from "../../common/constants/CommonConstants";
+import { CommandDao } from '../../data/dao/CommandDao';
+import { CommandRepository } from '../repository/CommandRepository';
+import { CommandImportResult, CommandImportService } from '../service/CommandImportService';
+import { CommandMutationResult, CommandService } from '../service/CommandService';
+import CommandEntry from './CommandEntry';
+import { ExportJsonObject } from './JsonObjects';
 
+/**
+ * 指令列表聚合根（设计 §2.3）：持有内存中的列表与 `orderIndex = max + 1` 的规则，
+ * 增删改后把受影响的 `formID` 映射交回上层。
+ *
+ * 涉及业务判定的顺序（删除先解绑、清空先解绑、改条目是否解绑）在 `CommandService`；
+ * 导入校验与事务整体替换在 `CommandImportService`。数据存取一律经仓库接口，不直连数据库与首选项。
+ */
 export default class CommandEntryList {
     commandEntries: Array<CommandEntry> = [];
 
-    private LOG_TAG = "[Model/CommandEntryList]";
+    private LOG_TAG = '[Model/CommandEntryList]';
 
-    private db = DB.getInstance();
-    private pm = PM.getInstance();
+    private commands: CommandRepository;
+    private service: CommandService;
+    private importService: CommandImportService;
 
-    constructor(commandEntries: Array<CommandEntry>) {
+    constructor(commandEntries: Array<CommandEntry>,
+                commands: CommandRepository = CommandDao.getInstance(),
+                service: CommandService = new CommandService(),
+                importService: CommandImportService = new CommandImportService()) {
         this.commandEntries = commandEntries;
+        this.commands = commands;
+        this.service = service;
+        this.importService = importService;
     }
 
-    async loadCommandEntries(): Promise<void> {
+    /**
+     * 读列表。失败时返回 false 且不动内存列表——把失败显示成空列表是假话（设计 §2.11 第三条）。
+     */
+    async loadCommandEntries(): Promise<boolean> {
         try {
-            let result = await this.db.getCommandList();
-            if(result === undefined) throw new Error("指令列表 undefined");
-            else this.commandEntries = result;
+            const result = await this.commands.list();
+            if (result === undefined) throw new Error("指令列表 undefined");
+
+            this.commandEntries = result;
+            return true;
         } catch (err) {
             Logger.error(this.LOG_TAG, `加载列表失败, ${err}`);
+            return false;
         }
     }
 
@@ -36,7 +58,7 @@ export default class CommandEntryList {
 
             commandEntry.orderIndex = newOrderIndex;
 
-            const result = await this.db.addCommandEntry(commandEntry);
+            const result = await this.commands.insert(commandEntry);
             Logger.debug(this.LOG_TAG, `新命令添加成功，ID: ${result}`);
             return true;
         } catch (err) {
@@ -45,123 +67,49 @@ export default class CommandEntryList {
         }
     }
 
-    // 更新成功返回更新 entry 对应的所有 formID
-    // 只有更新失败返回布尔值
-    async updateCommandEntry(commandEntry: CommandEntry): Promise<boolean | Map<string, string[]>> {
-        try {
-            const result = await this.db.updateCommandEntry(commandEntry);
-            Logger.debug(this.LOG_TAG, `命令更新成功, ${result}`);
+    async updateCommandEntry(commandEntry: CommandEntry): Promise<CommandMutationResult> {
+        const result = await this.service.updateEntry(commandEntry);
 
-            let updatedFormIDs: Map<string, string[]> = new Map<string, string[]>();
+        if (result.ok) Logger.debug(this.LOG_TAG, `命令更新成功`);
+        else Logger.error(this.LOG_TAG, `更新命令失败, ${result.reason}`);
 
-            // 如果条目更改为需要自定义输入，则取消绑定所有卡片
-            if(commandEntry.idInputRequired === 1 || commandEntry.accountInputRequired === 1) {
-                updatedFormIDs = await this.removeAllFormBelongsToEntryID(commandEntry.id);
-            } else { // 否则更新卡片昵称和指令
-                updatedFormIDs = await this.updateAllFormBelongsToEntry(commandEntry);
-            }
-
-            return updatedFormIDs;
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `更新命令失败, ${err}`);
-            return false;
-        }
+        return result;
     }
 
-    // 删除成功返回删除 entry 对应的所有 formID
-    // 只有删除失败返回布尔值
-    async deleteCommandEntry(commandEntry: CommandEntry): Promise<boolean | Map<string, string[]>> {
-        try {
-            const result = await this.db.deleteCommandEntryByID(commandEntry);
-            Logger.debug(this.LOG_TAG, `命令删除成功, ${result}`);
+    async deleteCommandEntry(commandEntry: CommandEntry): Promise<CommandMutationResult> {
+        const result = await this.service.deleteEntry(commandEntry.id);
 
-            // 删除所有对应 ID 的卡片
-            const removedFormIDs = await this.removeAllFormBelongsToEntryID(commandEntry.id);
+        if (result.ok) Logger.debug(this.LOG_TAG, `命令删除成功`);
+        else Logger.error(this.LOG_TAG, `删除命令失败, ${result.reason}`);
 
-            return removedFormIDs;
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `删除命令失败, ${err}`);
-            return false;
-        }
+        return result;
     }
 
-    async clearCommandEntry(): Promise<boolean | Map<string, string[]>> {
-        try {
-            await this.db.clearTableCommandEntries();
-            Logger.debug(this.LOG_TAG, `指令列表清除成功`);
+    async clearCommandEntry(): Promise<CommandMutationResult> {
+        const result = await this.service.clearAll();
 
-            // 获取全部卡片 formID，供 ViewModel 清空绑定
-            const allSingleBindings = await this.pm.getAllCardBindingsSingle();
-            const allMultipleBindings = await this.pm.getAllCardBindingsMultiple();
+        if (result.ok) Logger.debug(this.LOG_TAG, `指令列表清除成功`);
+        else Logger.error(this.LOG_TAG, `清除指令列表失败, ${result.reason}`);
 
-            const allFormIDMap: Map<string, string[]> = new Map<string, string[]>();
-            allFormIDMap.set(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE, allSingleBindings.map(binding => binding.formID));
-            allFormIDMap.set(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE, allMultipleBindings.map(binding => binding.formID));
-
-            // 清空卡片绑定
-            const success = await this.pm.clearAllBindings();
-            if(success) {
-                Logger.debug(this.LOG_TAG, `指令绑定已清空`);
-                return allFormIDMap; // 成功清除则返回所有 formID
-            } else {
-                Logger.warn(this.LOG_TAG, `指令绑定清空失败`);
-                return false;
-            }
-        } catch (err) {
-            Logger.error(this.LOG_TAG, `清除指令列表失败, ${err}`);
-            return false;
-        }
+        return result;
     }
 
-    async importData(address: string, password: string, entries: Array<CommandEntry>): Promise<boolean> {
-        const success = await this.db.importData(address, password, entries);
-        if (!success) return false;
-
-        const bindingsCleared = await this.pm.clearAllBindings();
-        if (!bindingsCleared) {
-            Logger.warn(this.LOG_TAG, '导入成功，但卡片绑定清空失败');
-        }
-
-        return true;
+    async importData(json: ExportJsonObject): Promise<CommandImportResult> {
+        return this.importService.importData(json);
     }
 
-    async updateEntriesOrder(reorderedEntries: Array<Array<number>>): Promise<boolean> {
+    async updateEntriesOrder(entries: Array<CommandEntry>): Promise<boolean> {
         try {
-            const success = await this.db.batchUpdateOrderIndices(reorderedEntries);
+            const success = await this.commands.batchUpdateOrderIndices(entries);
             if (success) {
-                Logger.debug(this.LOG_TAG, `顺序更新成功，共更新 ${reorderedEntries.length} 个命令。`);
+                Logger.debug(this.LOG_TAG, `顺序更新成功，共更新 ${entries.length} 个命令。`);
             } else {
-                Logger.warn(this.LOG_TAG, `顺序更新失败，共 ${reorderedEntries.length} 个命令。`);
+                Logger.warn(this.LOG_TAG, `顺序更新失败，共 ${entries.length} 个命令。`);
             }
             return success;
         } catch (err) {
             Logger.error(this.LOG_TAG, `更新命令顺序失败: ${err}`);
             return false;
         }
-    }
-
-    /*
-     * 以下为桌面卡片(Form)相关
-     * 仅更改持久化存储，不刷新卡片 UI
-     * 卡片 UI 在 ViewModel 刷新
-     */
-    private async updateAllFormBelongsToEntry(commandEntry: CommandEntry): Promise<Map<string, string[]>> {
-        let affectedMap: Map<string, string[]> = new Map<string, string[]>();
-
-        affectedMap.set(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE, await this.pm.updateByShortcutSingle(commandEntry));
-        affectedMap.set(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE, await this.pm.updateByShortcutMultiple(commandEntry));
-
-        Logger.debug(this.LOG_TAG, `已更新相关卡片: 单指令 ${affectedMap.get(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE)?.length} 个，多指令 ${affectedMap.get(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE)?.length} 个`);
-        return affectedMap;
-    }
-
-    private async removeAllFormBelongsToEntryID(commandID: number): Promise<Map<string, string[]>> {
-        let affectedMap: Map<string, string[]> = new Map<string, string[]>();
-
-        affectedMap.set(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE, await this.pm.removeBindingsByShortcutIDSingle(commandID));
-        affectedMap.set(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE, await this.pm.removeBindingsByShortcutIDMultiple(commandID));
-
-        Logger.debug(this.LOG_TAG, `已清除相关卡片: 单指令卡片 ${affectedMap.get(CommonConstants.FORM_RESULT_MAP_KEY_SINGLE)?.length} 个，多指令卡片 ${affectedMap.get(CommonConstants.FORM_RESULT_MAP_KEY_MULTIPLE)?.length} 个`);
-        return affectedMap;
     }
 }

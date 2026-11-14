@@ -2,17 +2,18 @@ import { FormExtensionAbility, formInfo, formProvider } from '@kit.FormKit';
 import { Want } from '@kit.AbilityKit';
 
 import Logger from '../common/utils/Logger';
-import { DB } from '../common/utils/DB';
-import { PM } from '../common/utils/PM';
+import { Database } from '../data/Database';
+import { FormBindingStore } from '../data/store/FormBindingStore';
 import CommonConstants from '../common/constants/CommonConstants';
-import CommonUtils from '../common/utils/CommonUtils';
+import { FormPublisher } from '../data/form/FormPublisher';
 import SingleCommandFormData from '../domain/model/SingleCommandFormData';
 
 export default class SingleCommandFormAbility extends FormExtensionAbility {
     private LOG_TAG = '[SingleCommandFormAbility]';
 
-    private db: DB = DB.getInstance();
-    private pm: PM = PM.getInstance();
+    private db: Database = Database.getInstance();
+    private pm: FormBindingStore = FormBindingStore.getInstance();
+    private publisher: FormPublisher = FormPublisher.getInstance();
 
     // Tips
     // 卡片变换大小时会调用，新建变换后的 Form
@@ -27,7 +28,7 @@ export default class SingleCommandFormAbility extends FormExtensionAbility {
             Logger.warn(this.LOG_TAG, `onAddForm() formID 为空`);
         }
 
-        return CommonUtils.createSingleCommandFormBindingData(formID);
+        return this.publisher.createSingleCommandFormBindingData(formID);
     }
 
     // Tips
@@ -53,14 +54,14 @@ export default class SingleCommandFormAbility extends FormExtensionAbility {
             if(formData) {
                 Logger.debug(this.LOG_TAG, `onUpdateForm() 查询到 formID = ${formId} 的卡片 formData`);
 
-                const formInfo = CommonUtils.createSingleCommandFormBindingData(formData);
+                const formInfo = this.publisher.createSingleCommandFormBindingData(formData);
                 await formProvider.updateForm(formId, formInfo);
 
                 Logger.debug(this.LOG_TAG, `onUpdateForm() formID = ${formId} 的卡片已更新`);
             } else {
                 Logger.warn(this.LOG_TAG, `onUpdateForm() formID = ${formId} 的卡片 formData 为空`);
 
-                const formInfo = CommonUtils.createSingleCommandFormBindingData(formId);
+                const formInfo = this.publisher.createSingleCommandFormBindingData(formId);
                 await formProvider.updateForm(formId, formInfo);
 
                 Logger.warn(this.LOG_TAG, `onUpdateForm() 已重置 formID = ${formId} 的卡片`);
@@ -117,13 +118,16 @@ export default class SingleCommandFormAbility extends FormExtensionAbility {
     }
 
     private async unbindForm(formID: string) {
-        const success = await this.pm.unbind(formID);
-        if(success) Logger.debug(this.LOG_TAG, `unbindForm() 已删除卡片绑定: ${formID}`);
-        else Logger.warn(this.LOG_TAG, `unbindForm() 删除卡片绑定失败: ${formID}`)
+        try {
+            await this.pm.unbind(formID);
+            Logger.debug(this.LOG_TAG, `unbindForm() 已删除卡片绑定: ${formID}`);
+        } catch (err) {
+            Logger.warn(this.LOG_TAG, `unbindForm() 删除卡片绑定失败: ${formID}`);
+        }
     }
 
     private async getFormDataByID(formID: string): Promise<SingleCommandFormData | null> {
-        const formData = await this.pm.getFormDataByIDSingle(formID);
+        const formData = await this.pm.getSingle(formID);
 
         Logger.debug(this.LOG_TAG, `getFormDataByID() ${formID} 查询结果: ${JSON.stringify(formData)}`);
 
@@ -137,7 +141,7 @@ export default class SingleCommandFormAbility extends FormExtensionAbility {
     private async handleRestoreAction(formID: string, from: string) {
         Logger.debug(this.LOG_TAG, `handleRestoreAction() 调用方: ${from}`);
 
-        const formData = await this.pm.getFormDataByIDSingle(formID);
+        const formData = await this.pm.getSingle(formID);
 
         if(formData) Logger.debug(this.LOG_TAG, `handleRestoreAction() 查询到 formID = ${formID} 卡片的绑定数据: ${JSON.stringify(formData)}`);
         else {
