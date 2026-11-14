@@ -68,6 +68,9 @@ struct Index {
 
     pageStack: NavPathStack = new NavPathStack();
 
+    // 长按快捷方式要去的页面：记下上次已消费的值，从子页/后台回来时不重复跳
+    private consumedShortcutPath: string = '';
+
     aboutToAppear(): void {
         // 拖拽落库失败：VM 内部已按数据库顺序回滚，页面再刷一次并 toast 提示（设计 §2.4.5）
         this.viewModel.onMoveFailed = () => {
@@ -82,14 +85,16 @@ struct Index {
         if (this.pageStack.size() === 0) await this.viewModel.init();
         else await this.viewModel.loadEntries();
 
-        if (AppStorage.has(CommonConstants.APP_STORAGE_KEY_SHORTCUT_PATH)) {
-            Logger.debug(this.LOG_TAG, `检测到长按快捷方式页面`);
+        // 每次前台回来都读一次窗口通道（设计 §2.6，通道只读不写）：
+        // 应用已在运行时再次长按快捷方式，`onNewWant` 会重写同一个键，读得到新值才跳；
+        // 与上次已消费的值相同则不跳，避免从子页返回时重复跳转
+        const shortcutPath: string =
+            PageContext.readWindowParam(this.uiContext, CommonConstants.APP_STORAGE_KEY_SHORTCUT_PATH);
+        if (shortcutPath !== '' && shortcutPath !== this.consumedShortcutPath) {
+            this.consumedShortcutPath = shortcutPath;
 
-            const path: string | undefined = AppStorage.get(CommonConstants.APP_STORAGE_KEY_SHORTCUT_PATH);
-            if (path) {
-                await this.goToSpecifyPage(path);
-                AppStorage.delete(CommonConstants.APP_STORAGE_KEY_SHORTCUT_PATH);
-            }
+            Logger.debug(this.LOG_TAG, `检测到长按快捷方式页面`);
+            await this.goToSpecifyPage(shortcutPath);
         }
     }
 

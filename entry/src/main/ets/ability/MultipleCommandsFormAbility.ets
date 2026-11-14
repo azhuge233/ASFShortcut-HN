@@ -1,4 +1,4 @@
-import { FormExtensionAbility, formInfo, formProvider } from '@kit.FormKit';
+import { FormExtensionAbility, formInfo } from '@kit.FormKit';
 import { Want } from '@kit.AbilityKit';
 
 import Logger from '../common/utils/Logger';
@@ -50,15 +50,15 @@ export default class MultipleCommandsFormAbility extends FormExtensionAbility {
             if(formData) {
                 Logger.debug(this.LOG_TAG, `onUpdateForm() 查询到 formID = ${formId} 的卡片 formData`);
 
-                const formInfo = this.publisher.createMultipleCommandFormBindingData(formData);
-                await formProvider.updateForm(formId, formInfo);
+                await this.publisher.publish(formId, formData);
 
                 Logger.debug(this.LOG_TAG, `onUpdateForm() formID = ${formId} 的卡片已更新`);
             } else {
                 Logger.warn(this.LOG_TAG, `onUpdateForm() formID = ${formId} 的卡片 formData 为空`);
 
-                const formInfo = this.publisher.createMultipleCommandFormBindingData(formId);
-                await formProvider.updateForm(formId, formInfo);
+                // 多指令卡的空形态由调用方交有类型的空对象表达（`FormPublisher` 的契约）：
+                // 传 null 会走单卡建法，写出去的 payload 键集就变了
+                await this.publisher.publish(formId, new MultipleCommandsFormData(formId, false));
 
                 Logger.warn(this.LOG_TAG, `onUpdateForm() 已重置 formID = ${formId} 的卡片`);
             }

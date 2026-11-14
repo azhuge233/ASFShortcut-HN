@@ -1,5 +1,5 @@
 import { BusinessError } from '@kit.BasicServicesKit';
-import { PromptAction } from '@ohos.arkui.UIContext';
+import { PromptAction, UIContext } from '@ohos.arkui.UIContext';
 import { common } from '@kit.AbilityKit';
 import { vibrator } from '@kit.SensorServiceKit';
 
@@ -8,8 +8,8 @@ import Logger from '../../common/utils/Logger';
 const LOG_TAG: string = '[PageContext]';
 
 /**
- * 页面上下文相关动作：提示、子页返回日志、振动、关闭应用。
- * 四个方法签名与行为与 1.7.1 一致；
+ * 页面上下文相关动作：提示、子页返回日志、振动、关闭应用、读窗口参数。
+ * 方法签名与行为与 1.7.1 一致（`readWindowParam` 是 B4 的一次性参数通道读取，见设计 §2.6）；
  * 落 `ui/common/` 是因为它们只对页面侧有意义，`domain/` 与 `data/` 不该 import `@kit.ArkUI`。
  */
 class PageContext {
@@ -70,6 +70,19 @@ class PageContext {
         context.terminateSelf().catch((err: BusinessError) => {
             Logger.error(from, `关闭应用失败, ${err}`);
         });
+    }
+
+    // 读本窗口的参数：`loadContent` 第二参交付的 `LocalStorage`（设计 §2.6）
+    // 通道只读不写：页面不写回参数，也不靠删键造“一次性”（那是写入）
+    public readWindowParam(uiContext: UIContext, key: string): string {
+        const storage: LocalStorage | undefined = uiContext.getSharedLocalStorage();
+
+        if (!storage || !storage.has(key)) return '';
+
+        const value: string | undefined = storage.get<string>(key);
+        if (!value) return '';
+
+        return value;
     }
 }
 

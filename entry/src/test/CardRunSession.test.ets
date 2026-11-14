@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@ohos/hypium';
 
-import { CardRunSession, RunCancelResult, RunToken } from '../main/ets/common/utils/CardRunSession';
+import { CardRunSession, RunCancelResult, RunToken } from '../main/ets/domain/card/CardRunSession';
 
 // CardRunSession 的 token 仲裁单测：设备外可复跑的验收判据（设计 §5 的 AC4 / AC11 行）
 export default function cardRunSessionTest() {

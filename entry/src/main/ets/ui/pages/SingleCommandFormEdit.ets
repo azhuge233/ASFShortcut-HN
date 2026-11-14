@@ -5,7 +5,7 @@ import StyleConstants from '../../common/constants/StyleConstants';
 import Logger from '../../common/utils/Logger';
 import CommonConstants from '../../common/constants/CommonConstants';
 import PageContext from '../common/PageContext';
-import CommandFormEditViewModel from '../../viewmodel/CommandFormEditViewModel';
+import CommandFormEditViewModel, { PageHideDecision } from '../../viewmodel/CommandFormEditViewModel';
 import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
 
 /**
@@ -21,29 +21,52 @@ struct SingleCommandFormEdit {
     @Local viewModel: CommandFormEditViewModel = new CommandFormEditViewModel();
 
     private context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    private promptAction = this.getUIContext().getPromptAction();
 
     private scrollerForList: ListScroller = new ListScroller();
 
     private formID: string = '';
 
-    async onPageShow(): Promise<void> {
+    // 页面是否在前台：保存失败时若已隐藏，提示留到 `onPageShow` 补（设计 §2.7）
+    private pageVisible: boolean = true;
+
+    aboutToAppear(): void {
+        // 一次性参数在页面创建时读一次（设计 §2.6）：通道只读不写
         this.formID = this.readFormID();
+
+        // 关闭动作交给 VM：保存中隐藏后保存成功，由 VM 关窗（设计 §2.7）
+        this.viewModel.setCloseHandler(() => {
+            PageContext.closeApplication(this.LOG_TAG, this.context);
+        });
+    }
+
+    async onPageShow(): Promise<void> {
+        this.pageVisible = true;
         await this.viewModel.init(this.formID);
+        this.alertSaveErrorIfAny();
     }
 
     onPageHide(): void {
-        PageContext.closeApplication(this.LOG_TAG, this.context);
+        this.pageVisible = false;
+
+        // 保存中隐藏不关窗，等保存结果（设计 §2.7）
+        const decision: PageHideDecision = this.viewModel.notifyPageHide();
+        if (decision === 'close') PageContext.closeApplication(this.LOG_TAG, this.context);
     }
 
+    // 一次性参数从本窗口通道读（设计 §2.6）：只读不写，页面不写回参数
     private readFormID(): string {
-        if (!AppStorage.has(CommonConstants.APP_STORAGE_KEY_FORM_ID)) return '';
-
-        const formIDParam: string | undefined = AppStorage.get(CommonConstants.APP_STORAGE_KEY_FORM_ID);
-        if (!formIDParam) return '';
+        const formIDParam: string = PageContext.readWindowParam(this.getUIContext(), CommonConstants.APP_STORAGE_KEY_FORM_ID);
+        if (formIDParam === '') return '';
 
         Logger.debug(this.LOG_TAG, `传入 formID: ${formIDParam}`);
-        AppStorage.delete(CommonConstants.APP_STORAGE_KEY_FORM_ID);
         return formIDParam;
+    }
+
+    private alertSaveErrorIfAny(): void {
+        if (this.viewModel.consumeSaveError() === '') return;
+
+        PageContext.alert($r('app.string.EditPage_Update_Failed_Try_Again'), this.promptAction);
     }
 
     // 整行可选中；单卡只留一个选中项
@@ -60,7 +83,13 @@ struct SingleCommandFormEdit {
     private async handleConfirmClick(): Promise<void> {
         const saved: boolean = await this.viewModel.confirmSingle();
         // 保存成功后关闭页面（1.7.1 同一判据：绑定与卡片写入都成功才关）
-        if (saved) PageContext.closeApplication(this.LOG_TAG, this.context);
+        if (saved) {
+            PageContext.closeApplication(this.LOG_TAG, this.context);
+            return;
+        }
+
+        // 失败留页可重试；页面已隐藏的那次由 `onPageShow` 补提示
+        if (this.pageVisible) this.alertSaveErrorIfAny();
     }
 
     @Builder

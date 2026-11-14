@@ -550,7 +550,7 @@
     },
     {
       "name": "More_Clear_Bindings_Failed",
-      "value": "绑定未解除"
+      "value": "绑定未解除，指令未清空"
     }
   ]
 }

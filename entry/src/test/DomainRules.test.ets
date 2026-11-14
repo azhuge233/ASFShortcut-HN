@@ -6,9 +6,15 @@ import MultipleCommandsFormData from '../main/ets/domain/model/MultipleCommandsF
 import SingleCommandFormData from '../main/ets/domain/model/SingleCommandFormData';
 import { CommandEntryJsonObject, ExportJsonObject, SettingsJsonObject } from '../main/ets/domain/model/JsonObjects';
 import { CommandRepository } from '../main/ets/domain/repository/CommandRepository';
+import { CardPublisher } from '../main/ets/domain/repository/CardPublisher';
 import { FormBindingRepository } from '../main/ets/domain/repository/FormBindingRepository';
 import { SettingsRepository } from '../main/ets/domain/repository/SettingsRepository';
 import { TransactionBoundary } from '../main/ets/data/Database';
+import { CardAdapter, CardKind, CardRunRequest, CardTerminal } from '../main/ets/domain/card/CardAdapter';
+import { CardRunPipeline } from '../main/ets/domain/card/CardRunPipeline';
+import { CardRunSession, RunToken } from '../main/ets/domain/card/CardRunSession';
+import { MultipleCardAdapter } from '../main/ets/domain/card/MultipleCardAdapter';
+import { SingleCardAdapter } from '../main/ets/domain/card/SingleCardAdapter';
 import { CommandService } from '../main/ets/domain/service/CommandService';
 import { CommandImportService } from '../main/ets/domain/service/CommandImportService';
 
@@ -261,6 +267,84 @@ function legalImportJson(command: string): ExportJsonObject {
   );
 }
 
+// 记录一次终态写入的判据：pipeline 交给 adapter 的结局，以及据此选出的文案
+class RecordedTerminal {
+  formID: string = '';
+  cancelled: boolean = false;
+  payload: string | null = null;
+  text: string = '';
+}
+
+// 假的卡片类型实现：只记录 pipeline 调了哪些步骤、按什么结局写终态
+class RecordingCardAdapter implements CardAdapter {
+  readonly kind: CardKind = 'single';
+
+  earlyWrites: string[] = [];
+  refreshWrites: string[] = [];
+  terminals: RecordedTerminal[] = [];
+
+  // 早写运行态时抛错：验证「写失败也要落到终态」，不让会话挂在运行态
+  failEarlyWrite: boolean = false;
+  // 早写运行态时要做的事（用例用它模拟「早写期间就被取消」）
+  onEarlyWrite: (() => void) | null = null;
+
+  parseRunRequest(params: Record<string, Object>): CardRunRequest | null {
+    const formID: string = params['formID'] as string;
+    return formID ? new CardRunRequest(formID) : null;
+  }
+
+  async writeRunningEarly(req: CardRunRequest): Promise<void> {
+    if (this.onEarlyWrite) this.onEarlyWrite();
+    if (this.failEarlyWrite) throw new Error('注入的早写失败');
+
+    this.earlyWrites.push(req.formID);
+  }
+
+  async refreshRunningFromBinding(req: CardRunRequest): Promise<void> {
+    // 与真实 adapter 同形：会话不活就不写运行态（模块档 §2.6 末段）
+    if (!req.isActive()) return;
+    this.refreshWrites.push(req.formID);
+  }
+
+  async writeTerminal(formID: string, outcome: CardTerminal): Promise<boolean> {
+    const record = new RecordedTerminal();
+    record.formID = formID;
+    record.cancelled = outcome.cancelled;
+    record.payload = outcome.payload;
+    record.text = outcome.text('已取消', '执行失败');
+    this.terminals.push(record);
+
+    return true;
+  }
+
+  // pipeline 只在「无在跑会话」的取消里调它；本套用例不断言它（那条路要先初始化数据依赖）
+  async writeFallbackTerminal(formID: string): Promise<void> {
+  }
+}
+
+// 假的卡片写出口：分开记录 publish 与 publishWithRetry，判 adapter 走的是哪条既有口径
+class RecordingPublisher implements CardPublisher {
+  singleWrites: SingleCommandFormData[] = [];
+  multipleWrites: MultipleCommandsFormData[] = [];
+  retriedFormIDs: string[] = [];
+
+  async publish(formID: string, data: SingleCommandFormData | MultipleCommandsFormData | null): Promise<boolean> {
+    if (data instanceof SingleCommandFormData) this.singleWrites.push(data);
+    else if (data instanceof MultipleCommandsFormData) this.multipleWrites.push(data);
+
+    return true;
+  }
+
+  async publishWithRetry(formID: string, data: SingleCommandFormData | MultipleCommandsFormData): Promise<boolean> {
+    this.retriedFormIDs.push(formID);
+
+    if (data instanceof SingleCommandFormData) this.singleWrites.push(data);
+    else if (data instanceof MultipleCommandsFormData) this.multipleWrites.push(data);
+
+    return true;
+  }
+}
+
 export default function domainRulesTest() {
   describe('domainRulesTest', () => {
     // U1：删除被单卡绑定的指令 → 先 unbind，后 deleteByID，受影响集合含该 formID
@@ -438,6 +522,124 @@ export default function domainRulesTest() {
       expect(result.ok).assertFalse();
       expect(result.bindingsCleared).assertFalse();
       expect(result.reason.indexOf('卡片绑定未清理') >= 0).assertTrue();
+    });
+  });
+
+  // B4：运行编排的终态判定（U10–U12）与两个 adapter 的终态写入（设计 §5 的 adapter 断言）
+  describe('cardRunPipelineTest', () => {
+    // U10：用户取消后结果才到 → 终态文案取「已取消」，不是结果文本
+    it('cancelWinsOverLateResult', 0, async () => {
+      const adapter = new RecordingCardAdapter();
+      const session = CardRunSession.getInstance();
+      const pipeline = new CardRunPipeline(adapter, '[test]', session);
+
+      const token: RunToken = session.begin('form-cancel-late');
+      session.cancel('form-cancel-late');
+
+      await pipeline.finishRun(token, '晚到的结果');
+
+      expect(adapter.terminals.length).assertEqual(1);
+      expect(adapter.terminals[0].cancelled).assertTrue();
+      expect(adapter.terminals[0].text).assertEqual('已取消');
+      expect(adapter.terminals[0].formID).assertEqual('form-cancel-late');
+    });
+
+    // U11：超时路径（payload = null、未取消）→ 终态文案取失败
+    it('timeoutWritesFailedText', 0, async () => {
+      const adapter = new RecordingCardAdapter();
+      const session = CardRunSession.getInstance();
+      const pipeline = new CardRunPipeline(adapter, '[test]', session);
+
+      const token: RunToken = session.begin('form-timeout');
+
+      await pipeline.finishRun(token, null);
+
+      expect(adapter.terminals.length).assertEqual(1);
+      expect(adapter.terminals[0].cancelled).assertFalse();
+      expect(adapter.terminals[0].payload === null).assertTrue();
+      expect(adapter.terminals[0].text).assertEqual('执行失败');
+    });
+
+    // 早写运行态失败：会话不能挂在运行态，必须落到一次终态写入
+    it('earlyWriteFailureStillWritesTerminal', 0, async () => {
+      const adapter = new RecordingCardAdapter();
+      adapter.failEarlyWrite = true;
+      const session = CardRunSession.getInstance();
+      const pipeline = new CardRunPipeline(adapter, '[test]', session);
+
+      await pipeline.run({ 'formID': 'form-early-fail' });
+
+      expect(adapter.terminals.length).assertEqual(1);
+      expect(adapter.terminals[0].cancelled).assertFalse();
+      expect(adapter.terminals[0].text).assertEqual('执行失败');
+    });
+
+    // 早写运行态期间被取消：计时器与短时任务都要被归还，且只写一次「已取消」（U12 后半句）
+    it('cancelDuringEarlyWriteReleasesTimerAndKeepAlive', 0, async () => {
+      const adapter = new RecordingCardAdapter();
+      const session = CardRunSession.getInstance();
+      const pipeline = new CardRunPipeline(adapter, '[test]', session);
+
+      adapter.onEarlyWrite = () => {
+        pipeline.onBackground();            // 会话还活着 → 申请到短时任务
+        session.cancel('form-cancel-early'); // 早写期间被取消 → 后续活性检查全部不通过
+      };
+
+      await pipeline.run({ 'formID': 'form-cancel-early' });
+
+      expect(adapter.terminals.length).assertEqual(1);
+      expect(adapter.terminals[0].cancelled).assertTrue();
+      expect(adapter.terminals[0].text).assertEqual('已取消');
+      expect(pipeline.isTimingOut()).assertFalse();
+      expect(pipeline.hasKeepAlive()).assertFalse();
+    });
+
+    // U12：晚到结果（tryFinish 非当前会话）→ 不写卡片；旧运行不覆盖新卡片
+    it('lateResultDoesNotWriteCard', 0, async () => {
+      const adapter = new RecordingCardAdapter();
+      const session = CardRunSession.getInstance();
+      const pipeline = new CardRunPipeline(adapter, '[test]', session);
+
+      const staleToken: RunToken = session.begin('form-late');
+      const currentToken: RunToken = session.begin('form-late');
+
+      await pipeline.finishRun(staleToken, '旧结果');
+      expect(adapter.terminals.length).assertEqual(0);
+
+      await pipeline.finishRun(currentToken, '新结果');
+      expect(adapter.terminals.length).assertEqual(1);
+      expect(adapter.terminals[0].text).assertEqual('新结果');
+    });
+
+    // 单卡 adapter：终态按 cancelled 优先 / payload 为 null 判失败 / 否则取结果，三支都写进领域模型
+    it('singleAdapterSelectsTerminalText', 0, async () => {
+      const publisher = new RecordingPublisher();
+      const adapter = new SingleCardAdapter('已取消', '执行失败', new FakeFormBindingRepository(new CallLog()), publisher);
+
+      await adapter.writeTerminal('form-s1', CardTerminal.of(true, '结果'));
+      await adapter.writeTerminal('form-s1', CardTerminal.of(false, null));
+      await adapter.writeTerminal('form-s1', CardTerminal.of(false, '结果'));
+
+      expect(publisher.singleWrites.length).assertEqual(3);
+      expect(publisher.singleWrites[0].runResult).assertEqual('已取消');
+      expect(publisher.singleWrites[0].isRunning).assertFalse();
+      expect(publisher.singleWrites[1].runResult).assertEqual('执行失败');
+      expect(publisher.singleWrites[2].runResult).assertEqual('结果');
+    });
+
+    // 多卡 adapter：同一套终态判据，写入走 publishWithRetry（运行路径的既有重试口径）
+    it('multipleAdapterSelectsTerminalText', 0, async () => {
+      const publisher = new RecordingPublisher();
+      const adapter = new MultipleCardAdapter('已取消', '执行失败', new FakeFormBindingRepository(new CallLog()), publisher);
+
+      await adapter.writeTerminal('form-m1', CardTerminal.of(true, '结果'));
+      await adapter.writeTerminal('form-m1', CardTerminal.of(false, null));
+
+      expect(publisher.multipleWrites.length).assertEqual(2);
+      expect(publisher.retriedFormIDs.length).assertEqual(2);
+      expect(publisher.multipleWrites[0].runResult).assertEqual('已取消');
+      expect(publisher.multipleWrites[0].isRunning).assertFalse();
+      expect(publisher.multipleWrites[1].runResult).assertEqual('执行失败');
     });
   });
 }

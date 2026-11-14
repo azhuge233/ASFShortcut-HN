@@ -15,6 +15,10 @@ export default class EntryAbility extends UIAbility {
     private targetPage: string = 'ui/pages/Index'; // 指定页面，默认为 Index
     private currentWindowStage: window.WindowStage | null = null;
 
+    // 进程级全局存储不再持有任何键；`path` / `formID` 是一次性参数，只给本窗口的页面看（设计 §2.6）
+    // 颜色模式只走 AppStorageV2 的 `AppSettings`（§2.9）
+    private windowStorage: LocalStorage = new LocalStorage();
+
     private db = Database.getInstance();
     private pm = FormBindingStore.getInstance();
     private aSM = AppSettingsStore.getInstance();
@@ -96,7 +100,7 @@ export default class EntryAbility extends UIAbility {
 
     private loadContent(): void {
         if(this.currentWindowStage) {
-            this.currentWindowStage.loadContent(this.targetPage, (err) => {
+            this.currentWindowStage.loadContent(this.targetPage, this.windowStorage, (err) => {
                 try {
                     this.currentWindowStage?.getMainWindowSync().getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET_WITH_CARET);
                 } catch (err) {
@@ -135,7 +139,7 @@ export default class EntryAbility extends UIAbility {
 
             const formID = params['formID'];
             if (typeof formID === 'string' && formID.trim() !== '') {
-                AppStorage.setOrCreate(CommonConstants.APP_STORAGE_KEY_FORM_ID, formID);
+                this.windowStorage.setOrCreate(CommonConstants.APP_STORAGE_KEY_FORM_ID, formID);
             } else {
                 Logger.warn(this.LOG_TAG, `handleFormWant() formID 为空`);
             }
@@ -149,7 +153,7 @@ export default class EntryAbility extends UIAbility {
         Logger.debug(this.LOG_TAG, `长按快捷方式转入`);
         const shortCutKey = want?.parameters?.shortCutKey;
         if (typeof shortCutKey === 'string' && shortCutKey.trim() !== '') {
-            AppStorage.setOrCreate(CommonConstants.APP_STORAGE_KEY_SHORTCUT_PATH, shortCutKey);
+            this.windowStorage.setOrCreate(CommonConstants.APP_STORAGE_KEY_SHORTCUT_PATH, shortCutKey);
         } else {
             Logger.warn(this.LOG_TAG, `handleShortcutWant() 快捷方式参数为空`);
         }

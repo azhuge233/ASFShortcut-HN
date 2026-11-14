@@ -1,4 +1,4 @@
-import { FormExtensionAbility, formInfo, formProvider } from '@kit.FormKit';
+import { FormExtensionAbility, formInfo } from '@kit.FormKit';
 import { Want } from '@kit.AbilityKit';
 
 import Logger from '../common/utils/Logger';
@@ -54,15 +54,13 @@ export default class SingleCommandFormAbility extends FormExtensionAbility {
             if(formData) {
                 Logger.debug(this.LOG_TAG, `onUpdateForm() 查询到 formID = ${formId} 的卡片 formData`);
 
-                const formInfo = this.publisher.createSingleCommandFormBindingData(formData);
-                await formProvider.updateForm(formId, formInfo);
+                await this.publisher.publish(formId, formData);
 
                 Logger.debug(this.LOG_TAG, `onUpdateForm() formID = ${formId} 的卡片已更新`);
             } else {
                 Logger.warn(this.LOG_TAG, `onUpdateForm() formID = ${formId} 的卡片 formData 为空`);
 
-                const formInfo = this.publisher.createSingleCommandFormBindingData(formId);
-                await formProvider.updateForm(formId, formInfo);
+                await this.publisher.publish(formId, null);
 
                 Logger.warn(this.LOG_TAG, `onUpdateForm() 已重置 formID = ${formId} 的卡片`);
             }
