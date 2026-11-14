@@ -17,9 +17,9 @@ struct SingleCommandWidgetCard {
     @LocalStorageProp('runResult') private runResult: string = '';
 
     private readonly ENTRY_ABILITY_NAME: string = 'EntryAbility';
-    private readonly WIDGET_ENTRY_ABILITY_NAME: string = 'SingleCommandWidgetEntryAbility';
+    private readonly WIDGET_ENTRY_ABILITY_NAME: string = 'SingleCommandRunAbility';
 
-    private readonly FORM_EDIT_PAGE_ROUTE: string = 'pages/SingleCommandFormEdit';
+    private readonly FORM_EDIT_PAGE_ROUTE: string = 'ui/pages/SingleCommandFormEdit';
 
     private sendMessageAction(action: string, data: number | string | null) {
         postCardAction(this, {

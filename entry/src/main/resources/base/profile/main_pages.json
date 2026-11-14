@@ -1,11 +1,11 @@
 {
   "src": [
-    "pages/Index",
-    "pages/AddCommand",
-    "pages/EditPage",
-    "pages/ASFSettingsPage",
-    "pages/MorePage",
-    "pages/SingleCommandFormEdit",
-    "pages/MultipleCommandsFormEdit"
+    "ui/pages/Index",
+    "ui/pages/AddCommand",
+    "ui/pages/EditPage",
+    "ui/pages/ASFSettingsPage",
+    "ui/pages/MorePage",
+    "ui/pages/SingleCommandFormEdit",
+    "ui/pages/MultipleCommandsFormEdit"
   ]
 }

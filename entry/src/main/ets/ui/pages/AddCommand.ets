@@ -1,22 +1,22 @@
 import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
 
-import StyleConstants from '../common/constants/StyleConstants';
-import CommonUtils from '../common/utils/CommonUtils';
-import Logger from '../common/utils/Logger';
-import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
-import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
+import Logger from '../../common/utils/Logger';
+import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
+import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
+import StyleConstants from '../../common/constants/StyleConstants';
+import CommonUtils from '../../common/utils/CommonUtils';
 
 @Builder
-export function EditPageBuilder() {
-    EditPage();
+export function AddCommandBuilder() {
+    AddCommand();
 }
 
 @Entry
 @ComponentV2
-struct EditPage {
-    private LOG_TAG = "[pages/EditPage]";
+struct AddCommand {
+    private LOG_TAG = '[pages/AddCommand]';
 
-    @Local updatingCommandEntry: CommandEntryViewModel = new CommandEntryViewModel();
+    @Local newCommandViewModel: CommandEntryViewModel = new CommandEntryViewModel();
 
     private uiContext = this.getUIContext();
     private promptAction = this.uiContext.getPromptAction();
@@ -25,102 +25,111 @@ struct EditPage {
 
     pathStack: NavPathStack | undefined = undefined;
 
+    clearInput() {
+        this.newCommandViewModel.nickname = '';
+        this.newCommandViewModel.command = '';
+        this.newCommandViewModel.accountInputRequired = 0;
+        this.newCommandViewModel.idInputRequired = 0;
+    }
+
     async saveCommand() {
-        if (!this.updatingCommandEntry.nickname.trim() || !this.updatingCommandEntry.command.trim()) {
-            CommonUtils.alert($r("app.string.EditPage_Invalid_Input"), this.promptAction);
+        if (!this.newCommandViewModel.nickname.trim() || !this.newCommandViewModel.command.trim()) {
+            CommonUtils.alert($r("app.string.AddCommand_Invalid_Input"), this.promptAction);
             return;
         }
 
         try {
-            const success = await this.listViewModel.updateCommandEntry(this.updatingCommandEntry.toCommandEntry());
+            const success = await this.listViewModel.addCommandEntry(this.newCommandViewModel.toCommandEntry());
             if (success) {
-                CommonUtils.alert($r("app.string.EditPage_Update_Success"), this.promptAction);
-                this.pathStack?.pop("Button pressed");
-            } else CommonUtils.alert($r("app.string.EditPage_Update_Failed_Try_Again"), this.promptAction);
+                CommonUtils.alert($r("app.string.AddCommand_Add_Success"), this.promptAction);
+                this.clearInput();
+            } else CommonUtils.alert($r("app.string.AddCommand_Add_Failed_Try_Again"), this.promptAction);
         } catch (err) {
-            Logger.error(this.LOG_TAG, `更新命令失败: ${err}`);
-            CommonUtils.alert($r("app.string.EditPage_Update_Failed"), this.promptAction);
+            Logger.error(this.LOG_TAG, `保存命令失败: ${err}`);
+            CommonUtils.alert($r("app.string.AddCommand_Add_Failed"), this.promptAction);
         }
     }
 
     build() {
         HdsNavDestination() {
             Scroll() {
-                Column({ space: StyleConstants.EDIT_PAGE_BLANK_COL_SPACE }) {
+                Column({ space: StyleConstants.ADD_COMMAND_COL_SPACE }) {
                     Blank()
                         .margin({ top: StyleConstants.MARGIN_TEN, bottom: StyleConstants.MARGIN_TEN })
 
                     // 名称输入
-                    Text($r("app.string.EditPage_Name_Label"))
-                        .fontSize(StyleConstants.EDIT_PAGE_LABEL_FONT_SIZE)
+                    Text($r("app.string.AddCommand_Name_Label"))
+                        .fontSize(StyleConstants.ADD_COMMAND_LABEL_FONT_SIZE)
                         .alignSelf(ItemAlign.Start)
                         .margin({ left: StyleConstants.MARGIN_TWENTY })
                     TextInput(
                         {
-                            placeholder: $r("app.string.EditPage_Name_Input_Placeholder"),
-                            text: this.updatingCommandEntry.nickname
+                            placeholder: $r("app.string.AddCommand_Name_Input_Placeholder"),
+                            text: this.newCommandViewModel.nickname
                         }
                     )
                         .onChange(
                             (value: string) => {
-                                this.updatingCommandEntry.nickname = value;
+                                this.newCommandViewModel.nickname = value;
                             }
                         )
+                        .defaultFocus(true)
                         .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
                         .padding(StyleConstants.PADDING_TEN)
                         .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
 
                     // 命令输入
-                    Text($r("app.string.EditPage_Command_Label"))
-                        .fontSize(StyleConstants.EDIT_PAGE_LABEL_FONT_SIZE)
+                    Text($r("app.string.AddCommand_Command_Label"))
+                        .fontSize(StyleConstants.ADD_COMMAND_LABEL_FONT_SIZE)
                         .alignSelf(ItemAlign.Start)
                         .margin({ left: StyleConstants.MARGIN_TWENTY, top: StyleConstants.MARGIN_TWENTY })
                     TextInput(
                         {
-                            placeholder: $r("app.string.EditPage_Command_Input_Placeholder"),
-                            text: this.updatingCommandEntry.command
+                            placeholder: $r("app.string.AddCommand_Command_Input_Placeholder"),
+                            text: this.newCommandViewModel.command
                         }
                     )
                         .onChange(
                             (value: string) => {
-                                this.updatingCommandEntry.command = value;
+                                this.newCommandViewModel.command = value;
                             }
                         )
+                        .defaultFocus(false)
                         .margin({ left: StyleConstants.MARGIN_TWENTY, right: StyleConstants.MARGIN_TWENTY })
                         .padding(StyleConstants.PADDING_TEN)
                         .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
 
                     // 选项区域 - 使用 Toggle 组件
-                    Column({ space: StyleConstants.EDIT_PAGE_OPTION_COL_SPACE }) {
-                        Text($r("app.string.EditPage_Options_Label"))
-                            .fontSize(StyleConstants.EDIT_PAGE_LABEL_FONT_SIZE)
+                    Column({ space: StyleConstants.ADD_COMMAND_OPTION_COL_SPACE }) {
+                        Text($r("app.string.AddCommand_Options_Label"))
+                            .fontSize(StyleConstants.ADD_COMMAND_LABEL_FONT_SIZE)
                             .alignSelf(ItemAlign.Start)
                             .margin({ bottom: StyleConstants.MARGIN_TEN })
 
-                        // 需要输入ASF账户的选项
-                        Row({ space: StyleConstants.EDIT_PAGE_ROW_SPACE }) {
-                            Toggle({ type: ToggleType.Checkbox, isOn: this.updatingCommandEntry.accountRequired })
+                        // 需要输入账户的选项
+                        Row({ space: StyleConstants.ADD_COMMAND_ROW_SPACE }) {
+                            Toggle({ type: ToggleType.Checkbox, isOn: this.newCommandViewModel.accountRequired })
                                 .onChange(
                                     (value: boolean) => {
-                                        this.updatingCommandEntry.accountRequired = value;
+                                        this.newCommandViewModel.accountRequired = value;
                                     }
                                 )
-                            Text($r("app.string.EditPage_Needs_ASF_Account_Input_Label"))
-                                .fontSize(StyleConstants.EDIT_PAGE_CHECK_LABEL_FONT_SIZE)
+                            Text($r("app.string.AddCommand_Needs_ASF_Account_Input_Label"))
+                                .fontSize(StyleConstants.ADD_COMMAND_CHECK_LABEL_FONT_SIZE)
                         }
                         .justifyContent(FlexAlign.Start)
                         .width(StyleConstants.FULL_PERCENT)
 
-                        // 需要输入 ASF App ID 的选项
-                        Row({ space: StyleConstants.EDIT_PAGE_ROW_SPACE }) {
-                            Toggle({ type: ToggleType.Checkbox, isOn: this.updatingCommandEntry.idRequired })
+                        // 需要输入 App ID 的选项
+                        Row({ space: StyleConstants.ADD_COMMAND_ROW_SPACE }) {
+                            Toggle({ type: ToggleType.Checkbox, isOn: this.newCommandViewModel.idRequired })
                                 .onChange(
                                     (value: boolean) => {
-                                        this.updatingCommandEntry.idRequired = value;
+                                        this.newCommandViewModel.idRequired = value;
                                     }
                                 )
-                            Text($r("app.string.EditPage_Needs_ASF_ID_Input_Label"))
-                                .fontSize(StyleConstants.EDIT_PAGE_CHECK_LABEL_FONT_SIZE)
+                            Text($r("app.string.AddCommand_Needs_ASF_ID_Input_Label"))
+                                .fontSize(StyleConstants.ADD_COMMAND_CHECK_LABEL_FONT_SIZE)
                         }
                         .justifyContent(FlexAlign.Start)
                         .width(StyleConstants.FULL_PERCENT)
@@ -137,9 +146,13 @@ struct EditPage {
                     .border({ width: StyleConstants.INPUT_BORDER_WIDTH, color: Color.Gray })
                     .borderRadius(StyleConstants.INPUT_BORDER_RADIUS)
 
-                    // 按钮
-                    Button($r("app.string.EditPage_Save_Button_Label"))
+                    // 按钮区域
+                    Button($r("app.string.AddCommand_Add_Button_Label"))
                         .width(StyleConstants.SEVENTY_PERCENT)
+                        .enabled(
+                            this.newCommandViewModel.nickname.trim() !== "" &&
+                                this.newCommandViewModel.command.trim() !== ""
+                        )
                         .margin({ top: StyleConstants.MARGIN_FORTY })
                         .onClick(
                             () => {
@@ -158,7 +171,7 @@ struct EditPage {
         .titleBar({
             content: {
                 title: {
-                    mainTitle: $r("app.string.EditPage_Title")
+                    mainTitle: $r("app.string.AddCommand_Title")
                 }
             },
             style: {
@@ -173,11 +186,7 @@ struct EditPage {
         .width(StyleConstants.FULL_PERCENT)
         .onReady((context: NavDestinationContext) => {
             this.pathStack = context.pathStack;
-            const param = context.pathInfo.param as Array<object>;
-            this.listViewModel = param[0] as CommandEntryListViewModel;
-            const sourceEntry = param[1] as CommandEntryViewModel;
-            this.updatingCommandEntry = new CommandEntryViewModel();
-            this.updatingCommandEntry.updateCommand(sourceEntry.toCommandEntry());
+            this.listViewModel = context.pathInfo.param as CommandEntryListViewModel;
         })
         .onBackPressed(() => {
             this.pathStack?.pop("Back pressed");

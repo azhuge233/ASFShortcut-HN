@@ -5,15 +5,15 @@ import { HdsNavigation, HdsNavigationMenuContentOptions, HdsTabs,
     HdsTabsController, ScrollEffectType } from '@hms.hds.hdsBaseComponent';
 import { hdsMaterial } from '@kit.UIDesignKit';
 
-import Logger from '../common/utils/Logger';
-import { ASF } from '../common/utils/ASF';
-import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
-import { DB } from '../common/utils/DB';
-import CommonConstants from '../common/constants/CommonConstants';
-import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
-import { CommandTile } from '../view/components/CommandTile';
-import StyleConstants from '../common/constants/StyleConstants';
-import CommonUtils from '../common/utils/CommonUtils';
+import Logger from '../../common/utils/Logger';
+import { ASF } from '../../common/utils/ASF';
+import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
+import { DB } from '../../common/utils/DB';
+import CommonConstants from '../../common/constants/CommonConstants';
+import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
+import { CommandTile } from '../components/CommandTile';
+import StyleConstants from '../../common/constants/StyleConstants';
+import CommonUtils from '../../common/utils/CommonUtils';
 
 @Entry
 @ComponentV2

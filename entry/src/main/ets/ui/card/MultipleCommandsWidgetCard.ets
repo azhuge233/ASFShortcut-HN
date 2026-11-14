@@ -1,6 +1,6 @@
 import StyleConstants from '../../common/constants/StyleConstants';
 import CommonConstants from '../../common/constants/CommonConstants'
-import WidgetCommand from '../model/WidgetCommand';
+import WidgetCommand from '../../domain/model/WidgetCommand';
 
 let storage = new LocalStorage();
 
@@ -16,9 +16,9 @@ struct MultipleCommandsWidgetCard {
     @LocalStorageProp('runResult') private runResult: string = '';
 
     private readonly ENTRY_ABILITY_NAME: string = 'EntryAbility';
-    private readonly WIDGET_ENTRY_ABILITY_NAME: string = 'MultipleCommandsWidgetEntryAbility';
+    private readonly WIDGET_ENTRY_ABILITY_NAME: string = 'MultipleCommandsRunAbility';
 
-    private readonly FORM_EDIT_PAGE_ROUTE: string = 'pages/MultipleCommandsFormEdit';
+    private readonly FORM_EDIT_PAGE_ROUTE: string = 'ui/pages/MultipleCommandsFormEdit';
 
     private sendMessageAction(action: string, data: number | string | null) {
         postCardAction(this, {

@@ -4,7 +4,7 @@ import { BusinessError } from '@kit.BasicServicesKit';
 
 import Logger from '../utils/Logger';
 import CommonConstants from '../constants/CommonConstants'
-import CommandEntry from '../../model/CommandEntry';
+import CommandEntry from '../../domain/model/CommandEntry';
 
 export class DB {
     private LOG_TAG = '[DB]'

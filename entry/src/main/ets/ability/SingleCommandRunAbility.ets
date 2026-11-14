@@ -2,18 +2,17 @@ import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { http } from '@kit.NetworkKit';
 import { backgroundTaskManager } from '@kit.BackgroundTasksKit';
 
-import CommonUtils from '../../common/utils/CommonUtils';
-import Logger from '../../common/utils/Logger';
-import { ASF } from '../../common/utils/ASF';
-import { DB } from '../../common/utils/DB';
-import { PM } from '../../common/utils/PM';
-import { CardRunSession, RunCancelResult, RunToken } from '../../common/utils/CardRunSession';
-import CommonConstants from '../../common/constants/CommonConstants';
-import MultipleCommandsFormData from '../model/MultipleCommandsFormData';
-import WidgetCommand from '../model/WidgetCommand';
+import CommonUtils from '../common/utils/CommonUtils';
+import Logger from '../common/utils/Logger';
+import { ASF } from '../common/utils/ASF';
+import { DB } from '../common/utils/DB';
+import { PM } from '../common/utils/PM';
+import { CardRunSession, RunCancelResult, RunToken } from '../common/utils/CardRunSession';
+import CommonConstants from '../common/constants/CommonConstants';
+import SingleCommandFormData from '../domain/model/SingleCommandFormData';
 
-export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
-    private LOG_TAG = "[MultipleCommandsWidgetEntryAbility]";
+export default class SingleCommandWidgetEntryAbility extends UIAbility {
+    private LOG_TAG = "[SingleCommandWidgetEntryAbility]";
 
     private db = DB.getInstance();
     private pm = PM.getInstance();
@@ -21,13 +20,14 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
 
     private formID: string = '';
     private shortcutID: number = -1;
+    private nickname: string = '';
     private command: string = '';
-    private commandList: Array<WidgetCommand> = [];
 
     private runToken: RunToken | null = null;   // 本实例发起的运行会话；取消实例不持有 token
     private timeoutID: number = -1;             // 15 秒硬超时计时器，-1 表示不在计时
     private delayRequestID: number = -1;        // 短时任务 requestId，-1 表示未申请
 
+    // 如果UIAbility启动，在收到call事件后会触发onCreate生命周期回调
     onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
         Logger.debug(this.LOG_TAG, `onCreate()`);
 
@@ -113,22 +113,8 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
     private async handleRunMethod(params: Record<string, Object>): Promise<void> {
         this.formID = params['formID'] as string;
         this.shortcutID = params['shortcutID'] as number;
+        this.nickname = params['nickname'] as string;
         this.command = params['command'] as string;
-
-        const rawCommandList = params['commandList'];
-        if (Array.isArray(rawCommandList)) {
-            this.commandList = rawCommandList as Array<WidgetCommand>;
-        } else if (typeof rawCommandList === 'string') {
-            try {
-                const parsed = JSON.parse(rawCommandList) as Array<WidgetCommand>;
-                this.commandList = Array.isArray(parsed) ? parsed : [];
-            } catch (err) {
-                Logger.warn(this.LOG_TAG, `handleRunMethod() commandList 解析失败, ${err}`);
-                this.commandList = [];
-            }
-        } else {
-            this.commandList = [];
-        }
 
         if (!this.formID) {
             Logger.warn(this.LOG_TAG, `handleRunMethod() formID 为空，忽略本次运行`);
@@ -139,7 +125,7 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
         const token = session.begin(this.formID);
         this.runToken = token;
 
-        Logger.debug(this.LOG_TAG, `handleRunMethod() 从 call 事件获得参数: ${this.formID}, ${this.shortcutID}, ${this.command}, ${this.commandList}`);
+        Logger.debug(this.LOG_TAG, `handleRunMethod() 从 call 事件获得参数: ${this.formID}, ${this.shortcutID}, ${this.nickname}, ${this.command}`);
 
         // F3：参数到手即写运行态，不读 DB / PM
         await this.writeRunningState();
@@ -211,7 +197,7 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
         try {
             await this.init();
 
-            const formData = await this.pm.getFormDataByIDMultiple(formID);
+            const formData = await this.pm.getFormDataByIDSingle(formID);
             if (!formData) {
                 Logger.warn(this.LOG_TAG, `writeFallbackTerminal() 无 PM 绑定，不写卡片: ${formID}`);
                 return;
@@ -220,7 +206,7 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
             formData.isRunning = false;
             formData.runResult = this.getRunFailedMessage();
 
-            const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData);
+            const formInfo = CommonUtils.createSingleCommandFormBindingData(formData);
             const written = await CommonUtils.updateFormWithRetry(formID, formInfo);
 
             Logger.info(this.LOG_TAG, `writeFallbackTerminal() 无在跑会话，写兜底终态${written ? '成功' : '失败'}: ${formID}`);
@@ -230,30 +216,35 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
     }
 
     private async writeRunningState(): Promise<void> {
-        const formData = new MultipleCommandsFormData(this.formID, true);
+        const formData = new SingleCommandFormData(this.formID, true);
 
-        formData.commandList = this.commandList;
+        formData.shortcutID = this.shortcutID;
+        formData.nickname = this.nickname;
+        formData.command = this.command;
         formData.isRunning = true;
 
-        const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData);
+        const formInfo = CommonUtils.createSingleCommandFormBindingData(formData);
         await CommonUtils.updateFormWithRetry(this.formID, formInfo);
     }
 
-    private async getNewFormData(): Promise<MultipleCommandsFormData> {
-        const formData = new MultipleCommandsFormData(this.formID, true);
+    private async getNewFormData(): Promise<SingleCommandFormData> {
+        const formData = new SingleCommandFormData(this.formID, true);
+
+        formData.shortcutID = this.shortcutID;
+        formData.nickname = this.nickname;
+        formData.command = this.command;
 
         try {
-            const bound = await this.pm.getFormDataByIDMultiple(this.formID);
-            formData.commandList = bound ? bound.commandList : this.commandList;
+            const bound = await this.pm.getFormDataByIDSingle(this.formID);
+            if (bound) formData.nickname = bound.nickname;
         } catch (err) {
             Logger.warn(this.LOG_TAG, `getNewFormData() 读取 PM 绑定失败，使用 call 参数, ${err}`);
-            formData.commandList = this.commandList;
         }
 
         return formData;
     }
 
-    // 用 PM 绑定刷新 commandList 后写运行态；取绑定期间可能已写终态，此时不再把卡片写回运行态
+    // 用 PM 绑定刷新昵称后写运行态；取绑定期间可能已写终态，此时不再把卡片写回运行态
     private async sendFormRunning(token: RunToken) {
         const formData = await this.getNewFormData();
 
@@ -261,7 +252,7 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
 
         formData.isRunning = true;
 
-        const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData);
+        const formInfo = CommonUtils.createSingleCommandFormBindingData(formData);
         await CommonUtils.updateFormWithRetry(this.formID, formInfo);
     }
 
@@ -305,7 +296,7 @@ export default class MultipleCommandsWidgetEntryAbility extends UIAbility {
             formData.runResult = runResult; // 显示执行结果
             formData.isRunning = false; // 取消卡片正在运行状态
 
-            const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData);
+            const formInfo = CommonUtils.createSingleCommandFormBindingData(formData);
             const written = await CommonUtils.updateFormWithRetry(token.formID, formInfo);
 
             if (written) Logger.debug(this.LOG_TAG, `finishRun() 已写终态: ${runResult}`);

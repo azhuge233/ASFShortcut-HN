@@ -4,7 +4,7 @@
       "name": "SingleCommandWidget",
       "displayName": "$string:SingleCommandWidget_display_name",
       "description": "$string:SingleCommandWidget_desc",
-      "src": "./ets/singlecommandwidget/pages/SingleCommandWidgetCard.ets",
+      "src": "./ets/ui/card/SingleCommandWidgetCard.ets",
       "uiSyntax": "arkts",
       "window": {
         "designWidth": 720,
@@ -16,7 +16,7 @@
       "isDynamic": true,
       "isDefault": true,
       "updateEnabled": true,
-      "formConfigAbility": "ability://SingleCommandEditEntryAbility",
+      "formConfigAbility": "ability://SingleCommandEditAbility",
       "scheduledUpdateTime": "10:30",
       "updateDuration": 1,
       "defaultDimension": "1*2",

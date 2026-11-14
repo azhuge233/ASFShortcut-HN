@@ -1,5 +1,5 @@
-import CommandEntry from '../model/CommandEntry'
-import { CommandEntryJsonObject } from '../model/JsonObjects'
+import CommandEntry from '../domain/model/CommandEntry'
+import { CommandEntryJsonObject } from '../domain/model/JsonObjects'
 
 @ObservedV2
 export class CommandEntryViewModel {

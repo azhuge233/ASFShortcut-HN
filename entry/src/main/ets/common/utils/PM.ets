@@ -2,9 +2,9 @@ import preferences from '@ohos.data.preferences';
 import { deviceInfo, BusinessError } from '@kit.BasicServicesKit';
 
 import Logger from './Logger';
-import CommandEntry from '../../model/CommandEntry';
-import SingleCommandFormData from '../../singlecommandwidget/model/SingleCommandFormData';
-import MultipleCommandsFormData from '../../multiplecommandswidget/model/MultipleCommandsFormData';
+import CommandEntry from '../../domain/model/CommandEntry';
+import SingleCommandFormData from '../../domain/model/SingleCommandFormData';
+import MultipleCommandsFormData from '../../domain/model/MultipleCommandsFormData';
 
 export class PM {
     private LOG_TAG = '[PM]';

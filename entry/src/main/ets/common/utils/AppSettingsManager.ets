@@ -3,7 +3,7 @@ import { deviceInfo } from '@kit.BasicServicesKit';
 import { ConfigurationConstant } from '@kit.AbilityKit';
 
 import Logger from '../utils/Logger';
-import { AppSettings } from '../../model/AppSettings';
+import { AppSettings } from '../../domain/model/AppSettings';
 
 export class AppSettingsManager {
     private LOG_TAG = "[AppSettingsManager]";

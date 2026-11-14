@@ -8,9 +8,9 @@ import { vibrator } from '@kit.SensorServiceKit';
 import { formBindingData, formProvider } from '@kit.FormKit';
 
 import Logger from './Logger';
-import { ExportJsonObject } from '../../model/JsonObjects';
-import SingleCommandFormData from '../../singlecommandwidget/model/SingleCommandFormData';
-import MultipleCommandsFormData from '../../multiplecommandswidget/model/MultipleCommandsFormData';
+import { ExportJsonObject } from '../../domain/model/JsonObjects';
+import SingleCommandFormData from '../../domain/model/SingleCommandFormData';
+import MultipleCommandsFormData from '../../domain/model/MultipleCommandsFormData';
 
 class CommonUtils {
     private LOG_TAG = "[CommonUtils]";

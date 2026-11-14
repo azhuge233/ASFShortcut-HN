@@ -4,7 +4,7 @@
       "name": "MultipleCommandsWidget",
       "displayName": "$string:MultipleCommandsWidget_display_name",
       "description": "$string:MultipleCommandsWidget_desc",
-      "src": "./ets/multiplecommandswidget/pages/MultipleCommandsWidgetCard.ets",
+      "src": "./ets/ui/card/MultipleCommandsWidgetCard.ets",
       "uiSyntax": "arkts",
       "window": {
         "designWidth": 720,
@@ -16,7 +16,7 @@
       "isDynamic": true,
       "isDefault": false,
       "updateEnabled": true,
-      "formConfigAbility": "ability://MultipleCommandsEditEntryAbility",
+      "formConfigAbility": "ability://MultipleCommandsEditAbility",
       "scheduledUpdateTime": "10:30",
       "updateDuration": 1,
       "defaultDimension": "2*4",

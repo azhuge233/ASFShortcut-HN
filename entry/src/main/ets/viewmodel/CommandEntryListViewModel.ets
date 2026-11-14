@@ -1,8 +1,8 @@
 import Logger from '../common/utils/Logger';
 import { PM } from '../common/utils/PM';
-import CommandEntry from '../model/CommandEntry';
-import CommandEntryList from '../model/CommandEntryList';
-import { CommandEntryJsonObject } from '../model/JsonObjects';
+import CommandEntry from '../domain/model/CommandEntry';
+import CommandEntryList from '../domain/model/CommandEntryList';
+import { CommandEntryJsonObject } from '../domain/model/JsonObjects';
 import { CommandEntryViewModel } from "./CommandEntryViewModel";
 import { formProvider } from '@kit.FormKit';
 import CommonUtils from '../common/utils/CommonUtils';

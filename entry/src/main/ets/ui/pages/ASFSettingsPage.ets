@@ -1,10 +1,10 @@
 import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
 
-import Logger from '../common/utils/Logger';
-import { DB } from '../common/utils/DB';
-import CommonConstants from '../common/constants/CommonConstants';
-import StyleConstants from '../common/constants/StyleConstants';
-import CommonUtils from '../common/utils/CommonUtils';
+import Logger from '../../common/utils/Logger';
+import { DB } from '../../common/utils/DB';
+import CommonConstants from '../../common/constants/CommonConstants';
+import StyleConstants from '../../common/constants/StyleConstants';
+import CommonUtils from '../../common/utils/CommonUtils';
 
 @Builder
 export function ASFSettingsPageBuilder() {

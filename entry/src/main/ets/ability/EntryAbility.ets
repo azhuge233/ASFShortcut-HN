@@ -6,12 +6,12 @@ import { DB } from '../common/utils/DB';
 import CommonConstants from '../common/constants/CommonConstants';
 import { PM } from '../common/utils/PM';
 import { AppSettingsManager } from '../common/utils/AppSettingsManager';
-import { AppSettings } from '../model/AppSettings';
+import { AppSettings } from '../domain/model/AppSettings';
 
 export default class EntryAbility extends UIAbility {
     private LOG_TAG = "[EntryAbility]";
 
-    private targetPage: string = 'pages/Index'; // 指定页面，默认为 Index
+    private targetPage: string = 'ui/pages/Index'; // 指定页面，默认为 Index
     private currentWindowStage: window.WindowStage | null = null;
 
     private db = DB.getInstance();
@@ -19,13 +19,13 @@ export default class EntryAbility extends UIAbility {
     private aSM = AppSettingsManager.getInstance();
 
     private static readonly VALID_TARGET_PAGES: Set<string> = new Set([
-        'pages/Index',
-        'pages/AddCommand',
-        'pages/EditPage',
-        'pages/ASFSettingsPage',
-        'pages/MorePage',
-        'pages/SingleCommandFormEdit',
-        'pages/MultipleCommandsFormEdit'
+        'ui/pages/Index',
+        'ui/pages/AddCommand',
+        'ui/pages/EditPage',
+        'ui/pages/ASFSettingsPage',
+        'ui/pages/MorePage',
+        'ui/pages/SingleCommandFormEdit',
+        'ui/pages/MultipleCommandsFormEdit'
     ]);
 
     onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
@@ -118,7 +118,7 @@ export default class EntryAbility extends UIAbility {
             const rawParams = want?.parameters?.params;
             if (typeof rawParams !== 'string') {
                 Logger.warn(this.LOG_TAG, `handleFormWant() 参数为空`);
-                this.targetPage = 'pages/Index';
+                this.targetPage = 'ui/pages/Index';
                 return;
             }
 
@@ -129,7 +129,7 @@ export default class EntryAbility extends UIAbility {
                 this.targetPage = targetPage;
             } else {
                 Logger.warn(this.LOG_TAG, `handleFormWant() 非法目标页面，使用默认页面`);
-                this.targetPage = 'pages/Index';
+                this.targetPage = 'ui/pages/Index';
             }
 
             const formID = params['formID'];
@@ -140,7 +140,7 @@ export default class EntryAbility extends UIAbility {
             }
         } catch (err) {
             Logger.error(this.LOG_TAG, `handleFormWant() 解析失败, ${err}`);
-            this.targetPage = 'pages/Index';
+            this.targetPage = 'ui/pages/Index';
         }
     }
 

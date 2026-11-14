@@ -2,20 +2,21 @@ import { common } from '@kit.AbilityKit';
 import { formProvider } from '@kit.FormKit';
 import { HdsNavigation, HdsNavigationTitleMode, ScrollEffectType, hdsMaterial } from '@kit.UIDesignKit';
 
-import StyleConstants from '../common/constants/StyleConstants';
-import { DB } from '../common/utils/DB';
-import Logger from '../common/utils/Logger';
-import { PM } from '../common/utils/PM';
-import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
-import { CommandEntryViewModel } from '../viewmodel/CommandEntryViewModel';
-import SingleCommandFormData from '../singlecommandwidget/model/SingleCommandFormData';
-import CommonConstants from '../common/constants/CommonConstants';
-import CommonUtils from '../common/utils/CommonUtils';
+import StyleConstants from '../../common/constants/StyleConstants';
+import { DB } from '../../common/utils/DB';
+import Logger from '../../common/utils/Logger';
+import { PM } from '../../common/utils/PM';
+import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
+import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
+import CommonConstants from '../../common/constants/CommonConstants';
+import CommonUtils from '../../common/utils/CommonUtils';
+import MultipleCommandsFormData from '../../domain/model/MultipleCommandsFormData';
+import WidgetCommand from '../../domain/model/WidgetCommand';
 
 @Entry
 @ComponentV2
-struct SingleCommandFormEdit {
-    private LOG_TAG = "[pages/SingleCommandFormEdit]";
+struct MultipleCommandsFormEdit {
+    private LOG_TAG = "[pages/MultipleCommandsFormEdit]";
 
     @Local listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
 
@@ -23,7 +24,7 @@ struct SingleCommandFormEdit {
 
     @Local isDBInitialized: boolean = true;
 
-    @Local selectedID: number | null = null;
+    @Local selectedIDs: number[] = [];
     @Local isUpdating: boolean = false;
 
     private context = this.getUIContext().getHostContext() as common.UIAbilityContext;
@@ -62,32 +63,32 @@ struct SingleCommandFormEdit {
                 AppStorage.delete(CommonConstants.APP_STORAGE_KEY_FORM_ID);
             }
         }
-
     }
 
     private handleSelectionChange(itemID: number, isChecked: boolean): void {
         if (isChecked) {
-            // 选中当前条目，清空之前的选择
-            this.selectedID = itemID;
-        } else if (this.selectedID === itemID) {
-            // 取消选中当前已选中的条目
-            this.selectedID = null;
+            // 选中当前条目，添加到数组
+            if(!this.selectedIDs.includes(itemID)) this.selectedIDs.push(itemID);
+        } else {
+            // 取消选中，从数组中移除
+            const index = this.selectedIDs.indexOf(itemID);
+            if (index >= 0) this.selectedIDs.splice(index, 1);
         }
     }
 
     private toggleSelection(itemID: number): void {
-        this.handleSelectionChange(itemID, this.selectedID !== itemID);
+        this.handleSelectionChange(itemID, !this.selectedIDs.includes(itemID));
     }
 
     private async handleConfirmClick(): Promise<void> {
-        if (!this.selectedID || this.isUpdating || !this.formID) return;
+        if (this.selectedIDs.length === 0 || this.isUpdating || !this.formID) return;
 
         // 查找选中的条目
-        const selectedItem = this.listViewModel.commandEntries.find(
-            (item: CommandEntryViewModel) => item.id === this.selectedID
+        const selectedItems = this.listViewModel.commandEntries.filter(
+            (item: CommandEntryViewModel) => this.selectedIDs.includes(item.id)
         );
 
-        if (!selectedItem) {
+        if (!selectedItems) {
             Logger.error(this.LOG_TAG, '未找到选中的条目');
             return;
         }
@@ -95,21 +96,19 @@ struct SingleCommandFormEdit {
         try {
             this.isUpdating = true;
 
-            const formData: SingleCommandFormData = new SingleCommandFormData(this.formID, true);
+            const formData: MultipleCommandsFormData = new MultipleCommandsFormData(this.formID, true);
 
-            formData.shortcutID = selectedItem.id;
-            formData.nickname = selectedItem.nickname;
-            formData.command = selectedItem.command;
+            formData.commandList = selectedItems.map(item => new WidgetCommand(item.id, item.nickname, item.command));
 
             // 持久化存储卡片绑定信息
-            await this.pm.bindSingle(this.formID, formData);
+            await this.pm.bindMultiple(this.formID, formData);
 
             // 创建表单绑定数据
-            const formInfo = CommonUtils.createSingleCommandFormBindingData(formData);
+            const formInfo = CommonUtils.createMultipleCommandFormBindingData(formData);
             // 更新卡片
             await formProvider.updateForm(this.formID as string, formInfo);
 
-            Logger.debug(this.LOG_TAG, `卡片更新成功: formID: ${this.formID}, commandId: ${selectedItem.id}`);
+            Logger.debug(this.LOG_TAG, `卡片更新成功: formID: ${this.formID}, commandIDs: ${this.selectedIDs}`);
 
             // 更新成功后关闭页面
             CommonUtils.closeApplication(this.LOG_TAG, this.context);
@@ -174,7 +173,7 @@ struct SingleCommandFormEdit {
             Button($r('app.string.FormEdit_Confirm_Button_Label'), { type: ButtonType.Capsule })
                 .width(StyleConstants.EIGHTY_PERCENT)
                 .fontWeight(FontWeight.Medium)
-                .enabled(this.selectedID !== null && !this.isUpdating)
+                .enabled(this.selectedIDs.length !== 0 && !this.isUpdating)
                 .onClick(async () => {
                     await this.handleConfirmClick();
                 })
@@ -211,13 +210,13 @@ struct SingleCommandFormEdit {
                                             .fontWeight(FontWeight.Medium)
                                             .maxLines(1)
                                             .textOverflow({ overflow: TextOverflow.Ellipsis })
-                                            .fontColor(this.selectedID === item.id ?
+                                            .fontColor(this.selectedIDs.includes(item.id) ?
                                                 $r('sys.color.interactive_active') : $r('sys.color.font_primary'))
 
                                         Text(item.command)
                                             .maxLines(1)
                                             .textOverflow({ overflow: TextOverflow.MARQUEE })
-                                            .fontColor(this.selectedID === item.id ?
+                                            .fontColor(this.selectedIDs.includes(item.id) ?
                                                 $r('sys.color.interactive_active') : $r('sys.color.font_secondary'))
                                     }
                                     .width(StyleConstants.EIGHTY_PERCENT)
@@ -229,7 +228,7 @@ struct SingleCommandFormEdit {
 
                                     Column() {
                                         Checkbox()
-                                            .select(this.selectedID === item.id)
+                                            .select(this.selectedIDs.includes(item.id))
                                             .onChange((isChecked: boolean) => {
                                                 this.handleSelectionChange(item.id, isChecked);
                                             })

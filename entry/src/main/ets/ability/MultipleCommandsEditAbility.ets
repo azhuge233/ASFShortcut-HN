@@ -1,18 +1,18 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { AppStorageV2, window, KeyboardAvoidMode } from '@kit.ArkUI';
 
-import Logger from '../../common/utils/Logger';
-import { DB } from '../../common/utils/DB';
-import CommonConstants from '../../common/constants/CommonConstants';
-import { PM } from '../../common/utils/PM';
-import { AppSettingsManager } from '../../common/utils/AppSettingsManager';
-import { AppSettings } from '../../model/AppSettings';
-import CommonUtils from '../../common/utils/CommonUtils';
+import Logger from '../common/utils/Logger';
+import { DB } from '../common/utils/DB';
+import CommonConstants from '../common/constants/CommonConstants';
+import { PM } from '../common/utils/PM';
+import { AppSettingsManager } from '../common/utils/AppSettingsManager';
+import { AppSettings } from '../domain/model/AppSettings';
+import CommonUtils from '../common/utils/CommonUtils';
 
-export default class SingleCommandEditEntryAbility extends UIAbility {
-    private LOG_TAG = "[SingleCommandEditEntryAbility]";
+export default class MultipleCommandsEditEntryAbility extends UIAbility {
+    private LOG_TAG = "[MultipleCommandsEditEntryAbility]";
 
-    private targetPage: string = 'pages/SingleCommandFormEdit';
+    private targetPage: string = 'ui/pages/MultipleCommandsFormEdit';
     private currentWindowStage: window.WindowStage | null = null;
 
     private db = DB.getInstance();
@@ -99,7 +99,7 @@ export default class SingleCommandEditEntryAbility extends UIAbility {
         const rawFormID = want.parameters?.formId;
         const formID: string = typeof rawFormID === 'string' ? rawFormID : '';
 
-        Logger.debug(this.LOG_TAG, `编辑单设备卡片，卡片 ID = ${formID}`);
+        Logger.debug(this.LOG_TAG, `编辑多设备卡片，卡片 ID = ${formID}`);
 
         if(formID.trim() !== '') AppStorage.setOrCreate(CommonConstants.APP_STORAGE_KEY_FORM_ID, formID);
         else {

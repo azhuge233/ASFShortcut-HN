@@ -2,7 +2,7 @@
   "routerMap": [
     {
       "name": "AddCommand",
-      "pageSourceFile": "src/main/ets/pages/AddCommand.ets",
+      "pageSourceFile": "src/main/ets/ui/pages/AddCommand.ets",
       "buildFunction": "AddCommandBuilder",
       "data": {
         "description" : "Add command page"
@@ -10,7 +10,7 @@
     },
     {
       "name": "ASFSettingsPage",
-      "pageSourceFile": "src/main/ets/pages/ASFSettingsPage.ets",
+      "pageSourceFile": "src/main/ets/ui/pages/ASFSettingsPage.ets",
       "buildFunction": "ASFSettingsPageBuilder",
       "data": {
         "description" : "ASF Settings page"
@@ -18,7 +18,7 @@
     },
     {
       "name": "EditPage",
-      "pageSourceFile": "src/main/ets/pages/EditPage.ets",
+      "pageSourceFile": "src/main/ets/ui/pages/EditPage.ets",
       "buildFunction": "EditPageBuilder",
       "data": {
         "description" : "Edit page"
@@ -26,7 +26,7 @@
     },
     {
       "name": "MorePage",
-      "pageSourceFile": "src/main/ets/pages/MorePage.ets",
+      "pageSourceFile": "src/main/ets/ui/pages/MorePage.ets",
       "buildFunction": "MorePageBuilder",
       "data": {
         "description" : "More page"
@@ -34,7 +34,7 @@
     },
     {
       "name": "SelectableDialog",
-      "pageSourceFile": "src/main/ets/view/dialogs/SelectableDialog.ets",
+      "pageSourceFile": "src/main/ets/ui/dialogs/SelectableDialog.ets",
       "buildFunction": "SelectableDialogBuilder",
       "data": {
         "description" : "Selectable Dialog"
@@ -42,7 +42,7 @@
     },
     {
       "name": "AccountInputDialog",
-      "pageSourceFile": "src/main/ets/view/dialogs/AccountInputDialog.ets",
+      "pageSourceFile": "src/main/ets/ui/dialogs/AccountInputDialog.ets",
       "buildFunction": "AccountInputDialogBuilder",
       "data": {
         "description" : "ASF account Input Dialog"
@@ -50,7 +50,7 @@
     },
     {
       "name": "IDInputDialog",
-      "pageSourceFile": "src/main/ets/view/dialogs/IDInputDialog.ets",
+      "pageSourceFile": "src/main/ets/ui/dialogs/IDInputDialog.ets",
       "buildFunction": "IDInputDialogBuilder",
       "data": {
         "description" : "ASF ID Input Dialog"

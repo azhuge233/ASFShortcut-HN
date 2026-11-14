@@ -3,18 +3,18 @@ import { AppStorageV2 } from '@kit.ArkUI';
 import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
 import bundleManager from '@ohos.bundle.bundleManager';
 
-import Logger from '../common/utils/Logger';
-import StyleConstants from '../common/constants/StyleConstants';
-import { AppSettingsManager } from '../common/utils/AppSettingsManager';
-import { AppSettings } from '../model/AppSettings';
-import { ColorModeRow, colorModeOptions } from '../view/components/ColorModeRow';
-import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
-import { DB } from '../common/utils/DB';
-import { MoreMenuItem } from '../view/components/MoreMenuItem';
-import CommonUtils from '../common/utils/CommonUtils';
-import { ExportJsonObject, SettingsJsonObject } from '../model/JsonObjects';
-import CommonConstants from '../common/constants/CommonConstants';
-import CommandEntry from '../model/CommandEntry';
+import Logger from '../../common/utils/Logger';
+import StyleConstants from '../../common/constants/StyleConstants';
+import { AppSettingsManager } from '../../common/utils/AppSettingsManager';
+import { AppSettings } from '../../domain/model/AppSettings';
+import { ColorModeRow, colorModeOptions } from '../components/ColorModeRow';
+import CommandEntryListViewModel from '../../viewmodel/CommandEntryListViewModel';
+import { DB } from '../../common/utils/DB';
+import { MoreMenuItem } from '../components/MoreMenuItem';
+import CommonUtils from '../../common/utils/CommonUtils';
+import { ExportJsonObject, SettingsJsonObject } from '../../domain/model/JsonObjects';
+import CommonConstants from '../../common/constants/CommonConstants';
+import CommandEntry from '../../domain/model/CommandEntry';
 
 @Builder
 export function MorePageBuilder() {

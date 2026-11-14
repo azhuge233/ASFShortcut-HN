@@ -14,7 +14,7 @@
     "abilities": [
       {
         "name": "EntryAbility",
-        "srcEntry": "./ets/entryability/EntryAbility.ets",
+        "srcEntry": "./ets/ability/EntryAbility.ets",
         "description": "$string:EntryAbility_desc",
         "icon": "$media:app_icon_layered",
         "label": "$string:EntryAbility_label",
@@ -39,8 +39,8 @@
         ]
       },
       {
-        "name": 'SingleCommandWidgetEntryAbility',
-        "srcEntry": "./ets/singlecommandwidget/singlecommandwidgetentryability/SingleCommandWidgetEntryAbility.ets",
+        "name": 'SingleCommandRunAbility',
+        "srcEntry": "./ets/ability/SingleCommandRunAbility.ets",
         "description": '$string:WidgetEventCallCard_desc',
         "icon": "$media:app_icon_layered",
         "label": "$string:WidgetEventCallCard_label",
@@ -49,8 +49,8 @@
         "launchType": "multiton"
       },
       {
-        "name": 'MultipleCommandsWidgetEntryAbility',
-        "srcEntry": "./ets/multiplecommandswidget/multiplecommandswidgetentryability/MultipleCommandsWidgetEntryAbility.ets",
+        "name": 'MultipleCommandsRunAbility',
+        "srcEntry": "./ets/ability/MultipleCommandsRunAbility.ets",
         "description": '$string:WidgetEventCallCard_desc',
         "icon": "$media:app_icon_layered",
         "label": "$string:WidgetEventCallCard_label",
@@ -59,8 +59,8 @@
         "launchType": "multiton"
       },
       {
-        "name": 'SingleCommandEditEntryAbility',
-        "srcEntry": "./ets/singlecommandwidget/singlecommandeditentryability/SingleCommandEditEntryAbility.ets",
+        "name": 'SingleCommandEditAbility',
+        "srcEntry": "./ets/ability/SingleCommandEditAbility.ets",
         "description": '$string:SingleCommandEditEntryAbility_desc',
         "icon": "$media:app_icon_layered",
         "label": "$string:SingleCommandEditEntryAbility_label",
@@ -70,8 +70,8 @@
         "removeMissionAfterTerminate": true
       },
       {
-        "name": 'MultipleCommandsEditEntryAbility',
-        "srcEntry": "./ets/multiplecommandswidget/multiplecommandseditentryability/MultipleCommandsEditEntryAbility.ets",
+        "name": 'MultipleCommandsEditAbility',
+        "srcEntry": "./ets/ability/MultipleCommandsEditAbility.ets",
         "description": '$string:MultipleCommandsEditEntryAbility_desc',
         "icon": "$media:app_icon_layered",
         "label": "$string:MultipleCommandsEditEntryAbility_label",
@@ -84,7 +84,7 @@
     "extensionAbilities": [
       {
         "name": "EntryBackupAbility",
-        "srcEntry": "./ets/entrybackupability/EntryBackupAbility.ets",
+        "srcEntry": "./ets/ability/EntryBackupAbility.ets",
         "type": "backup",
         "exported": false,
         "metadata": [
@@ -96,7 +96,7 @@
       },
       {
         "name": "SingleCommandFormAbility",
-        "srcEntry": "./ets/singlecommandwidget/singlecommandformability/SingleCommandFormAbility.ets",
+        "srcEntry": "./ets/ability/SingleCommandFormAbility.ets",
         "label": "$string:SingleCommandFormAbility_label",
         "description": "$string:SingleCommandFormAbility_desc",
         "type": "form",
@@ -109,7 +109,7 @@
       },
       {
         "name": "MultipleCommandsFormAbility",
-        "srcEntry": "./ets/multiplecommandswidget/multiplecommandsformability/MultipleCommandsFormAbility.ets",
+        "srcEntry": "./ets/ability/MultipleCommandsFormAbility.ets",
         "label": "$string:MultipleCommandsFormAbility_label",
         "description": "$string:MultipleCommandsFormAbility_desc",
         "type": "form",

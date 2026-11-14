@@ -36,12 +36,12 @@
         "entry/src/main/ets/common/utils/ASF.ets",
         "entry/src/main/ets/common/utils/DB.ets",
         "entry/src/main/ets/common/utils/PM.ets",
-        "entry/src/main/ets/model/CommandEntryList.ets",
-        "entry/src/main/ets/multiplecommandswidget/multiplecommandsformability/MultipleCommandsFormAbility.ets",
-        "entry/src/main/ets/multiplecommandswidget/multiplecommandswidgetentryability/MultipleCommandsWidgetEntryAbility.ets",
-        "entry/src/main/ets/singlecommandwidget/singlecommandformability/SingleCommandFormAbility.ets",
-        "entry/src/main/ets/singlecommandwidget/singlecommandwidgetentryability/SingleCommandWidgetEntryAbility.ets",
-        "entry/src/main/ets/view/components/CommandTile.ets"
+        "entry/src/main/ets/domain/model/CommandEntryList.ets",
+        "entry/src/main/ets/ability/MultipleCommandsFormAbility.ets",
+        "entry/src/main/ets/ability/MultipleCommandsRunAbility.ets",
+        "entry/src/main/ets/ability/SingleCommandFormAbility.ets",
+        "entry/src/main/ets/ability/SingleCommandRunAbility.ets",
+        "entry/src/main/ets/ui/components/CommandTile.ets"
       ],
       "rules": {
         "@typescript-eslint/await-thenable": "off"

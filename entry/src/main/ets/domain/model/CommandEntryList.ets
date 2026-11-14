@@ -1,8 +1,8 @@
 import CommandEntry from "./CommandEntry";
-import Logger from '../common/utils/Logger';
-import { DB } from "../common/utils/DB"
-import { PM } from "../common/utils/PM";
-import CommonConstants from "../common/constants/CommonConstants";
+import Logger from '../../common/utils/Logger';
+import { DB } from "../../common/utils/DB"
+import { PM } from "../../common/utils/PM";
+import CommonConstants from "../../common/constants/CommonConstants";
 
 export default class CommandEntryList {
     commandEntries: Array<CommandEntry> = [];
