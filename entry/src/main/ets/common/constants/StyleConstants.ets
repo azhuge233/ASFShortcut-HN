@@ -90,8 +90,13 @@ class StyleConstants {
     public readonly FORM_LIST_ITEM_BORDER_RADIUS = 13;
     public readonly FORM_LIST_ITEM_HEIGHT = 50;
 
-    public readonly COLOR_MODE_PAGE_BORDER_WIDTH = 0.5;
-    public readonly COLOR_MODE_PAGE_RADIO_SIZE = 35;
+    // 颜色模式行（`ColorModeRow`，B1 后位于 `ui/components/`）：行解剖照 `MoreMenuItem` 量取。
+    // 最小高度 = 图标块（图标尺寸 + 上下各一个 `MARGIN_TEN`），保证右侧胶囊把行撑矮时仍与同组其它行等高。
+    public readonly COLOR_MODE_ROW_MIN_HEIGHT = 48;
+    // 行标题字号与 `MORE_MENU_ITEM_FONT_SIZE` 同值，与同组其它行同一档。
+    public readonly COLOR_MODE_ROW_LABEL_FONT_SIZE = 17;
+    // 胶囊字号取该行次级文字档（介于标题 17 与描述 12 之间）。
+    public readonly COLOR_MODE_ROW_SELECT_FONT_SIZE = 14;
 }
 
 export default new StyleConstants();

@@ -24,7 +24,6 @@ export default class EntryAbility extends UIAbility {
         'pages/EditPage',
         'pages/ASFSettingsPage',
         'pages/MorePage',
-        'pages/ColorModeSettingsPage',
         'pages/SingleCommandFormEdit',
         'pages/MultipleCommandsFormEdit'
     ]);

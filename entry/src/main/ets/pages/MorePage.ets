@@ -1,9 +1,13 @@
-import { common } from '@kit.AbilityKit';
+import { common, ConfigurationConstant } from '@kit.AbilityKit';
+import { AppStorageV2 } from '@kit.ArkUI';
 import { HdsNavDestination, hdsMaterial } from '@kit.UIDesignKit';
 import bundleManager from '@ohos.bundle.bundleManager';
 
 import Logger from '../common/utils/Logger';
 import StyleConstants from '../common/constants/StyleConstants';
+import { AppSettingsManager } from '../common/utils/AppSettingsManager';
+import { AppSettings } from '../model/AppSettings';
+import { ColorModeRow, colorModeOptions } from '../view/components/ColorModeRow';
 import CommandEntryListViewModel from '../viewmodel/CommandEntryListViewModel';
 import { DB } from '../common/utils/DB';
 import { MoreMenuItem } from '../view/components/MoreMenuItem';
@@ -27,6 +31,9 @@ struct MorePage {
     @Local versionName: string = '';
     @Local versionCode: string = '';
 
+    @Local appSettings: AppSettings = AppStorageV2.connect(AppSettings, CommonConstants.APP_STORAGE_KEY_APP_SETTINGS,
+        () => new AppSettings(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET))!;
+
     private uiContext = this.getUIContext();
     private context = this.uiContext.getHostContext() as common.UIAbilityContext;
     private promptAction = this.uiContext.getPromptAction();
@@ -34,6 +41,8 @@ struct MorePage {
     pathStack: NavPathStack | undefined = undefined;
 
     private db = DB.getInstance();
+
+    private aSM: AppSettingsManager = AppSettingsManager.getInstance();
 
     private listViewModel: CommandEntryListViewModel = new CommandEntryListViewModel();
 
@@ -49,18 +58,6 @@ struct MorePage {
                   }
               }
           );}
-      ],
-      [
-          $r("app.string.Color_Mode_Settings_Title"), $r("app.media.brush"), $r("app.string.Color_Mode_Desc"),
-          () => {
-            this.pathStack?.pushPath(
-              {
-                  name: "ColorModeSettingsPage",
-                  onPop: (popInfo) => {
-                      CommonUtils.returnFromSubPage(popInfo);
-                  }
-              }
-            )}
       ]
     ];
 
@@ -80,6 +77,21 @@ struct MorePage {
             this.versionCode = bundleInfo.versionCode.toString();
         } catch (error) {
             Logger.error(this.LOG_TAG, `同步获取失败: ${error.message}`);
+        }
+    }
+
+    // B0 期暂留本页：写设置 + 改应用颜色模式两项照搬原颜色模式设置页的 applyColorMode，B3 搬进 `MoreViewModel`。
+    private async applyColorMode(mode: ConfigurationConstant.ColorMode) {
+        if (this.appSettings.colorMode === mode) return;
+
+        this.appSettings.colorMode = mode;
+        await this.aSM.set(this.appSettings);
+
+        try {
+            this.context.getApplicationContext().setColorMode(mode);
+            Logger.debug(this.LOG_TAG, `窗口颜色设置: ${mode}`);
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `设置窗口颜色模式失败, ${err}`);
         }
     }
 
@@ -302,6 +314,18 @@ struct MorePage {
                 Column() {
                     Column() {
                         this.EntryGroup(this.settingsEntries);
+
+                        // 颜色模式行就地选择、不跳页，形状与 `MoreMenuItem` 不同，所以不入 `settingsEntries`（那张表只装跳转行）。
+                        ColorModeRow({
+                            icon: $r("app.media.brush"),
+                            label: $r("app.string.Color_Mode_Settings_Title"),
+                            desc: $r("app.string.Color_Mode_Desc"),
+                            options: colorModeOptions,
+                            currentMode: this.appSettings.colorMode,
+                            onSelectMode: (mode: ConfigurationConstant.ColorMode) => {
+                                this.applyColorMode(mode);
+                            }
+                        })
 
                         this.EntryDivider();
 
