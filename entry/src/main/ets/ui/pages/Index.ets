@@ -1,16 +1,22 @@
 import { common } from '@kit.AbilityKit';
-import { SymbolGlyphModifier } from '@kit.ArkUI'
+import { AppStorageV2, SymbolGlyphModifier } from '@kit.ArkUI';
 import { HdsNavigation, HdsNavigationMenuContentOptions, HdsTabs,
     HdsTabsController, ScrollEffectType } from '@hms.hds.hdsBaseComponent';
-import { hdsMaterial } from '@kit.UIDesignKit';
+import { hdsMaterial, HdsNavigationTitleMode } from '@kit.UIDesignKit';
 
 import Logger from '../../common/utils/Logger';
 import CommonConstants from '../../common/constants/CommonConstants';
+import StyleConstants from '../../common/constants/StyleConstants';
+import { AppSettings, ColorMode, ListLayout } from '../../domain/model/AppSettings';
 import CommandListViewModel, { CommandOutcome } from '../../viewmodel/CommandListViewModel';
 import { CommandEntryViewModel } from '../../viewmodel/CommandEntryViewModel';
-import { CommandTile } from '../components/CommandTile';
+import { CommandList } from '../components/CommandList';
 import { LiveTestSection } from '../components/LiveTestSection';
-import StyleConstants from '../../common/constants/StyleConstants';
+import { AddCommandForm } from '../components/AddCommandForm';
+import { AppButton, AppButtonKind } from '../components/AppButton';
+import { AppEmptyState } from '../components/AppEmptyState';
+import { AppSearchField } from '../components/AppSearchField';
+import { CommandEditViewModel } from '../../viewmodel/CommandEditViewModel';
 import PageContext from '../common/PageContext';
 
 @Entry
@@ -20,51 +26,99 @@ struct Index {
 
     @Local viewModel: CommandListViewModel = new CommandListViewModel();
 
+    // 添加表单的 VM 提在页面级：切页签时表单节点可能重建，草稿在这里不随节点丢（设计 §2.5）。
+    // 初值是占位实例（首个 build 前必须有一个合法实例），`aboutToAppear` 里换成绑定主列表 VM 的那一个
+    @Local commandEditViewModel: CommandEditViewModel = new CommandEditViewModel(new CommandListViewModel());
+
+    // 搜索框显隐：纯展示态，留页面；关键字与过滤仍在 VM（设计 §2.1）
+    @Local isSearchVisible: boolean = false;
+
+    // 排序态：纯展示态，不落盘；退出回原布局由派生值成立（设计 §2.2）
+    @Local isSorting: boolean = false;
+
+    @Local appSettings: AppSettings = AppStorageV2.connect(AppSettings, CommonConstants.APP_STORAGE_KEY_APP_SETTINGS,
+        () => new AppSettings(ColorMode.FOLLOW_SYSTEM))!;
+
     private uiContext = this.getUIContext();
     private context = this.uiContext.getHostContext() as common.UIAbilityContext;
     private promptAction = this.uiContext.getPromptAction();
 
     private scrollerForList: ListScroller = new ListScroller();
+    private scrollerForGrid: Scroller = new Scroller();
     private tabController: HdsTabsController = new HdsTabsController();
 
-    // HdsNavigation 新版菜单
-    private menus: HdsNavigationMenuContentOptions = {
-        value: [
-            {
-                content: {
-                    label: $r("app.string.Index_Add_Menu_Button_Label"),
-                    icon: $r("sys.symbol.plus"),
-                    action: () => {
-                        this.safeCloseSwipeActions();
-                        this.pageStack.pushPath({
-                            name: "AddCommand",
-                            param: this.viewModel,
-                            onPop: async (popInfo) => {
-                                PageContext.returnFromSubPage(popInfo);
-                            }
-                        });
-                    }
-                }
-            },
-            {
-                content: {
-                    label: $r("app.string.Index_More_Menu_Button_Label"),
-                    icon: $r("sys.symbol.dot_grid_2x2"),
-                    action: () => {
-                        this.safeCloseSwipeActions();
-                        this.pageStack.pushPath({
-                            name: "MorePage",
-                            param: this.viewModel,
-                            onPop: async (popInfo) => {
-                                await this.viewModel.init();
-                                PageContext.returnFromSubPage(popInfo);
-                            }
-                        });
-                    }
-                }
+    // 底栏胶囊离底距（见 `StyleConstants.INDEX_TAB_BAR_BOTTOM_MARGIN`）
+    private get tabBarBottomMargin(): number {
+        return StyleConstants.INDEX_TAB_BAR_BOTTOM_MARGIN;
+    }
+
+    // 生效布局：排序态一律单列，退出即回到落盘的布局（设计 §2.2）
+    private get effectiveLayout(): ListLayout {
+        return this.isSorting ? ListLayout.SINGLE : this.viewModel.listLayout;
+    }
+
+    // 标题栏绑定当前生效容器的那一个滚动器，切布局时随 `build` 重算（设计 §2.5）
+    private get scrollables(): Array<Scroller> {
+        return this.effectiveLayout === ListLayout.DOUBLE ? [this.scrollerForGrid] : [this.scrollerForList];
+    }
+
+    // HdsNavigation 新版菜单：三项固定为 布局切换 / 搜索 / 设置（C1）。
+    // 第一项的图标与动作随态走：排序态读「完成」，否则按当前布局读对应网格图标（设计 §2.3）
+    private get menus(): HdsNavigationMenuContentOptions {
+        const layoutIcon: Resource = this.isSorting ? $r("sys.symbol.checkmark") :
+            (this.viewModel.listLayout === ListLayout.SINGLE ? $r("sys.symbol.rectangle_grid_1x2") :
+                $r("sys.symbol.square_grid_2x2"));
+        const layoutLabel: Resource = this.isSorting ? $r("app.string.Index_Done_Menu_Button_Label") :
+            (this.viewModel.listLayout === ListLayout.SINGLE ? $r("app.string.Index_Layout_Double_Menu_Button_Label") :
+                $r("app.string.Index_Layout_Single_Menu_Button_Label"));
+        const layoutAction: () => void = () => {
+            if (this.isSorting) {
+                this.isSorting = false;
+                return;
             }
-        ]
-    };
+            this.safeCloseSwipeActions();
+            this.viewModel.toggleLayout();
+        };
+
+        return {
+            value: [
+                {
+                    content: {
+                        label: layoutLabel,
+                        icon: layoutIcon,
+                        action: layoutAction
+                    }
+                },
+                {
+                    content: {
+                        label: $r("app.string.Index_Search_Menu_Button_Label"),
+                        icon: this.isSearchVisible ? $r("sys.symbol.xmark") : $r("sys.symbol.magnifyingglass"),
+                        action: () => {
+                            if (this.isSearchVisible) this.collapseSearch();
+                            else this.isSearchVisible = true;
+                        }
+                    }
+                },
+                {
+                    content: {
+                        label: $r("app.string.Index_More_Menu_Button_Label"),
+                        icon: $r("sys.symbol.gearshape"),
+                        action: () => {
+                            this.safeCloseSwipeActions();
+                            this.pageStack.pushPath({
+                                name: "MorePage",
+                                param: this.viewModel,
+                                onPop: async (popInfo) => {
+                                    await this.viewModel.init();
+                                    PageContext.returnFromSubPage(popInfo);
+                                }
+                            });
+                        }
+                    }
+                }
+            ]
+        };
+    }
 
     pageStack: NavPathStack = new NavPathStack();
 
@@ -72,11 +126,16 @@ struct Index {
     private consumedShortcutPath: string = '';
 
     aboutToAppear(): void {
-        // 拖拽落库失败：VM 内部已按数据库顺序回滚，页面再刷一次并 toast 提示（设计 §2.4.5）
+        // 添加表单的 VM 绑到本页的主列表 VM：新增要落库并刷新列表与卡片，走的就是它（设计 §2.5）
+        this.commandEditViewModel = new CommandEditViewModel(this.viewModel);
+
+        // 布局读的是 `AppStorageV2` 的全应用同一份设置：先接上，`init()` 里的 `loadLayout()` 才有落点
+        this.viewModel.attachSettings(this.appSettings);
+
+        // 拖拽落库失败：VM 内部已按数据库顺序回滚并重刷列表，页面只提示，不再重复读库
         this.viewModel.onMoveFailed = () => {
             Logger.warn(this.LOG_TAG, `拖拽顺序未保存，列表已回滚`);
             PageContext.alert($r("app.string.Index_Reorder_Failed"), this.promptAction);
-            this.viewModel.loadEntries();
         };
     }
 
@@ -188,11 +247,17 @@ struct Index {
         });
     }
 
+    // 搜索收起：两个入口（标题栏图标 / 搜索框取消按钮）都只调它，关键字一并清空（A3 / A4）
+    private collapseSearch(): void {
+        this.isSearchVisible = false;
+        this.viewModel.setKeyword('');
+    }
+
     // 安全关闭左滑菜单
-    // 防止列表没有条目时闪退
+    // 防止列表没有条目时闪退；双列没有左滑能力，不作无意义的调用（设计 §2.5）
     private safeCloseSwipeActions(): void {
         try {
-            if (this.viewModel.entries.length > 0) {
+            if (this.effectiveLayout === ListLayout.SINGLE && this.viewModel.entries.length > 0) {
                 this.scrollerForList.closeAllSwipeActions();
             }
         } catch (err) {
@@ -200,83 +265,52 @@ struct Index {
         }
     }
 
-    // 删除按钮
-    @Builder
-    DeleteButton(entry: CommandEntryViewModel) {
-        Row() {
-            Button() {
-                Image($r("app.media.trash"))
-                    .objectFit(ImageFit.Cover)
-                    .width(StyleConstants.SIXTY_PERCENT)
-                    .height(StyleConstants.SIXTY_PERCENT)
+    // 打开编辑页：左滑按钮与双列长按菜单都调它
+    private openEditPage(entry: CommandEntryViewModel): void {
+        this.safeCloseSwipeActions();
+        this.pageStack.pushPath({
+            name: "EditPage",
+            param: [this.viewModel, entry],
+            onPop: (popInfo) => {
+                PageContext.returnFromSubPage(popInfo);
             }
-            .backgroundColor($r("app.color.delete_button_color"))
-            .type(ButtonType.Circle)
-            .width(StyleConstants.INDEX_SWIPE_BUTTON_SIZE)
-            .height(StyleConstants.INDEX_SWIPE_BUTTON_SIZE)
-            .onClick(async () => {
-                try {
-                    const result = await this.promptAction.showDialog({
-                        title: $r("app.string.Index_Deletion_Confirm_Title"),
-                        message: $r("app.string.Index_Deletion_Confirm_Message", entry.nickname),
-                        buttons: [
-                            {
-                                text: $r("app.string.Index_Deletion_Confirm"),
-                                color: $r("sys.color.warning")
-                            },
-                            {
-                                text: $r("app.string.Index_Deletion_Cancel"),
-                                color: $r("sys.color.font_primary")
-                            }
-                        ]
-                    });
-
-                    if (result.index === 0) {
-                        const deleteResult = await this.viewModel.deleteEntry(entry.toCommandEntry());
-                        if (!deleteResult.ok) {
-                            PageContext.alert(deleteResult.unbindFailed ?
-                                $r("app.string.Index_Deletion_Failed_Unbind") : $r("app.string.Index_Deletion_Failed"),
-                                this.promptAction);
-                        }
-                    } else Logger.warn(this.LOG_TAG, `取消删除`);
-                } catch (err) {
-                    Logger.error(this.LOG_TAG, `删除确认框弹出失败`);
-                }
-            })
-        }
-        .margin({
-            left: StyleConstants.THREE_PERCENT
-        })
+        });
     }
 
-    // 编辑按钮
-    @Builder
-    EditButton(entry: CommandEntryViewModel) {
-        Row() {
-            Button() {
-                Image($r("app.media.square_and_pencil"))
-                    .objectFit(ImageFit.Cover)
-                    .width(StyleConstants.SIXTY_PERCENT)
-                    .height(StyleConstants.SIXTY_PERCENT)
-            }
-            .backgroundColor($r("app.color.edit_button_color"))
-            .type(ButtonType.Circle)
-            .width(StyleConstants.INDEX_SWIPE_BUTTON_SIZE)
-            .height(StyleConstants.INDEX_SWIPE_BUTTON_SIZE)
-            .onClick(() => {
-                this.safeCloseSwipeActions();
-                this.pageStack.pushPath({
-                    name: "EditPage",
-                    param: [this.viewModel, entry],
-                    onPop: (popInfo) => {
-                        PageContext.returnFromSubPage(popInfo);
+    // 删除确认与落库：两个入口（单列左滑 / 双列长按菜单）走同一条确认路径
+    private async confirmDelete(entry: CommandEntryViewModel): Promise<void> {
+        try {
+            const result = await this.promptAction.showDialog({
+                title: $r("app.string.Index_Deletion_Confirm_Title"),
+                message: $r("app.string.Index_Deletion_Confirm_Message", entry.nickname),
+                buttons: [
+                    {
+                        text: $r("app.string.Index_Deletion_Confirm"),
+                        color: $r("sys.color.warning")
+                    },
+                    {
+                        text: $r("app.string.Index_Deletion_Cancel"),
+                        color: $r("sys.color.font_primary")
                     }
-                });
-            })
+                ]
+            });
+
+            if (result.index === 0) {
+                const deleteResult = await this.viewModel.deleteEntry(entry.toCommandEntry());
+                if (!deleteResult.ok) {
+                    PageContext.alert(deleteResult.unbindFailed ?
+                        $r("app.string.Index_Deletion_Failed_Unbind") : $r("app.string.Index_Deletion_Failed"),
+                        this.promptAction);
+                }
+            } else Logger.warn(this.LOG_TAG, `取消删除`);
+        } catch (err) {
+            Logger.error(this.LOG_TAG, `删除确认框弹出失败`);
         }
-        .margin({
-            left: StyleConstants.THREE_PERCENT
-        })
+    }
+
+    // 进排序态：双列长按菜单第三项；布局不改写，退出由 `effectiveLayout` 回到原布局（C7）
+    private enterSorting(): void {
+        this.isSorting = true;
     }
 
     // ASF 发送指令时显示
@@ -335,9 +369,16 @@ struct Index {
                 Text($r("app.string.Index_Setup_Alert_Label"))
                     .fontSize(StyleConstants.INDEX_SETUP_FONT_SIZE)
                     .margin(StyleConstants.MARGIN_FIVE)
-                Button($r("app.string.Index_Setup_Button_Label"))
-                    .margin(StyleConstants.MARGIN_FIVE)
-                    .onClick(() => {
+                // 盘上这一句是 `Button(label)`：不设 type、不设宽度、不设字色。
+                // 主态三样都带（胶囊 + 满宽 + 白字），套上去会把本按钮从圆角矩形改成胶囊并拉满整宽；
+                // 按「用契约里已有的参数把盘上原形表达出来、不改画面」取次态 + `stretch: false`。
+                // 设计 §3 第 25 行写的是 `kind: Primary` 并判定「改后相同」——那一行把主态当成了 `Button(label)` 的原样，
+                // 与本机 API 23 起「`Button(label)` 默认 `ROUNDED_RECTANGLE`」不符，已在 §5 报明
+                AppButton({
+                    label: $r("app.string.Index_Setup_Button_Label"),
+                    kind: AppButtonKind.Secondary,
+                    stretch: false,
+                    onTap: () => {
                         this.pageStack.pushPath({
                             name: "ASFSettingsPage",
                             onPop: async (popInfo) => {
@@ -346,7 +387,9 @@ struct Index {
                             }
                         });
                         this.viewModel.showSetup = false;
-                    })
+                    }
+                })
+                    .margin(StyleConstants.MARGIN_FIVE)
             }
             .width(StyleConstants.FULL_PERCENT)
             .height(StyleConstants.FULL_PERCENT)
@@ -361,36 +404,32 @@ struct Index {
         })
     }
 
-    // 加载失败：显示原因入口并可重试，不把读失败显示成「没有指令」（X3）
+    // 加载失败：显示原因入口并可重试，不把读失败显示成「没有指令」（X3）；点击只挂在标题文字上（AppEmptyState）
     @Builder
     LoadFailedContent() {
-        Column() {
-            Text($r("app.string.Index_Load_Failed_Retry"))
-                .fontSize(StyleConstants.INDEX_NO_ENTRY_TITLE_FONT_SIZE)
-                .fontColor(Color.Gray)
-                .textAlign(TextAlign.Center)
-                .onClick(async () => {
-                    Logger.debug(this.LOG_TAG, `点击重试加载, 原因: ${this.viewModel.loadError}`);
-                    await this.viewModel.retryLoad();
-                })
-        }
-        .justifyContent(FlexAlign.Center)
-        .layoutWeight(StyleConstants.INDEX_LAYOUT_WEIGHT)
-        .width(StyleConstants.FULL_PERCENT)
+        AppEmptyState({
+            title: $r("app.string.Index_Load_Failed_Retry"),
+            onTap: async () => {
+                Logger.debug(this.LOG_TAG, `点击重试加载, 原因: ${this.viewModel.loadError}`);
+                await this.viewModel.retryLoad();
+            }
+        })
     }
 
     // 搜索控件：不占标题栏、不新增浮层（设计 §2.4.3、§8）
+    // 控件六项收在 `AppSearchField` 内；取消按钮仍走 `Search.searchButton`（SDK：「Clicking the search button
+    // triggers both onSubmit and onClick callbacks.」），所以仍是「同时触发 onSubmit 与 onClick」
     @Builder
     SearchBar() {
-        Search({
+        AppSearchField({
             value: this.viewModel.keyword,
-            placeholder: $r("app.string.Index_Search_Placeholder")
-        })
-            .width(StyleConstants.NINETY_PERCENT)
-            .margin({ bottom: StyleConstants.MARGIN_FIVE })
-            .onChange((value: string) => {
+            onChange: (value: string) => {
                 this.viewModel.setKeyword(value);
-            })
+            },
+            onCollapse: () => {
+                this.collapseSearch();
+            }
+        })
     }
 
     // 主页
@@ -400,79 +439,56 @@ struct Index {
             if (this.viewModel.loadError !== '') {
                 this.LoadFailedContent();
             } else if (this.viewModel.isEmpty()) {
-                Column() {
-                    Text($r("app.string.Index_No_Commands_Label"))
-                        .fontSize(StyleConstants.INDEX_NO_ENTRY_TITLE_FONT_SIZE)
-                        .fontColor(Color.Gray)
-                    Text($r("app.string.Index_Create_First_Command_Label"))
-                        .fontSize(StyleConstants.INDEX_NO_ENTRY_SECOND_TITLE_FONT_SIZE)
-                        .fontColor(Color.Gray)
-                        .margin({ top: StyleConstants.MARGIN_TEN })
-                }
-                .justifyContent(FlexAlign.Center)
-                .layoutWeight(StyleConstants.INDEX_LAYOUT_WEIGHT)
-                .width(StyleConstants.FULL_PERCENT)
+                AppEmptyState({
+                    title: $r("app.string.Index_No_Commands_Label"),
+                    subtitle: $r("app.string.Index_Create_First_Command_Label")
+                })
             } else if (this.viewModel.isNoMatch()) {
                 Column() {
-                    this.SearchBar();
+                    if (this.isSearchVisible) {
+                        this.SearchBar();
+                    }
 
                     Column() {
-                        Text($r("app.string.Index_Search_No_Result"))
-                            .fontSize(StyleConstants.INDEX_NO_ENTRY_TITLE_FONT_SIZE)
-                            .fontColor(Color.Gray)
+                        AppEmptyState({ title: $r("app.string.Index_Search_No_Result") })
                     }
-                    .justifyContent(FlexAlign.Center)
-                    .layoutWeight(StyleConstants.INDEX_LAYOUT_WEIGHT)
                     .width(StyleConstants.FULL_PERCENT)
+                    .height(StyleConstants.FULL_PERCENT)
                 }
                 .width(StyleConstants.FULL_PERCENT)
                 .height(StyleConstants.FULL_PERCENT)
             } else {
                 Column() {
-                    this.SearchBar();
-
-                    List({ scroller: this.scrollerForList }) {
-                        ForEach(this.viewModel.entries, (item: CommandEntryViewModel) => {
-                            ListItem() {
-                                CommandTile({
-                                    item: item,
-                                    onAccountInput: () => this.inputPopup("Account"),
-                                    onIDInput: () => this.inputPopup("ID"),
-                                    onSendCommand: (command: string) => this.sendCommand(item.nickname, command),
-                                    onRunningStateChange: (isRunning: boolean) => {
-                                        this.viewModel.setRunning(item.id, isRunning);
-                                    }
-                                })
-                            }
-                            .enabled(!this.viewModel.runningIDs.has(item.id))
-                            .swipeAction({
-                                end: {
-                                    builder: () => {
-                                        this.EditButton(item);
-                                        this.DeleteButton(item);
-                                    }
-                                }
-                            })
-                            .margin({
-                                top: StyleConstants.TWO_PERCENT,
-                                left: StyleConstants.ONE_PERCENT,
-                                right: StyleConstants.ONE_PERCENT,
-                                bottom: StyleConstants.TWO_PERCENT
-                            })
-                        }, (item: CommandEntryViewModel) => item.id.toString())
-                            .onMove((from: number, to: number) => {
-                                // 同步返回、失败按 DB 顺序回滚：VM 落库失败时调 onMoveFailed
-                                return this.viewModel.move(from, to);
-                            }, {
-                                onLongPress: () => {
-                                    PageContext.vibrate(CommonConstants.VIBRATE_EFFECT_ID_SOFT);
-                                }
-                            })
+                    if (this.isSearchVisible) {
+                        this.SearchBar();
                     }
-                    .padding(StyleConstants.PADDING_EIGHT)
-                    .layoutWeight(StyleConstants.INDEX_LAYOUT_WEIGHT)
-                    .height(StyleConstants.FULL_PERCENT)
-                    .width(StyleConstants.FULL_PERCENT)
+
+                    // 列表容器搬进 `CommandList`（设计 §2.5）：本页只传参、接收事件
+                    CommandList({
+                        entries: this.viewModel.entries,
+                        layout: this.effectiveLayout,
+                        runningIDs: this.viewModel.runningIDs,
+                        listScroller: this.scrollerForList,
+                        gridScroller: this.scrollerForGrid,
+                        onAccountInput: () => this.inputPopup("Account"),
+                        onIDInput: () => this.inputPopup("ID"),
+                        onSendCommand: async (entry: CommandEntryViewModel, command: string) => {
+                            await this.sendCommand(entry.nickname, command);
+                        },
+                        onRunningStateChange: (entry: CommandEntryViewModel, isRunning: boolean) => {
+                            this.viewModel.setRunning(entry.id, isRunning);
+                        },
+                        onEdit: (entry: CommandEntryViewModel) => {
+                            this.openEditPage(entry);
+                        },
+                        onDelete: (entry: CommandEntryViewModel) => {
+                            this.confirmDelete(entry);
+                        },
+                        onSortRequest: () => {
+                            this.enterSorting();
+                        },
+                        onMove: (from: number, to: number) => this.viewModel.move(from, to)
+                    })
                 }
                 .width(StyleConstants.FULL_PERCENT)
                 .height(StyleConstants.FULL_PERCENT)
@@ -496,6 +512,25 @@ struct Index {
                             selected: new SymbolGlyphModifier($r("sys.symbol.doc_plaintext_fill"))
                         }, $r("app.string.Index_Tab_Label_Home")))
 
+                        // 中间的页签（序 1）：添加指令常驻（设计 §2.5 / F9）。
+                        // 添加是主操作，占中间位；表单节点可能被重建，草稿在页面级 VM 里
+                        TabContent() {
+                            if (!this.viewModel.showSetup) {
+                                AddCommandForm({
+                                    viewModel: this.commandEditViewModel,
+                                    // 保存成功后切回「指令列表」（序 0）：常驻页签下停在空表单上是坏形态（需求 U5）
+                                    onSaved: () => {
+                                        this.tabController.changeIndex(0);
+                                    }
+                                })
+                            }
+                        }
+                        .tabBar(new BottomTabBarStyle({
+                            normal: new SymbolGlyphModifier($r("sys.symbol.plus")),
+                            selected: new SymbolGlyphModifier($r("sys.symbol.plus"))
+                        }, $r("app.string.Index_Tab_Label_Add")))
+
+                        // 最后一个页签（序 2）：ASF 测试（设计 §2.4 / F9）
                         TabContent() {
                             if (!this.viewModel.showSetup) {
                                 LiveTestSection({
@@ -511,11 +546,17 @@ struct Index {
                             selected: new SymbolGlyphModifier($r("sys.symbol.worldclock_fill"))
                         }, $r("app.string.Index_Tab_Label_Test")))
                     }
-                    .backgroundColor($r("sys.color.background_primary"))
+                    // 页面底与卡面分层（需求 U11）：页面走 `background_secondary`，卡面仍是 `comp_background_primary`
+                    .backgroundColor($r("sys.color.background_secondary"))
                     .barPosition(BarPosition.End)
                     .barOverlap(true)
+                    // 悬浮胶囊 + 沉浸材质，三个页签由系统均布（设计 §2.4）。宽度不显式设。
                     .barFloatingStyle({
-                        barBottomMargin: StyleConstants.INDEX_TAB_BAR_MARGIN,
+                        barBottomMargin: this.tabBarBottomMargin,
+                        // 遮罩高显式归零：系统默认值是「组件高 + 32vp」，那条带把卡片下缘整块吃掉（需求 U10）
+                        gradientMask: {
+                            maskHeight: StyleConstants.INDEX_TAB_BAR_GRADIENT_MASK_HEIGHT
+                        },
                         systemMaterialEffect: {
                             materialType: hdsMaterial.MaterialType.ADAPTIVE,
                             materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
@@ -548,12 +589,17 @@ struct Index {
                 //avoidLayoutSafeArea: false,
                 enableComponentSafeArea: true // 启用标题栏占位
             })
-            .bindToScrollable([this.scrollerForList])
+            .bindToScrollable(this.scrollables)
+            // 标题固定大标题（F10）：不设时走默认 FREE，标题随滚动自动收放——用户实测过「缩下去回不到顶」
+            // 与「样式回来了位置没回来」，那是两套状态机各走一半。固定 FULL 直接根除这类不同步；
+            // 代价是 `ScrollEffectType.GRADIENT_BLUR` 不再触发（它本就服务于标题收缩时内容透出），这是预期结果。
+            .titleMode(HdsNavigationTitleMode.FULL)
             .ignoreLayoutSafeArea([LayoutSafeAreaType.SYSTEM], [LayoutSafeAreaEdge.TOP, LayoutSafeAreaEdge.BOTTOM])
             .height(StyleConstants.FULL_PERCENT)
             .width(StyleConstants.FULL_PERCENT)
             .alignSelf(ItemAlign.Center)
-            .backgroundColor($r("sys.color.background_primary"))
+            // 页面底与卡面分层（需求 U11），与 HdsTabs 自身同一个键
+            .backgroundColor($r("sys.color.background_secondary"))
             .onAppear(() => {
                 Logger.debug(this.LOG_TAG, "Loaded!");
             })

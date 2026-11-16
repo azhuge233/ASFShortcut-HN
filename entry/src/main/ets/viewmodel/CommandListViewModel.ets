@@ -2,9 +2,11 @@ import Logger from '../common/utils/Logger';
 import CommonConstants from '../common/constants/CommonConstants';
 import CommandEntry from '../domain/model/CommandEntry';
 import CommandEntryList from '../domain/model/CommandEntryList';
+import { AppSettings, ListLayout } from '../domain/model/AppSettings';
 import MultipleCommandsFormData from '../domain/model/MultipleCommandsFormData';
 import SingleCommandFormData from '../domain/model/SingleCommandFormData';
 import { CommandEntryJsonObject, ExportJsonObject } from '../domain/model/JsonObjects';
+import { AppSettingsRepository } from '../domain/repository/AppSettingsRepository';
 import { CommandSendResult, CommandSender } from '../domain/repository/CommandSender';
 import { CardPublisher } from '../domain/repository/CardPublisher';
 import { FormBindingRepository } from '../domain/repository/FormBindingRepository';
@@ -12,6 +14,7 @@ import { SettingsRepository } from '../domain/repository/SettingsRepository';
 import { CommandImportResult } from '../domain/service/CommandImportService';
 import { CommandMutationResult } from '../domain/service/CommandService';
 import {
+    appSettingsRepository,
     cardPublisher,
     createCommandSender,
     formBindingRepository,
@@ -88,13 +91,17 @@ export default class CommandListViewModel {
     @Trace testPassword: string = '';
     @Trace testCommand: string = '';
 
-    // 拖拽落库失败回调：页面据此再刷一次列表并提示（§2.4.5）
+    // 拖拽落库失败回调：列表已由本类按 DB 顺序回滚并重刷，页面据此只做提示
     onMoveFailed: (() => void) | null = null;
 
-    // 全量条目：过滤前的底稿，`entries` 是它按关键字过滤后的副本
-    private allEntries: Array<CommandEntryViewModel> = [];
+    // 全量条目：过滤前的底稿，`entries` 是它按关键字过滤后的副本；两个空态判定读它，故须在观察面
+    @Trace private allEntries: Array<CommandEntryViewModel> = [];
+
+    // `AppStorageV2` 连接得到的可观察设置对象，全应用同一份（布局不在这里另存一份，设计 §2.2）
+    private sharedSettings: AppSettings | null = null;
 
     private dataModel: CommandEntryList;
+    private appSettings: AppSettingsRepository;
     private bindings: FormBindingRepository;
     private publisher: CardPublisher;
     private settings: SettingsRepository;
@@ -102,19 +109,24 @@ export default class CommandListViewModel {
     private sender: CommandSender | null = null;
 
     constructor(dataModel: CommandEntryList = new CommandEntryList([]),
+                appSettings: AppSettingsRepository = appSettingsRepository(),
                 bindings: FormBindingRepository = formBindingRepository(),
                 publisher: CardPublisher = cardPublisher(),
                 settings: SettingsRepository = settingsRepository(),
                 senderFactory: () => CommandSender = createCommandSender) {
         this.dataModel = dataModel;
+        this.appSettings = appSettings;
         this.bindings = bindings;
         this.publisher = publisher;
         this.settings = settings;
         this.senderFactory = senderFactory;
     }
 
-    /** 首屏：检查设置完整性 → 读地址密码并初始化发送器 → 读列表 */
+    /** 首屏：读布局 → 检查设置完整性 → 读地址密码并初始化发送器 → 读列表 */
     async init(): Promise<void> {
+        // 布局是首屏就要用到的显示状态，且与设置是否完整无关：放在 try 之前，任何早退路径都不会跳过它（设计 §2.2）
+        await this.loadLayout();
+
         try {
             this.showSetup = !(await this.settings.areComplete());
         } catch (err) {
@@ -158,9 +170,10 @@ export default class CommandListViewModel {
         }
     }
 
-    /** 清错误态后重读；页面重试入口调它 */
+    /** 清错误态后重读；页面重试入口调它。布局与设置是否完整无关，一并补读（设计 §2.2） */
     async retryLoad(): Promise<void> {
         this.loadError = '';
+        await this.loadLayout();
         await this.loadEntries();
     }
 
@@ -170,7 +183,7 @@ export default class CommandListViewModel {
         this.applyFilter();
     }
 
-    /** 全量为空（「没有指令 / 点右上角新建」空态） */
+    /** 全量为空（「暂无指令」空态，副标指向底部「添加指令」页签） */
     isEmpty(): boolean {
         return this.allEntries.length === 0;
     }
@@ -245,7 +258,7 @@ export default class CommandListViewModel {
      * 拖拽排序：同步返回（`List.onMove` 要求同步），落库在后台。
      * `from/to` 是**可见列表**的下标，而搜索过滤时可见列表 ≠ 全量底稿，所以先按 id 映回全量位置再重排——
      * 直接拿可见下标去 splice 全量，会拖 A 行改掉 B 行的顺序。
-     * 落库失败时按 DB 顺序回滚并调 `onMoveFailed`，页面据此再刷一次（§2.4.5）。
+     * 落库失败时按 DB 顺序回滚、重刷列表并调 `onMoveFailed`，页面据此只做提示。
      */
     move(from: number, to: number): boolean {
         const visible: Array<CommandEntryViewModel> = this.entries;
@@ -322,6 +335,50 @@ export default class CommandListViewModel {
 
     setCurrentTab(index: number): void {
         this.currentTab = index;
+    }
+
+    // 列表布局（设计 §2.2）：读的是共享可观察对象的 `@Trace` 字段，不复制第二份；
+    // 写走「先写共享设置（界面即时切布局）→ 再落盘」两段，与 `selectColorMode` 同形
+
+    /** 接收 `AppStorageV2.connect` 得到的可观察设置对象 */
+    attachSettings(settings: AppSettings): void {
+        this.sharedSettings = settings;
+    }
+
+    /** 当前列表布局；未连接共享设置时为单列 */
+    get listLayout(): ListLayout {
+        return this.sharedSettings ? this.sharedSettings.listLayout : ListLayout.SINGLE;
+    }
+
+    /** 读已落盘的布局写入共享设置；没存过时得到单列 */
+    async loadLayout(): Promise<void> {
+        const layout: ListLayout = await this.appSettings.getLayout();
+
+        if (this.sharedSettings) {
+            this.sharedSettings.listLayout = layout;
+            return;
+        }
+
+        // 没连接共享设置是接线错误：布局回不到界面，记一行可查的日志，不静默吞掉
+        Logger.warn(this.LOG_TAG, `loadLayout() 未连接共享设置，布局 ${layout} 无处落地`);
+    }
+
+    /** 两态互换：单列 ⇄ 双列 */
+    async toggleLayout(): Promise<void> {
+        await this.setLayout(this.listLayout === ListLayout.SINGLE ? ListLayout.DOUBLE : ListLayout.SINGLE);
+    }
+
+    /**
+     * 选中即写共享设置并落盘；同值即返回。
+     * 落盘失败的处置逐字沿用 `selectColorMode`：只记一行 warn，无重试、无回滚、无用户提示（设计 §2.1）。
+     */
+    async setLayout(layout: ListLayout): Promise<void> {
+        if (this.listLayout === layout) return;
+
+        if (this.sharedSettings) this.sharedSettings.listLayout = layout;
+
+        const saved: boolean = await this.appSettings.setLayout(layout);
+        if (!saved) Logger.warn(this.LOG_TAG, `setLayout() 落盘失败, ${layout}`);
     }
 
     // 私有方法

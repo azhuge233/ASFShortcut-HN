@@ -33,6 +33,22 @@
       }
     },
     {
+      "name": "DataManagementPage",
+      "pageSourceFile": "src/main/ets/ui/pages/DataManagementPage.ets",
+      "buildFunction": "DataManagementPageBuilder",
+      "data": {
+        "description" : "Data management page"
+      }
+    },
+    {
+      "name": "AboutPage",
+      "pageSourceFile": "src/main/ets/ui/pages/AboutPage.ets",
+      "buildFunction": "AboutPageBuilder",
+      "data": {
+        "description" : "About page"
+      }
+    },
+    {
       "name": "SelectableDialog",
       "pageSourceFile": "src/main/ets/ui/dialogs/SelectableDialog.ets",
       "buildFunction": "SelectableDialogBuilder",

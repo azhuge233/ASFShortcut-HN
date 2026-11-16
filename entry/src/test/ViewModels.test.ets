@@ -2,6 +2,8 @@ import { describe, it, expect } from '@ohos/hypium';
 
 import CommandEntry from '../main/ets/domain/model/CommandEntry';
 import CommandEntryList from '../main/ets/domain/model/CommandEntryList';
+import { AppSettings, ColorMode, ListLayout } from '../main/ets/domain/model/AppSettings';
+import { AppSettingsRepository } from '../main/ets/domain/repository/AppSettingsRepository';
 import CommandListViewModel from '../main/ets/viewmodel/CommandListViewModel';
 
 /**
@@ -64,6 +66,36 @@ function seed(): Array<CommandEntry> {
 
 function nicknames(vm: CommandListViewModel): string {
   return vm.entries.map((item) => item.nickname).join(',');
+}
+
+/**
+ * 应用设置端口替身：只在内存里记布局。
+ * `writes` 用来观察「同值不写盘」，`writeFails` 用来注入落盘失败（设计 §2.1 的失败处置）。
+ */
+class FakeAppSettingsRepository implements AppSettingsRepository {
+  storedLayout: ListLayout = ListLayout.SINGLE;
+  writes: number = 0;
+  writeFails: boolean = false;
+
+  async get(): Promise<ColorMode> {
+    return ColorMode.FOLLOW_SYSTEM;
+  }
+
+  async set(_mode: ColorMode): Promise<boolean> {
+    return true;
+  }
+
+  async getLayout(): Promise<ListLayout> {
+    return this.storedLayout;
+  }
+
+  async setLayout(layout: ListLayout): Promise<boolean> {
+    this.writes++;
+    if (this.writeFails) return false;
+
+    this.storedLayout = layout;
+    return true;
+  }
 }
 
 export default function viewModelsTest() {
@@ -147,6 +179,89 @@ export default function viewModelsTest() {
 
       expect(vm.loadError).assertEqual('');
       expect(vm.entries.length).assertEqual(3);
+    });
+
+    // 布局：没连共享设置时读回单列（领域默认值，不是猜）
+    it('listLayoutDefaultsToSingle', 0, async () => {
+      const repo = new FakeAppSettingsRepository();
+      repo.storedLayout = ListLayout.DOUBLE;
+
+      const vm = new CommandListViewModel(new FakeAggregate(seed()), repo);
+
+      expect(vm.listLayout).assertEqual(ListLayout.SINGLE);
+    });
+
+    // 布局：`loadLayout` 把已落盘的布局写进共享设置
+    it('loadLayoutReadsStoredLayout', 0, async () => {
+      const repo = new FakeAppSettingsRepository();
+      repo.storedLayout = ListLayout.DOUBLE;
+
+      const vm = new CommandListViewModel(new FakeAggregate(seed()), repo);
+      const settings = new AppSettings(ColorMode.FOLLOW_SYSTEM);
+      vm.attachSettings(settings);
+
+      await vm.loadLayout();
+
+      expect(settings.listLayout).assertEqual(ListLayout.DOUBLE);
+      expect(vm.listLayout).assertEqual(ListLayout.DOUBLE);
+    });
+
+    // 布局：`setLayout` 先写共享设置（界面即时生效）再落盘
+    it('setLayoutWritesThrough', 0, async () => {
+      const repo = new FakeAppSettingsRepository();
+      const vm = new CommandListViewModel(new FakeAggregate(seed()), repo);
+      const settings = new AppSettings(ColorMode.FOLLOW_SYSTEM);
+      vm.attachSettings(settings);
+
+      await vm.setLayout(ListLayout.DOUBLE);
+
+      expect(settings.listLayout).assertEqual(ListLayout.DOUBLE);
+      expect(repo.storedLayout).assertEqual(ListLayout.DOUBLE);
+      expect(repo.writes).assertEqual(1);
+    });
+
+    // 布局：同值不写盘
+    it('setLayoutSkipsWhenUnchanged', 0, async () => {
+      const repo = new FakeAppSettingsRepository();
+      const vm = new CommandListViewModel(new FakeAggregate(seed()), repo);
+      vm.attachSettings(new AppSettings(ColorMode.FOLLOW_SYSTEM));
+
+      await vm.setLayout(ListLayout.SINGLE);
+
+      expect(repo.writes).assertEqual(0);
+      expect(vm.listLayout).assertEqual(ListLayout.SINGLE);
+    });
+
+    // 布局：两态互换，两次之后回到原态
+    it('toggleLayoutSwapsBothWays', 0, async () => {
+      const repo = new FakeAppSettingsRepository();
+      const vm = new CommandListViewModel(new FakeAggregate(seed()), repo);
+      const settings = new AppSettings(ColorMode.FOLLOW_SYSTEM);
+      vm.attachSettings(settings);
+
+      await vm.toggleLayout();
+      expect(vm.listLayout).assertEqual(ListLayout.DOUBLE);
+      expect(repo.storedLayout).assertEqual(ListLayout.DOUBLE);
+
+      await vm.toggleLayout();
+      expect(vm.listLayout).assertEqual(ListLayout.SINGLE);
+      expect(repo.storedLayout).assertEqual(ListLayout.SINGLE);
+    });
+
+    // 布局：落盘失败不回滚界面（与 `selectColorMode` 同一条处置，设计 §2.1）
+    it('setLayoutKeepsUiSwitchWhenPersistFails', 0, async () => {
+      const repo = new FakeAppSettingsRepository();
+      repo.writeFails = true;
+
+      const vm = new CommandListViewModel(new FakeAggregate(seed()), repo);
+      const settings = new AppSettings(ColorMode.FOLLOW_SYSTEM);
+      vm.attachSettings(settings);
+
+      await vm.setLayout(ListLayout.DOUBLE);
+
+      expect(vm.listLayout).assertEqual(ListLayout.DOUBLE);
+      expect(settings.listLayout).assertEqual(ListLayout.DOUBLE);
+      expect(repo.storedLayout).assertEqual(ListLayout.SINGLE);
     });
   });
 }

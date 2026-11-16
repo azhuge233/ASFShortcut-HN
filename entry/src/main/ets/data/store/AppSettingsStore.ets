@@ -4,7 +4,7 @@ import { ConfigurationConstant } from '@kit.AbilityKit';
 
 import Logger from '../../common/utils/Logger';
 import { toDomainColorMode, toPlatformColorMode } from '../../common/utils/ColorModeMapper';
-import { AppSettings, ColorMode } from '../../domain/model/AppSettings';
+import { AppSettings, ColorMode, ListLayout } from '../../domain/model/AppSettings';
 import { AppSettingsRepository } from '../../domain/repository/AppSettingsRepository';
 
 const LOG_TAG: string = '[AppSettingsStore]';
@@ -12,6 +12,9 @@ const LOG_TAG: string = '[AppSettingsStore]';
 /*
  * `ASFS_App_Preferences` 的读写。落盘值仍是原枚举数值，旧数据可直接读。
  * 领域枚举 ↔ 平台枚举的映射表在 `common/utils/ColorModeMapper.ets`（B3 搬出本文件，供 ui 与 data 共用）。
+ *
+ * 列表布局另起一个键 `ListLayout`，仍存裸数值：既有 `AppSettings` 键存的是裸数值，
+ * 把布局塞进同一个键就得改成对象形态，那是一次格式迁移；新键零迁移，颜色模式那条路径一行不动（设计 §2.1）。
  */
 
 export class AppSettingsStore {
@@ -21,6 +24,7 @@ export class AppSettingsStore {
 
     private readonly PREFERENCES_NAME = 'ASFS_App_Preferences';
     private readonly STORE_KEY = 'AppSettings';
+    private readonly LAYOUT_KEY = 'ListLayout';
 
     private readonly isGSKVSupported = deviceInfo.sdkApiVersion >= 18 && preferences.isStorageTypeSupported(preferences.StorageType.GSKV);
 
@@ -96,6 +100,36 @@ export class AppSettingsStore {
         }
         return true;
     }
+
+    /** 写列表布局：与 `set(appSettings)` 同形（GSKV 直写、XML 写后 flush），失败返回 false */
+    async setLayout(layout: ListLayout): Promise<boolean> {
+        if (!this.checkReady()) return false;
+
+        try {
+            await this.dataPreferences?.put(this.LAYOUT_KEY, layout as number);
+            if (!this.isGSKVSupported) await this.dataPreferences?.flush();
+            return true;
+        } catch (err) {
+            Logger.error(LOG_TAG, `保存列表布局失败, ${err}`);
+            return false;
+        }
+    }
+
+    /** 读列表布局：没存过时按单列；存过的值只有单 / 双两档，其余按单列读 */
+    async getLayout(): Promise<ListLayout> {
+        if (!this.checkReady()) return ListLayout.SINGLE;
+
+        try {
+            const stored = await this.dataPreferences!.get(this.LAYOUT_KEY,
+                ListLayout.SINGLE as number) as Object;
+
+            if (typeof stored === 'number' && (stored as number) === ListLayout.DOUBLE) return ListLayout.DOUBLE;
+            return ListLayout.SINGLE;
+        } catch (err) {
+            Logger.error(LOG_TAG, `获取列表布局失败, ${err}`);
+            return ListLayout.SINGLE;
+        }
+    }
 }
 
 /**
@@ -104,6 +138,7 @@ export class AppSettingsStore {
  * 单独立类而不让 `AppSettingsStore` 直接 implements，是因为接口的 `get()` / `set(mode)`
  * 与 Store 既有的 `get(): Promise<AppSettings | null>` / `set(appSettings)` 同名不同形；
  * 接口「只加不减」，既有签名不动（三个 Ability 仍在用），所以由本类做转发。
+ * 布局两个方法同理转发，Store 侧与 `get` / `set` 同形。
  */
 export class AppSettingsRepositoryImpl implements AppSettingsRepository {
     private store: AppSettingsStore = AppSettingsStore.getInstance();
@@ -115,5 +150,13 @@ export class AppSettingsRepositoryImpl implements AppSettingsRepository {
 
     async set(mode: ColorMode): Promise<boolean> {
         return this.store.set(new AppSettings(mode));
+    }
+
+    async getLayout(): Promise<ListLayout> {
+        return this.store.getLayout();
+    }
+
+    async setLayout(layout: ListLayout): Promise<boolean> {
+        return this.store.setLayout(layout);
     }
 }

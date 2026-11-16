@@ -11,11 +11,25 @@ export enum ColorMode {
     LIGHT = 1
 }
 
+/**
+ * 主列表布局：领域枚举。
+ *
+ * 数值即落盘值，落在 `ASFS_App_Preferences` 的新键 `ListLayout` 上；没存过时读回 `SINGLE`。
+ * 键名与枚举同拼写只是巧合——前者是首选项的字符串键，后者是 TS 枚举，两者无耦合。
+ */
+export enum ListLayout {
+    SINGLE = 0,
+    DOUBLE = 1
+}
+
 @ObservedV2
 export class AppSettings {
     @Trace colorMode: ColorMode;
+    // 列表布局与颜色模式同一份可观察对象、同一条落盘路径（设计 §2.1 / §2.2）
+    @Trace listLayout: ListLayout;
 
-    constructor(colorMode: ColorMode) {
+    constructor(colorMode: ColorMode, listLayout: ListLayout = ListLayout.SINGLE) {
         this.colorMode = colorMode;
+        this.listLayout = listLayout;
     }
 }

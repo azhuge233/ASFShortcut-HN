@@ -246,7 +246,7 @@
     },
     {
       "name": "Index_Create_First_Command_Label",
-      "value": "点击 '+' 号创建指令"
+      "value": "点击底部「添加指令」创建"
     },
     {
       "name": "Index_Add_Menu_Button_Label",
@@ -264,10 +264,14 @@
       "name": "Index_Tab_Label_Home",
       "value": "指令列表"
     },
-    {
-      "name": "Index_Tab_Label_Test",
-      "value": "ASF测试"
-    },
+     {
+       "name": "Index_Tab_Label_Test",
+       "value": "ASF测试"
+     },
+     {
+       "name": "Index_Tab_Label_Add",
+       "value": "添加指令"
+     },
     {
       "name": "CommandTile_Button_Label_Run",
       "value": "运行"
@@ -282,11 +286,11 @@
     },
     {
       "name": "CommandTile_Input_Required_ASF_Account_Label",
-      "value": "ASF 机器人"
+      "value": "账号"
     },
     {
       "name": "CommandTile_Input_Required_ASF_ID_Label",
-      "value": "App/Sub/Def ID | Key"
+      "value": "ID"
     },
     {
       "name": "Account_Input_Dialog_Label",
@@ -326,7 +330,7 @@
     },
     {
       "name": "More_Title",
-      "value": "更多功能"
+      "value": "设置"
     },
     {
       "name": "More_Clear_Confirm_Title",
@@ -545,12 +549,64 @@
       "value": "搜索指令或昵称"
     },
     {
+      "name": "Index_Search_Cancel_Button",
+      "value": "取消"
+    },
+    {
+      "name": "Index_Search_Menu_Button_Label",
+      "value": "搜索"
+    },
+    {
       "name": "Index_Reorder_Failed",
       "value": "调整顺序失败"
     },
     {
       "name": "More_Clear_Bindings_Failed",
       "value": "绑定未解除，指令未清空"
-    }
+    },
+    {
+      "name": "DataManagement_Title",
+      "value": "数据管理"
+    },
+    {
+      "name": "About_Title",
+      "value": "关于"
+    },
+    {
+      "name": "About_Version_Label",
+      "value": "版本"
+    },
+    {
+      "name": "About_Author_Label",
+      "value": "作者"
+    },
+    {
+      "name": "About_Open_Source_Label",
+      "value": "开源地址"
+    },
+    {
+      "name": "About_Open_Source_Failed",
+      "value": "打开链接失败，请重试"
+    },
+    {
+      "name": "Index_Edit_Menu_Button_Label",
+      "value": "编辑"
+    },
+    {
+      "name": "Index_Sort_Menu_Button_Label",
+      "value": "排序"
+    },
+    {
+      "name": "Index_Done_Menu_Button_Label",
+      "value": "完成"
+    },
+    {
+      "name": "Index_Layout_Double_Menu_Button_Label",
+      "value": "切为双列"
+    },
+     {
+       "name": "Index_Layout_Single_Menu_Button_Label",
+       "value": "切为单列"
+     }
   ]
 }

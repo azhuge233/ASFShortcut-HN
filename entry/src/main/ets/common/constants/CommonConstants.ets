@@ -23,6 +23,10 @@ class CommonConstants {
 
     public readonly FORM_RESULT_MAP_KEY_SINGLE = 'single';
     public readonly FORM_RESULT_MAP_KEY_MULTIPLE = 'multiple';
+
+    // 「关于」页两项的固定取值：仓库 origin 与其账户名（需求档依赖一节给出）
+    public readonly OPEN_SOURCE_URL = 'https://github.com/azhuge233/ASFShortcut-HN';
+    public readonly OPEN_SOURCE_AUTHOR = 'azhuge233';
 }
 
 export default new CommonConstants();

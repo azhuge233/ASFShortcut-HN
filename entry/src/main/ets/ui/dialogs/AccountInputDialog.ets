@@ -1,76 +1,15 @@
-import { hdsMaterial, HdsNavDestination, ScrollEffectType } from "@kit.UIDesignKit";
+import { TextInputDialog } from './TextInputDialog';
 
-import StyleConstants from "../../common/constants/StyleConstants";
-
+/**
+ * 账号输入对话框（路由登记名保留，C7 / D8）。
+ *
+ * 实现只有一份，在 `TextInputDialog`；本文件只剩路由表要的两个名字——`route_map.json` 按
+ * `pageSourceFile` + `buildFunction` 登记，删文件就要改路由表。
+ *
+ * 这里不再套一层自定义组件：多一层就等于在 `HdsNavDestination` 上再盖一层壳，
+ * 而本文件要的只是「用本对话框的标题装同一份实现」。
+ */
 @Builder
 export function AccountInputDialogBuilder() {
-    AccountInputDialog();
-}
-
-@ComponentV2
-export struct AccountInputDialog {
-    pathStack: NavPathStack = new NavPathStack();
-
-    @Local inputValue: string = "";
-
-    build() {
-        HdsNavDestination() {
-            Column() {
-                Text($r("app.string.Account_Input_Dialog_Label"))
-                    .fontWeight(FontWeight.Bold)
-                    .alignSelf(ItemAlign.Start)
-                    .fontSize(StyleConstants.DIALOG_TITLE_FONT_SIZE)
-                    .textSelectable(TextSelectableMode.UNSELECTABLE)
-                    .copyOption(CopyOptions.None)
-                    .margin({
-                        top: StyleConstants.TWENTY_PERCENT,
-                        bottom: StyleConstants.TEN_PERCENT
-                    })
-
-                TextInput()
-                    .width(StyleConstants.FULL_PERCENT)
-                    .maxLines(1)
-                    .margin({ top: StyleConstants.MARGIN_TEN, bottom: StyleConstants.MARGIN_TEN })
-                    .onChange((value: string) => {
-                        this.inputValue = value;
-                    })
-
-                Button($r("app.string.Dialog_Button_Label"))
-                    .alignSelf(ItemAlign.Stretch)
-                    .enabled(this.inputValue.trim() !== "")
-                    .margin({
-                        top: StyleConstants.MARGIN_TWENTY
-                    })
-                    .onClick(() => {
-                        this.pathStack.pop(this.inputValue);
-                    })
-            }
-            .padding(StyleConstants.PADDING_TWENTY)
-            .width(StyleConstants.FULL_PERCENT)
-        }
-        .titleBar({
-            style: {
-                scrollEffectOpts: {
-                    // 设置滚动特效
-                    enableScrollEffect: true,
-                    scrollEffectType: ScrollEffectType.GRADIENT_BLUR,
-                },
-                systemMaterialEffect: {
-                    // 设置沉浸光感
-                    materialType: hdsMaterial.MaterialType.ADAPTIVE,
-                    materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
-                },
-            },
-            enableComponentSafeArea: true // 启用标题栏占位
-        })
-        .mode(NavDestinationMode.DIALOG)
-        .backgroundColor($r("app.color.dialog_background_color"))
-        .onBackPressed(() => {
-            this.pathStack.pop("");
-            return true;
-        })
-        .onReady((context) => {
-            this.pathStack = context.pathStack;
-        });
-    }
+    TextInputDialog({ title: $r("app.string.Account_Input_Dialog_Label") });
 }

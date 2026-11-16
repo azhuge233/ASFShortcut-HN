@@ -14,9 +14,11 @@ const LOG_TAG: string = '[PageContext]';
  */
 class PageContext {
     // 按照 API 版本显示 Toast 提醒
-    public alert(message: string | Resource, promptAction: PromptAction) {
+    // `duration` 可选：不传就交给平台的默认时长（27 处调用点因此一行不动，C9 / D7）
+    public alert(message: string | Resource, promptAction: PromptAction, duration?: number) {
         promptAction.openToast({
-            message: message
+            message: message,
+            duration: duration
         }).catch((err: BusinessError) => {
             Logger.error(LOG_TAG, `toast 提示错误, ${err}`);
         });
@@ -70,6 +72,12 @@ class PageContext {
         context.terminateSelf().catch((err: BusinessError) => {
             Logger.error(from, `关闭应用失败, ${err}`);
         });
+    }
+
+    // 打开外部链接（「关于」页的开源地址）：与 `closeApplication` 同形，页面把宿主上下文交进来。
+    // 失败（无浏览器 / 权限拒绝）不在这里吞掉：Promise 如实抛回调用页，由页面提示且不退出。
+    public async openLink(link: string, context: common.UIAbilityContext): Promise<void> {
+        await context.openLink(link);
     }
 
     // 读本窗口的参数：`loadContent` 第二参交付的 `LocalStorage`（设计 §2.6）

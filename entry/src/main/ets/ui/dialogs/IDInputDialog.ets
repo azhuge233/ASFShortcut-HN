@@ -1,76 +1,11 @@
-import { hdsMaterial, HdsNavDestination, ScrollEffectType } from "@kit.UIDesignKit";
+import { TextInputDialog } from './TextInputDialog';
 
-import StyleConstants from "../../common/constants/StyleConstants";
-
+/**
+ * ID 输入对话框（路由登记名保留，C7 / D8）：与 `AccountInputDialog` 逐行同形，只有标题键不同。
+ *
+ * 两件改造前是同一份代码抄两遍（`diff` 只差函数名、结构体名与一个字符串键），实现收进 `TextInputDialog`。
+ */
 @Builder
 export function IDInputDialogBuilder() {
-    IDInputDialog();
-}
-
-@ComponentV2
-export struct IDInputDialog {
-    pathStack: NavPathStack = new NavPathStack();
-
-    @Local inputValue: string = "";
-
-    build() {
-        HdsNavDestination() {
-            Column() {
-                Text($r("app.string.ID_Input_Dialog_Label"))
-                    .fontWeight(FontWeight.Bold)
-                    .alignSelf(ItemAlign.Start)
-                    .fontSize(StyleConstants.DIALOG_TITLE_FONT_SIZE)
-                    .textSelectable(TextSelectableMode.UNSELECTABLE)
-                    .copyOption(CopyOptions.None)
-                    .margin({
-                        top: StyleConstants.TWENTY_PERCENT,
-                        bottom: StyleConstants.TEN_PERCENT
-                    })
-
-                TextInput()
-                    .width(StyleConstants.FULL_PERCENT)
-                    .maxLines(1)
-                    .margin({ top: StyleConstants.MARGIN_TEN, bottom: StyleConstants.MARGIN_TEN })
-                    .onChange((value: string) => {
-                        this.inputValue = value;
-                    })
-
-                Button($r("app.string.Dialog_Button_Label"))
-                    .alignSelf(ItemAlign.Stretch)
-                    .enabled(this.inputValue.trim() !== "")
-                    .margin({
-                        top: StyleConstants.MARGIN_TWENTY
-                    })
-                    .onClick(() => {
-                        this.pathStack.pop(this.inputValue);
-                    })
-            }
-            .padding(StyleConstants.PADDING_TWENTY)
-            .width(StyleConstants.FULL_PERCENT)
-        }
-        .titleBar({
-            style: {
-                scrollEffectOpts: {
-                    // 设置滚动特效
-                    enableScrollEffect: true,
-                    scrollEffectType: ScrollEffectType.GRADIENT_BLUR,
-                },
-                systemMaterialEffect: {
-                    // 设置沉浸光感
-                    materialType: hdsMaterial.MaterialType.ADAPTIVE,
-                    materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
-                },
-            },
-            enableComponentSafeArea: true // 启用标题栏占位
-        })
-        .mode(NavDestinationMode.DIALOG)
-        .backgroundColor($r("app.color.dialog_background_color"))
-        .onBackPressed(() => {
-            this.pathStack.pop("");
-            return true;
-        })
-        .onReady((context) => {
-            this.pathStack = context.pathStack;
-        });
-    }
+    TextInputDialog({ title: $r("app.string.ID_Input_Dialog_Label") });
 }

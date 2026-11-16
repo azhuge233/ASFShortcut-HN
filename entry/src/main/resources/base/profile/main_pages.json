@@ -5,6 +5,8 @@
     "ui/pages/EditPage",
     "ui/pages/ASFSettingsPage",
     "ui/pages/MorePage",
+    "ui/pages/DataManagementPage",
+    "ui/pages/AboutPage",
     "ui/pages/SingleCommandFormEdit",
     "ui/pages/MultipleCommandsFormEdit"
   ]

@@ -246,7 +246,7 @@
     },
     {
       "name": "Index_Create_First_Command_Label",
-      "value": "Tap '+' to create your first command."
+      "value": "Tap \"Add Command\" at the bottom to create one."
     },
     {
       "name": "Index_Add_Menu_Button_Label",
@@ -264,10 +264,14 @@
       "name": "Index_Tab_Label_Home",
       "value": "Commands"
     },
-    {
-      "name": "Index_Tab_Label_Test",
-      "value": "ASF Test"
-    },
+     {
+       "name": "Index_Tab_Label_Test",
+       "value": "ASF Test"
+     },
+     {
+       "name": "Index_Tab_Label_Add",
+       "value": "Add Command"
+     },
     {
       "name": "CommandTile_Button_Label_Run",
       "value": "Run"
@@ -282,11 +286,11 @@
     },
     {
       "name": "CommandTile_Input_Required_ASF_Account_Label",
-      "value": "ASF Bot"
+      "value": "Account"
     },
     {
       "name": "CommandTile_Input_Required_ASF_ID_Label",
-      "value": "App/Sub/Def ID | Key"
+      "value": "ID"
     },
     {
       "name": "Account_Input_Dialog_Label",
@@ -326,7 +330,7 @@
     },
     {
       "name": "More_Title",
-      "value": "More"
+      "value": "Settings"
     },
     {
       "name": "More_Clear_Confirm_Title",
@@ -545,12 +549,64 @@
       "value": "Search commands or nicknames"
     },
     {
+      "name": "Index_Search_Cancel_Button",
+      "value": "Cancel"
+    },
+    {
+      "name": "Index_Search_Menu_Button_Label",
+      "value": "Search"
+    },
+    {
       "name": "Index_Reorder_Failed",
       "value": "Failed to reorder"
     },
     {
       "name": "More_Clear_Bindings_Failed",
       "value": "Bindings not unbound; commands not cleared"
-    }
+    },
+    {
+      "name": "DataManagement_Title",
+      "value": "Data Management"
+    },
+    {
+      "name": "About_Title",
+      "value": "About"
+    },
+    {
+      "name": "About_Version_Label",
+      "value": "Version"
+    },
+    {
+      "name": "About_Author_Label",
+      "value": "Author"
+    },
+    {
+      "name": "About_Open_Source_Label",
+      "value": "Open Source"
+    },
+    {
+      "name": "About_Open_Source_Failed",
+      "value": "Failed to open the link. Please try again."
+    },
+    {
+      "name": "Index_Edit_Menu_Button_Label",
+      "value": "Edit"
+    },
+    {
+      "name": "Index_Sort_Menu_Button_Label",
+      "value": "Sort"
+    },
+    {
+      "name": "Index_Done_Menu_Button_Label",
+      "value": "Done"
+    },
+    {
+      "name": "Index_Layout_Double_Menu_Button_Label",
+      "value": "Switch to two columns"
+    },
+     {
+       "name": "Index_Layout_Single_Menu_Button_Label",
+       "value": "Switch to single column"
+     }
   ]
 }
